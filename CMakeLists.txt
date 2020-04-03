@@ -58,6 +58,6 @@ target_compile_options(${TEST_NAME} PRIVATE
 )
 
 #include custom cmake function
-include ( "test/catch2/ParseAndAddCatchTests.cmake")
-#parse catch tests
+include("test/catch2/ParseAndAddCatchTests.cmake")
+include(CTest)
 ParseAndAddCatchTests (${TEST_NAME})
