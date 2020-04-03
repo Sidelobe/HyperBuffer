@@ -11,21 +11,27 @@ matrix:
           
         - os: linux
           compiler: gcc
-          env: COMPILER='g++'
+          addons: &gcc6
+              apt:
+                  sources: ['ubuntu-toolchain-r-test']
+                packages: ['g++-6']
+          env: COMPILER='g++-6'
          
 before_script:
-        # Export CXX to tell cmake which compiler to use
-        - export CXX=${COMPILER}
-        - export CPP_STANDARD=14
-        # Check versions
-        - cmake --version
-        # Run your build commands next
-        - cd deploy
-        - mkdir -p build
-        - cd build
+    # Export CXX to tell cmake which compiler to use
+    - export CXX=${COMPILER}
+    - export CPP_STANDARD=14
+    # Check versions
+    - cmake --version
+    # Run your build commands next
+    - cd deploy
+    - mkdir -p build
+    - cd build
+    - cmake -H. -j 2 ../.. -DCMAKE_BUILD_TYPE=Debug
 script:
 
-    - cmake -H. -j 2 ../.. -DCMAKE_BUILD_TYPE=Debug
     - make -j 2
-    - ./HyperBufferTest -r xml
+    #- ./HyperBufferTest
+    - ctest -V -j 2
+
     

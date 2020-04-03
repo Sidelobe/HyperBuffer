@@ -12,14 +12,19 @@ set(CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 file(GLOB_RECURSE source "source/*.h*" "source/*.c*")
+
+set (LIB_NAME "${CMAKE_PROJECT_NAME}")
+
+# TEST TARGET
+set (TEST_NAME "${LIB_NAME}Test")
 file(GLOB_RECURSE source_test "test/*.h*" "test/*.c*")
-add_executable(HyperBufferTest ${source} ${source_test})
+add_executable(${TEST_NAME} ${source} ${source_test})
 
-target_include_directories(HyperBufferTest PRIVATE source)
-target_include_directories(HyperBufferTest PRIVATE test)
-target_include_directories(HyperBufferTest PRIVATE test/catch2)
+target_include_directories(${TEST_NAME} PRIVATE source)
+target_include_directories(${TEST_NAME} PRIVATE test)
+target_include_directories(${TEST_NAME} PRIVATE test/catch2)
 
-target_compile_options(HyperBufferTest PRIVATE
+target_compile_options(${TEST_NAME} PRIVATE
     # clang/GCC warnings
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
     -Wall
@@ -51,3 +56,8 @@ target_compile_options(HyperBufferTest PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:
     "/Wall" >
 )
+
+#include custom cmake function
+include ( "test/catch2/ParseAndAddCatchTests.cmake")
+#parse catch tests
+ParseAndAddCatchTests (${TEST_NAME})
