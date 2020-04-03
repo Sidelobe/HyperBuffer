@@ -2,9 +2,6 @@
 dist: trusty
 language:
     - cpp
-compiler:
-    - clang
-    - gcc
 common_sources: &all_sources
     - ubuntu-toolchain-r-test
     - llvm-toolchain-trusty
