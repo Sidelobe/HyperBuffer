@@ -25,7 +25,7 @@ before_script:
         - cd build
 script:
 
-    - cmake ../.. -DCMAKE_BUILD_TYPE=Debug
+    - cmake -j 2 ../.. -DCMAKE_BUILD_TYPE=Debug
     - make -j 2
-    #- ./HyperBufferTest
-    - ctest -V -j 2
+    - ./HyperBufferTest -r xml
+    
