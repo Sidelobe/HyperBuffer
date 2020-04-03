@@ -10,14 +10,14 @@ matrix:
           env: COMPILER='clang++'
           
         - os: linux
-          dist: xenial
+          dist: bionic
           compiler: gcc
           
-          addons: &gcc6
+          addons:
               apt:
                   sources: ['ubuntu-toolchain-r-test']
-                  packages: ['g++-8']
-          env: COMPILER='g++-8'
+                  packages: ['g++-7']
+          env: COMPILER='g++-7'
          
 before_script:
     # Export CXX to tell cmake which compiler to use
@@ -30,8 +30,8 @@ before_script:
     - mkdir -p build
     - cd build
     - cmake -H. -j 2 ../.. -DCMAKE_BUILD_TYPE=Debug
+    
 script:
-
     - make -j 2
     #- ./HyperBufferTest
     - ctest -V -j 2
