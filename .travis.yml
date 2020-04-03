@@ -1,34 +1,39 @@
 # Travis configuration file for HyperBuffer
 dist: trusty
-os:
- # - linux
-  - osx
- # - windows
 language:
-  - cpp
+    - cpp
 compiler:
-#  - clang
-  - gcc
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-    packages:
-      - g++
-#      - clang
-      - cmake
+    - clang
+    - gcc
+common_sources: &all_sources
+    - ubuntu-toolchain-r-test
+    - llvm-toolchain-trusty
+matrix:
+    include:
+        - os: osx
+          osx_image: xcode9.1
+          compiler: clang
+          env: COMPILER='clang++'
+          
+        - os: linux
+          compiler: gcc
+          addons: *gcc8
+          env: COMPILER='g++-8'
 script:
+  # Export CXX to tell cmake which compiler to use
+  - export CXX=${COMPILER}
+  - export CPP_STANDARD=14
   # Link clang and g++ to their standard commands
   - ln -s /usr/bin/g++ /usr/local/bin/g++
-  # Export CXX to tell cmake which compiler to use
-  - export CXX=/usr/bin/g++
+  - ln -s /usr/bin/g++ /usr/local/bin/g++
+
   # Check versions of g++ and cmake
   - g++ -v && cmake --version
   # Run your build commands next
-  - export CPP_STANDARD=14
+
   - cd deploy
   - mkdir -p build
   - cd build
   - cmake ../..
   - make
-#  - ./HyperBufferTest
+  - ./HyperBufferTest
