@@ -14,7 +14,10 @@ matrix:
           
         - os: linux
           compiler: gcc
-          addons: *gcc8
+          addons: &gcc8
+              apt:
+                sources: *all_sources
+                packages: ['g++-8']
           env: COMPILER='g++-8'
          
 script:
