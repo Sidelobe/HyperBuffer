@@ -57,7 +57,8 @@ target_compile_options(${TEST_NAME} PRIVATE
     "/Wall" >
 )
 
-#include custom cmake function
+## ENABLE THE USE OF CTEST 
 include("test/catch2/ParseAndAddCatchTests.cmake")
-include(CTest)
-ParseAndAddCatchTests (${TEST_NAME})
+#include(CTest) # this will generate lots of additional targets
+enable_testing()
+ParseAndAddCatchTests(${TEST_NAME})
