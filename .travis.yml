@@ -5,17 +5,19 @@ language:
 matrix:
     include:
         - os: osx
-          osx_image: xcode9.1
+          osx_image: xcode11.3
           compiler: clang
           env: COMPILER='clang++'
           
         - os: linux
+          dist: xenial
           compiler: gcc
+          
           addons: &gcc6
               apt:
                   sources: ['ubuntu-toolchain-r-test']
-                packages: ['g++-6']
-          env: COMPILER='g++-6'
+                  packages: ['g++-8']
+          env: COMPILER='g++-8'
          
 before_script:
     # Export CXX to tell cmake which compiler to use
