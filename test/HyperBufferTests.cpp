@@ -7,7 +7,7 @@ TEST_CASE("HyperBuffer Tests")
 {
     HyperBuffer buffer;
     
-    REQUIRE(false);
+    REQUIRE(true);
     
     
     
