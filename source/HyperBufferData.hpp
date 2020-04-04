@@ -53,7 +53,7 @@ public:
     
 protected:
     template<typename... I>
-    HyperBufferData(I... i) : m_dimensions({ {i...} })
+    HyperBufferData(I... i) : m_dimensions({ {static_cast<int>(i)...} })
     {
         
     }
@@ -71,21 +71,26 @@ class HyperBufferDataOwning : public HyperBufferData<T, N>
     
 public:
     template<typename... I>
-    explicit HyperBufferDataOwning(I... i) : HyperBufferData<T, N>(i...), m_data(multiplyArgs(i...))
+    explicit HyperBufferDataOwning(I... i) :
+        HyperBufferData<T, N>(i...),
+        m_data(multiplyArgs(i...))
     {
+        // TODO: remove this uglyness
         auto begin = HyperBufferData<T, N>::m_dimensions.begin();
         auto end = HyperBufferData<T, N>::m_dimensions.end();
         std::vector<size_t> dimsSizeT(begin, end);
-        
         m_dataPointers = callocArray<pointer_type>(dimsSizeT.data());
     }
+    
     ~HyperBufferDataOwning()
     {
+         // TODO: remove this uglyness
         auto begin = HyperBufferData<T, N>::m_dimensions.begin();
         auto end = HyperBufferData<T, N>::m_dimensions.end();
         std::vector<size_t> dimsSizeT(begin, end);
         deleteArray(m_dataPointers, dimsSizeT.data());
     }
+    
     pointer_type getDataPointers() const override
     {
         return m_dataPointers;
@@ -105,7 +110,9 @@ class HyperBufferDataPreAlloc : public HyperBufferData<T, N>
     
 public:
     template<typename... I>
-    explicit HyperBufferDataPreAlloc(pointer_type preAllocatedData, I... i)
+    explicit HyperBufferDataPreAlloc(pointer_type preAllocatedData, I... i) :
+        HyperBufferData<T, N>(i...),
+        m_dataPointers(preAllocatedData)
     {
         
     }
