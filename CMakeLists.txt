@@ -14,6 +14,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 file(GLOB_RECURSE source "source/*.h*" "source/*.c*")
 set (LIB_NAME "${CMAKE_PROJECT_NAME}")
 
+add_subdirectory(test/external-utils/MemorySentinel)
+
 # TEST TARGET
 set (TEST_NAME "${LIB_NAME}Test")
 file(GLOB_RECURSE source_test "test/*.h*" "test/*.c*")
@@ -21,7 +23,7 @@ add_executable(${TEST_NAME} ${source} ${source_test})
 
 target_include_directories(${TEST_NAME} PRIVATE source)
 target_include_directories(${TEST_NAME} PRIVATE test)
-target_include_directories(${TEST_NAME} PRIVATE test/catch2)
+target_include_directories(${TEST_NAME} PRIVATE test/external-utils/catch2)
 
 get_target_property(allsources ${TEST_NAME} SOURCES)
 foreach(_source IN ITEMS ${allsources})
