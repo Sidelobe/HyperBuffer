@@ -1,0 +1,3 @@
+[submodule "MemorySentinel"]
+	path = test/external-utils/MemorySentinel
+	url = https://github.com/Sidelobe/MemorySentinel.git
