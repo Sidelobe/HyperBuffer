@@ -11,19 +11,22 @@ set(CMAKE_CXX_STANDARD 14)
 set(CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# SOURCE TARGET
 file(GLOB_RECURSE source "source/*.h*" "source/*.c*")
-set (LIB_NAME "${CMAKE_PROJECT_NAME}")
-
-add_subdirectory(test/external-utils/MemorySentinel)
+set (LIB_NAME "HyperBuffer")
 
 # TEST TARGET
 set (TEST_NAME "${LIB_NAME}Test")
-file(GLOB_RECURSE source_test "test/*.h*" "test/*.c*")
+file(GLOB_RECURSE source_test "test/tests/*.c*" "test/tests/*.c*")
 add_executable(${TEST_NAME} ${source} ${source_test})
 
-target_include_directories(${TEST_NAME} PRIVATE source)
+target_sources(${TEST_NAME} PRIVATE "test/main.cpp")
+target_include_directories(${TEST_NAME} PUBLIC source)
 target_include_directories(${TEST_NAME} PRIVATE test)
-target_include_directories(${TEST_NAME} PRIVATE test/external-utils/catch2)
+target_include_directories(${TEST_NAME} PRIVATE test/external-utils)
+target_include_directories(${TEST_NAME} PRIVATE test/external-utils/MemorySentinel/source)
+
+add_subdirectory(test/external-utils/MemorySentinel)
 
 get_target_property(allsources ${TEST_NAME} SOURCES)
 foreach(_source IN ITEMS ${allsources})
@@ -71,7 +74,7 @@ target_compile_options(${TEST_NAME} PRIVATE
 )
 
 ## ENABLE THE USE OF CTEST 
-include("test/catch2/ParseAndAddCatchTests.cmake")
+include("test/external-utils/catch2/ParseAndAddCatchTests.cmake")
 #include(CTest) # this will generate lots of additional targets
 enable_testing()
 ParseAndAddCatchTests(${TEST_NAME})
