@@ -46,7 +46,7 @@ class BufferGeometry
 public:
     /** Take the extents of the dimensions as a variable argument list */
     template<typename... I>
-    explicit BufferGeometry(I... i) : m_dimensions{i...}
+    explicit BufferGeometry(I... i) : m_dimensionExtents{i...}
     {
         static_assert(sizeof...(I) == N, "Incorrect number of arguments");
     }
@@ -56,7 +56,7 @@ public:
     int getOffsetInDataArray(int dn, I... dk) const
     {
         static_assert(sizeof...(I) == N-1, "Incorrect number of arguments");
-        return OffsetCalculation::getOffset<N>(1, 0, m_dimensions, dn, dk...);  // NOTE: start with dimIndex=1 - don't care about highest dimension's value
+        return OffsetCalculation::getOffset<N>(1, 0, m_dimensionExtents, dn, dk...);  // NOTE: start with dimIndex=1 - don't care about highest dimension's value
     }
     
     /** DimIdx corresponds to index in dimensions array, i.e. DimIdx=0 is the highest-order dimension */
@@ -69,7 +69,7 @@ public:
         int sumOfAllHigherDimPointers = 0;
         // --> sum of cumulative product "stopped early"
         for (int i=0; i < DimIdx; ++i) {
-            int p = OffsetCalculation::arrayProduct<N>(m_dimensions, 0, i+1);
+            int p = OffsetCalculation::arrayProduct<N>(m_dimensionExtents, 0, i+1);
             sumOfAllHigherDimPointers += p;
         }
         
@@ -82,8 +82,8 @@ public:
             }
         }
         std::cout << "sumOfAllHigherDimPointers=" << sumOfAllHigherDimPointers;
-        std::cout << " ... getOffsetMinusOne(DimIdx)=" << OffsetCalculation::getOffset<N-1>(1, 0, m_dimensions, dn, dk...) << std::endl;
-        return sumOfAllHigherDimPointers + OffsetCalculation::getOffset<N-1>(1, 0, m_dimensions, dn, dk...);
+        std::cout << " ... getOffsetMinusOne(DimIdx)=" << OffsetCalculation::getOffset<N-1>(1, 0, m_dimensionExtents, dn, dk...) << std::endl;
+        return sumOfAllHigherDimPointers + OffsetCalculation::getOffset<N-1>(1, 0, m_dimensionExtents, dn, dk...);
     }
     
 
@@ -106,6 +106,6 @@ public:
     }
     
 private:
-    int m_dimensions[N];
+    int m_dimensionExtents[N];
     
 };
