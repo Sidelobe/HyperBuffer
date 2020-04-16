@@ -71,13 +71,13 @@ constexpr int product(Args... args)
     return result;
 }
 
-/** Calculate the cumulative product of all args in parameter pack */
+/** Calculate the cumulative product of args in parameter pack - until 'cap' index */
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
-constexpr int sumOfCumulativeProduct(Args... args)
+constexpr int sumOfCumulativeProductCapped(int maxLength, Args... args)
 {
     int sum{0};
     T values[]{ args... };
-    for (int i=0; i < sizeof...(args); ++i) {
+    for (int i=0; i < maxLength; ++i) {
         int cumulativeProduct{1};
         for (int j=0; j <= i; ++j) {
             cumulativeProduct *= values[j];
@@ -86,6 +86,14 @@ constexpr int sumOfCumulativeProduct(Args... args)
     }
     return sum;
 }
+
+/** Calculate the cumulative product of all args in parameter pack */
+template<typename... Args, typename T = typename std::common_type<Args...>::type>
+constexpr int sumOfCumulativeProduct(Args... args)
+{
+    return sumOfCumulativeProductCapped(sizeof...(Args), args...);
+}
+
 
 // Make Tuple from std::array
 template<std::size_t... I, std::size_t N>
