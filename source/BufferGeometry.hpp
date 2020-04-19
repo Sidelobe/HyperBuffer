@@ -98,11 +98,7 @@ public:
         
         // MARK: - Get number of data pointers (length of 2nd-lowest dim)
         int numDataPointers = StdArrayOperations::productCapped(N-1, m_dimensionExtents);
-//        int numDataPointers = VarArgOperations::apply([](auto&&... args)
-//        {
-//            if (N < 2) { return 0; }
-//            return VarArgOperations::productCapped(N-1, std::forward<decltype(args)>(args)...);
-//        }, dimsArray);
+
         
         // MARK: - Hook up pointer that point to data (second lowest-order dimension)
         for (int i=0; i < numDataPointers; ++i) {
@@ -111,6 +107,7 @@ public:
         }
     }
     
+private:
     template<typename T, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
     void hookupHigherDimPointers(T** pointerArray, int arrayIndex, int dimIndex)
     {
@@ -118,13 +115,7 @@ public:
             return;
         }
 
-        // SumCumProd Capped
-        auto intTuple = VarArgOperations::makeIntTuple(m_dimensionExtents);
-        int sumCumProdUntilDimIndex = VarArgOperations::apply([dimIndex](auto&&... args)
-        {
-            return VarArgOperations::sumOfCumulativeProductCapped(dimIndex+1, std::forward<decltype(args)>(args)...);
-        }, intTuple);
-
+        int sumCumProdUntilDimIndex = StdArrayOperations::sumOfCumulativeProductCapped(dimIndex+1, m_dimensionExtents);
         int prodUntilDimIndex = StdArrayOperations::productCapped(dimIndex+1, m_dimensionExtents);
 
         
@@ -139,8 +130,7 @@ public:
         hookupHigherDimPointers(pointerArray, arrayIndex+prodUntilDimIndex, dimIndex+1);
         
     }
-    
-private:
+
     template<std::size_t Nmax>
     int getOffset(int dimIndex, int cumulativeOffset, int d0) const
     {
