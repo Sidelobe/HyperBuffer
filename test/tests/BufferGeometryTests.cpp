@@ -14,25 +14,16 @@
 TEST_CASE("BufferGeometry Tests")
 {
     SECTION("1D") {
-        BufferGeometry<1> bufferGeo(3);
+        constexpr int N = 1;
+        BufferGeometry<N> bufferGeo(3);
         CHECK(bufferGeo.getOffsetInDataArray(0) == 0);
         CHECK(bufferGeo.getOffsetInDataArray(1) == 1);
         CHECK(bufferGeo.getOffsetInDataArray(2) == 2);
-       
-//        float data [3] {0};
-//        float* pointers [3];
-//        bufferGeo.hookupPointerArrayToData(data, pointers);
-        
-//        CHECK(bufferGeo.getOffsetInPointerArray(0, 0) == 0);
-//        CHECK(bufferGeo.getOffsetInPointerArray(1, 0) == 1);
-//        CHECK(bufferGeo.getOffsetInPointerArray(2, 0) == 2);
-//        CHECK(pointers[0] == &data[(bufferGeo.getOffsetForIndex(0))]);
-//        CHECK(pointers[1] == &data[(bufferGeo.getOffsetForIndex(1))]);
-//        CHECK(pointers[2] == &data[(bufferGeo.getOffsetForIndex(2))]);
     }
     
     SECTION("2D") {
-        BufferGeometry<2> bufferGeo(3, 3);
+        constexpr int N = 2;
+        BufferGeometry<N> bufferGeo(3, 3);
         CHECK(bufferGeo.getOffsetInDataArray(0, 0) == 0);
         CHECK(bufferGeo.getOffsetInDataArray(0, 1) == 1);
         CHECK(bufferGeo.getOffsetInDataArray(0, 2) == 2);
@@ -43,21 +34,23 @@ TEST_CASE("BufferGeometry Tests")
         CHECK(bufferGeo.getOffsetInDataArray(2, 1) == 7);
         CHECK(bufferGeo.getOffsetInDataArray(2, 2) == 8);
 
-//        CHECK(bufferGeo.getOffsetInPointerArray(0, 0) == 0);
-//        CHECK(bufferGeo.getOffsetInPointerArray(1, 0) == 1);
-//        CHECK(bufferGeo.getOffsetInPointerArray(2, 0) == 2);
+        CHECK(bufferGeo.getOffsetInPointerArray<0>(0) == 0);
+        CHECK(bufferGeo.getOffsetInPointerArray<0>(1) == 1);
+        CHECK(bufferGeo.getOffsetInPointerArray<0>(2) == 2);
 
-    
-//        float data [3*3] {0};
-//        float* pointers [3];
-//        bufferGeo.hookupPointerArrayToData(data, pointers);
-//        REQUIRE(pointers[0] == &data[(bufferGeo.getOffsetForIndex(0, 0))]);
-//        REQUIRE(pointers[1] == &data[(bufferGeo.getOffsetForIndex(1, 0))]);
-//        REQUIRE(pointers[2] == &data[(bufferGeo.getOffsetForIndex(2, 0))]);
+        float data [3*3] {0};
+        constexpr int pointerDimensions = N-1;
+        float* pointers [VarArgOperations::sumOfCumulativeProductCapped(pointerDimensions, 3, 3)];
+        REQUIRE(getRawArrayLength(pointers) == 3);
+        bufferGeo.hookupPointerArrayToData(data, pointers);
+        REQUIRE(pointers[0] == &data[bufferGeo.getOffsetInDataArray(0, 0)]);
+        REQUIRE(pointers[1] == &data[bufferGeo.getOffsetInDataArray(1, 0)]);
+        REQUIRE(pointers[2] == &data[bufferGeo.getOffsetInDataArray(2, 0)]);
     }
     
     SECTION("3D") {
-        BufferGeometry<3> bufferGeo(2, 4, 2);
+        constexpr int N = 3;
+        BufferGeometry<N> bufferGeo(2, 4, 2);
         CHECK(bufferGeo.getOffsetInDataArray(0, 0, 0) == 0);
         CHECK(bufferGeo.getOffsetInDataArray(0, 0, 1) == 1);
         CHECK(bufferGeo.getOffsetInDataArray(0, 1, 0) == 2);
@@ -86,6 +79,21 @@ TEST_CASE("BufferGeometry Tests")
         CHECK(bufferGeo.getOffsetInPointerArray<1>(1, 1) == 7);
         CHECK(bufferGeo.getOffsetInPointerArray<1>(1, 2) == 8);
         CHECK(bufferGeo.getOffsetInPointerArray<1>(1, 3) == 9);
+        
+        float data [2*4*2] {0};
+        constexpr int pointerDimensions = N-1;
+        float* pointers [VarArgOperations::sumOfCumulativeProductCapped(pointerDimensions, 2, 4, 2)];
+        REQUIRE(getRawArrayLength(pointers) == 10);
+        //bufferGeo.hookupPointerArrayToData(data, pointers);
+//        REQUIRE(pointers[0] == &data[(bufferGeo.getOffsetInDataArray(0, 0, 0))]);
+//        REQUIRE(pointers[1] == &data[(bufferGeo.getOffsetInDataArray(0, 1, 0))]);
+//        REQUIRE(pointers[2] == &data[(bufferGeo.getOffsetInDataArray(0, 2, 0))]);
+//        REQUIRE(pointers[3] == &data[(bufferGeo.getOffsetInDataArray(0, 3, 0))]);
+//        REQUIRE(pointers[4] == &data[(bufferGeo.getOffsetInDataArray(1, 0, 0))]);
+//        REQUIRE(pointers[5] == &data[(bufferGeo.getOffsetInDataArray(1, 1, 0))]);
+//        REQUIRE(pointers[6] == &data[(bufferGeo.getOffsetInDataArray(1, 2, 0))]);
+//        REQUIRE(pointers[7] == &data[(bufferGeo.getOffsetInDataArray(1, 3, 0))]);
+
     }
     SECTION("4D") {
         BufferGeometry<4> bufferGeo(1, 3, 2, 2);
