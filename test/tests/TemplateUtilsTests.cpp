@@ -48,6 +48,21 @@ TEST_CASE("TemplateUtils VarArgOperations Tests")
         static_assert(product(2.f, .5f) == 1.f, "");
     }
     
+    SECTION("productCapped") {
+        static_assert(productCapped(1, 1) == 1, "");
+        static_assert(product(0) == 0, "");
+        static_assert(product(1, 1) == 1, "");
+        static_assert(product(1, 0) == 0, "");
+        static_assert(product(2, 2) == 4, "");
+        static_assert(product(2, 2, 1) == 4, "");
+        static_assert(product(2, 2, 3, 3) == 36, "");
+        static_assert(product(2, 2, 3, 0) == 0, "");
+        
+        static_assert(product(2, -1) == -2, "");
+        static_assert(product(2.f, 1.f) == 2.f, "");
+        static_assert(product(2.f, .5f) == 1.f, "");
+    }
+    
     SECTION("sumOfCumulativeProduct") {
         static_assert(sumOfCumulativeProduct(0) == 0, "");
         static_assert(sumOfCumulativeProduct(1) == 1, "");

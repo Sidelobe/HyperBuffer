@@ -10,6 +10,7 @@
 #include <iostream>
 
 #include "TemplateUtils.hpp"
+#include "IntArrayOperations.hpp"
 
 namespace OffsetCalculation
 {

@@ -55,30 +55,7 @@ template<class T> constexpr int getRawArrayLength(const T& a)
     return sizeof(a) / sizeof(typename std::remove_all_extents<T>::type);
 }
 
-// MARK: - Integer Array Operations
-namespace IntArrayOperations
-{
-/** Calculates the product of the elements in range [start, end[ of the supplied array */
-template<std::size_t N>
-constexpr int productOverRange(int begin, int end, const int (&array)[N])
-{
-    assert(end-begin > 0 && "Cannot cap a length-one argument list");
-    int product{1};
-    for (int i=begin; i < end; ++i) {
-        product *= array[i];
-    }
-    return product;
-}
-/** Calculates the product of the elements in range [0, cap[ of the supplied array */
-template<std::size_t N>
-constexpr int productCapped(int cap, const int (&array)[N])
-{
-    return productOverRange(0, cap, array);
-}
-
-} // namespace IntArrayOperations
-
-// MARK: - Variadic arguments / parameter pack helpers
+// MARK: - Variadic arguments / parameter pack helpers -- [resolved at compile time!]
 namespace VarArgOperations
 {
 /** Calculate the sum of all args in parameter pack */
@@ -86,19 +63,49 @@ template<typename... Args, typename T = typename std::common_type<Args...>::type
 constexpr int sum(Args... args)
 {
     using unused = int[];
-    T result{0};
-    (void)unused { 0, ( result += args, 0 ) ... };
-    return result;
+    T sum{0};
+    (void)unused { 0, ( sum += args, 0 ) ... };
+    return sum;
 }
 
+/** Calculate the sum of all args in parameter pack -  in range [start, end[ */
+template<typename... Args, typename T = typename std::common_type<Args...>::type>
+constexpr T sumOverRange(int begin, int end, Args... args)
+{
+    assert(end-begin > 0 && "Cannot cap a length-one argument list");
+    T sum{0};
+    T values[]{ args... };
+    for (int i=begin; i < end; ++i) {
+        sum += values[i];
+    }
+    return sum;
+}
 
+/** Calculate the sum of all args in parameter pack - until 'cap' index */
+template<typename... Args, typename T = typename std::common_type<Args...>::type>
+constexpr T sumCapped(int cap, Args... args)
+{
+    return sumOverRange(0, cap, args...);
+}
 
+/** Calculate the product of all args in parameter pack -  in range [start, end[ */
+template<typename... Args, typename T = typename std::common_type<Args...>::type>
+constexpr T productOverRange(int begin, int end, Args... args)
+{
+    assert(end-begin > 0 && "Cannot cap a length-one argument list");
+    T product{1};
+    T values[]{ args... };
+    for (int i=begin; i < end; ++i) {
+        product *= values[i];
+    }
+    return product;
+}
 
-/** Multiply all args in parameter pack - until 'cap' index */
+/** Calculates the product of all args in parameter pack - until 'cap' index */
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
 constexpr T productCapped(int cap, Args... args)
 {
-    return productCapped(cap, {args...});
+    return productOverRange(0, cap, args...);
 }
 
 /** Multiply all args in parameter pack */
@@ -194,3 +201,4 @@ decltype(auto) apply(F&& f, const std::array<int, N>& arr)
 }
 
 } // namespace VarArgOperations
+
