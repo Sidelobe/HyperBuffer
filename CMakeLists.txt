@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.9)
 
-# HYPERBUFFER
-
+#  ╦ ╦┬ ┬┌─┐┌─┐┬─┐  ╔╗ ┬ ┬┌─┐┌─┐┌─┐┬─┐
+#  ╠═╣└┬┘├─┘├┤ ├┬┘  ╠╩╗│ │├┤ ├┤ ├┤ ├┬┘
+#  ╩ ╩ ┴ ┴  └─┘┴└─  ╚═╝└─┘└  └  └─┘┴└─
 ###########################################################
 # MAIN
 project(HyperBuffer)
@@ -11,18 +12,34 @@ set(CMAKE_CXX_STANDARD 14)
 set(CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# SOURCE TARGET
 file(GLOB_RECURSE source "source/*.h*" "source/*.c*")
-
-set (LIB_NAME "${CMAKE_PROJECT_NAME}")
+set (LIB_NAME "HyperBuffer")
 
 # TEST TARGET
 set (TEST_NAME "${LIB_NAME}Test")
-file(GLOB_RECURSE source_test "test/*.h*" "test/*.c*")
+file(GLOB_RECURSE source_test "test/tests/*.c*" "test/tests/*.c*")
 add_executable(${TEST_NAME} ${source} ${source_test})
 
-target_include_directories(${TEST_NAME} PRIVATE source)
+target_sources(${TEST_NAME} PRIVATE "test/main.cpp")
+target_include_directories(${TEST_NAME} PUBLIC source)
 target_include_directories(${TEST_NAME} PRIVATE test)
-target_include_directories(${TEST_NAME} PRIVATE test/catch2)
+target_include_directories(${TEST_NAME} PRIVATE test/external-utils)
+target_include_directories(${TEST_NAME} PRIVATE test/external-utils/MemorySentinel/source)
+
+add_subdirectory(test/external-utils/MemorySentinel)
+
+get_target_property(allsources ${TEST_NAME} SOURCES)
+foreach(_source IN ITEMS ${allsources})
+    if (IS_ABSOLUTE "${_source}")
+        file(RELATIVE_PATH _source_rel "${CMAKE_CURRENT_SOURCE_DIR}" "${_source}")
+    else()
+       set(_source_rel "${_source}")
+    endif()
+    get_filename_component(_source_path "${_source_rel}" PATH)
+    string(REPLACE "/" "\\" _source_path_msvc "${_source_path}")
+    source_group("${_source_path_msvc}" FILES "${_source}")
+endforeach()
 
 target_compile_options(${TEST_NAME} PRIVATE
     # clang/GCC warnings
@@ -57,7 +74,8 @@ target_compile_options(${TEST_NAME} PRIVATE
     "/Wall" >
 )
 
-#include custom cmake function
-include("test/catch2/ParseAndAddCatchTests.cmake")
-include(CTest)
-ParseAndAddCatchTests (${TEST_NAME})
+## ENABLE THE USE OF CTEST 
+include("test/external-utils/catch2/ParseAndAddCatchTests.cmake")
+#include(CTest) # this will generate lots of additional targets
+enable_testing()
+ParseAndAddCatchTests(${TEST_NAME})
