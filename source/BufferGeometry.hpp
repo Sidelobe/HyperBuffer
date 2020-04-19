@@ -138,21 +138,32 @@ public:
     }
     
     template<typename T, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
-    static void hookupHigherDimPointers(T** pointerArray, int arrayIndex, int dimIndex, int const* dimExtents)
+    static void hookupHigherDimPointers(T** pointerArray, int arrayIndex, int dimIndex, const int (&dimExtents)[N])
     {
         if (dimIndex >= N-2) {
             return;
         }
+
+        auto intTuple = VarArgOperations::makeIntTuple(dimExtents);
+        int sumCumProdUntilDimIndex = VarArgOperations::apply([dimIndex](auto&&... args)
+        {
+            return VarArgOperations::sumOfCumulativeProductCapped(dimIndex+1, std::forward<decltype(args)>(args)...);
+        }, intTuple);
+        int prodUntilDimIndex = VarArgOperations::apply([dimIndex](auto&&... args)
+        {
+            return VarArgOperations::productCapped(dimIndex+1, std::forward<decltype(args)>(args)...);
+        }, intTuple);
         
-        for (int index = 0; index < dimExtents[dimIndex]; ++index) {
-            std::cout << "DimIndex=" << dimIndex << " Element= " << index << std::endl;
-            int offset = arrayIndex + dimExtents[dimIndex] + dimExtents[dimIndex+1] * index;
-            pointerArray[arrayIndex + index] = (T*) &(pointerArray)[offset];
+        for (int index = 0; index < prodUntilDimIndex; ++index) {
+            std::cout << "DimIndex=" << dimIndex << " Element= " << index <<  std::endl;
+            int offset = sumCumProdUntilDimIndex + dimExtents[dimIndex+1] * index;
             std::cout << "[" << arrayIndex+index << "] = offset " << offset << std::endl;
-            
+            pointerArray[arrayIndex + index] = (T*) &(pointerArray)[offset];
         }
+        
         // recursive call to lower-order dimension
-        hookupHigherDimPointers(pointerArray, dimExtents[dimIndex], dimIndex+1, dimExtents);
+        hookupHigherDimPointers(pointerArray, arrayIndex+prodUntilDimIndex, dimIndex+1, dimExtents);
+        
     }
                                                      
 private:
