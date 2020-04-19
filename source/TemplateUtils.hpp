@@ -58,9 +58,11 @@ template<class T> constexpr int getRawArrayLength(const T& a)
 // MARK: - Variadic arguments / parameter pack helpers -- [resolved at compile time!]
 namespace VarArgOperations
 {
+
+// MARK: - Sum
 /** Calculate the sum of all args in parameter pack */
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
-constexpr int sum(Args... args)
+constexpr T sum(Args... args)
 {
     using unused = int[];
     T sum{0};
@@ -68,7 +70,7 @@ constexpr int sum(Args... args)
     return sum;
 }
 
-/** Calculate the sum of all args in parameter pack -  in range [start, end[ */
+/** Calculate the sum of all args in parameter pack - in range [start, end[ */
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
 constexpr T sumOverRange(int begin, int end, Args... args)
 {
@@ -81,14 +83,15 @@ constexpr T sumOverRange(int begin, int end, Args... args)
     return sum;
 }
 
-/** Calculate the sum of all args in parameter pack - until 'cap' index */
+/** Calculate the sum of all args in parameter pack - until before 'cap' index */
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
 constexpr T sumCapped(int cap, Args... args)
 {
     return sumOverRange(0, cap, args...);
 }
 
-/** Calculate the product of all args in parameter pack -  in range [start, end[ */
+// MARK: - Product
+/** Calculate the product of all args in parameter pack - in range [start, end[ */
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
 constexpr T productOverRange(int begin, int end, Args... args)
 {
@@ -101,7 +104,7 @@ constexpr T productOverRange(int begin, int end, Args... args)
     return product;
 }
 
-/** Calculates the product of all args in parameter pack - until 'cap' index */
+/** Calculates the product of all args in parameter pack - until before 'cap' index */
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
 constexpr T productCapped(int cap, Args... args)
 {
@@ -118,14 +121,16 @@ constexpr T product(Args... args)
     return result;
 }
 
-/** Calculate the cumulative product of args in parameter pack - until 'cap' index */
+// MARK: - Sum of Cumulative Product
+
+/** Calculate the cumulative product of args in parameter pack - - in range [start, end[ */
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
-constexpr int sumOfCumulativeProductCapped(int maxLength, Args... args)
+constexpr T sumOfCumulativeProductOverRange(int begin, int end, Args... args)
 {
-    assert(maxLength > 0 && "Cannot cap a length-one argument list");
+    assert(end-begin > 0 && "Cannot cap a length-one argument list");
     int sum{0};
     T values[]{ args... };
-    for (int i=0; i < maxLength; ++i) {
+    for (int i=begin; i < end; ++i) {
         int cumulativeProduct{1};
         for (int j=0; j <= i; ++j) {
             cumulativeProduct *= values[j];
@@ -135,14 +140,21 @@ constexpr int sumOfCumulativeProductCapped(int maxLength, Args... args)
     return sum;
 }
 
+/** Calculate the cumulative product of args in parameter pack - until before 'cap' index */
+template<typename... Args, typename T = typename std::common_type<Args...>::type>
+constexpr T sumOfCumulativeProductCapped(int cap, Args... args)
+{
+    return sumOfCumulativeProductOverRange(0, cap, args...);
+}
+
 /** Calculate the cumulative product of all args in parameter pack */
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
-constexpr int sumOfCumulativeProduct(Args... args)
+constexpr T sumOfCumulativeProduct(Args... args)
 {
     return sumOfCumulativeProductCapped(sizeof...(Args), args...);
 }
 
-
+// MARK: - Tuple creation
 // Make Tuple from std::array
 template<std::size_t... I, std::size_t N>
 constexpr auto makeIntTuple(const std::array<int, N>& arr, std::index_sequence<I...>)
@@ -170,6 +182,7 @@ constexpr auto makeIntTuple(const int (&arr)[N])
 }
 
 
+// MARK: std::apply - like implementation
 /**
  * Helper to call a function with a std::tuple of arguments (standardized in C++17 as std::apply)
  * source: https://www.programming-books.io/essential/cpp/iterating-with-stdinteger-sequence-cca589107b7a499e9e7275427a994f97
@@ -183,6 +196,7 @@ namespace detail
     }
 }
 
+// apply from std::tuple
 template <class F, class Tuple>
 decltype(auto) apply(F&& f, Tuple&& tpl)
 {

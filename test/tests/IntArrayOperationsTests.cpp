@@ -63,4 +63,7 @@ TEST_CASE("StdArrayOperations Tests")
     REQUIRE(productOverRange(1, 4, std::array<int, 4>{3, 1, 2, 5}) == 10);
     REQUIRE(productOverRange(0, 4, std::array<int, 4>{3, 1, 2, 5}) == 30);
     REQUIRE(productOverRange(0, 3, std::array<int, 4>{3, 1, 2, 5}) == 6);
+    
+    REQUIRE(sumOfCumulativeProduct(std::array<int, 4>{2, 3, 2, 3}) == 56);
+    REQUIRE(sumOfCumulativeProductCapped(3, std::array<int, 4>{2, 3, 2, 3}) == 20);
 }
