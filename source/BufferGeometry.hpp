@@ -16,7 +16,7 @@ namespace OffsetCalculation
 {
 /** Calculates the product of the elements in range [start, end[ of the supplied array */
 template<int N>
-static int arrayProduct(int const* array, int start = 0, int end = N)
+int arrayProduct(int const* array, int start = 0, int end = N)
 {
     int product = 1;
     for (int i = start; i < end; ++i) {
@@ -26,14 +26,15 @@ static int arrayProduct(int const* array, int start = 0, int end = N)
 }
 
 template<int Nmax>
-int getOffset(int dimIndex, int cumulativeOffset, int const* dimExtents, int d0)
+int getOffset(int dimIndex, int cumulativeOffset, const int* dimExtents, int d0)
 {
     return cumulativeOffset + d0; // lowest-order dimension (dimIndex = N)
 }
 
 template<int Nmax, typename... I>
-int getOffset(int dimIndex, int cumulativeOffset, int const* dimExtents, int dn, I... dk)
+int getOffset(int dimIndex, int cumulativeOffset, const int* dimExtents, int dn, I... dk)
 {
+    //int p = StdArrayOperations::productOverRange(dimIndex, Nmax, std::array<int, Nmax>{dimExtents, dimExtents+Nmax});
     int p = arrayProduct<Nmax>(dimExtents, dimIndex, Nmax); // Size of a block of data "above" this dimIndex
     int index = p * dn + cumulativeOffset;
     return getOffset<Nmax>(dimIndex+1, index, dimExtents, dk...); // recusive call
@@ -57,7 +58,7 @@ public:
     int getOffsetInDataArray(int dn, I... dk) const
     {
         static_assert(sizeof...(I) == N-1, "Incorrect number of arguments");
-        return OffsetCalculation::getOffset<N>(1, 0, m_dimensionExtents, dn, dk...);  // NOTE: start with dimIndex=1 - don't care about highest dimension's value
+        return OffsetCalculation::getOffset<N>(1, 0, m_dimensionExtents.data(), dn, dk...);  // NOTE: start with dimIndex=1 - don't care about highest dimension's value
     }
     
     /** DimIdx corresponds to index in dimensions array, i.e. DimIdx=0 is the highest-order dimension */
@@ -70,7 +71,7 @@ public:
         int sumOfAllHigherDimPointers = 0;
         // --> sum of cumulative product "stopped early"
         for (int i=0; i < DimIdx; ++i) {
-            int p = OffsetCalculation::arrayProduct<N>(m_dimensionExtents, 0, i+1);
+            int p = OffsetCalculation::arrayProduct<N>(m_dimensionExtents.data(), 0, i+1);
             sumOfAllHigherDimPointers += p;
         }
         
@@ -84,7 +85,7 @@ public:
 //        }
 //        std::cout << "sumOfAllHigherDimPointers=" << sumOfAllHigherDimPointers;
 //        std::cout << " ... getOffsetMinusOne(DimIdx)=" << OffsetCalculation::getOffset<N-1>(1, 0, m_dimensionExtents, dn, dk...) << std::endl;
-        return sumOfAllHigherDimPointers + OffsetCalculation::getOffset<N-1>(1, 0, m_dimensionExtents, dn, dk...);
+        return sumOfAllHigherDimPointers + OffsetCalculation::getOffset<N-1>(1, 0, m_dimensionExtents.data(), dn, dk...);
     }
     
 public:
@@ -111,7 +112,7 @@ public:
         
         
         // MARK: - Intertwine pointer array: connect all pointers to itself -- skips 2 lowest-order dimensions
-        hookupHigherDimPointers(pointerArray, 0, 0, m_dimensionExtents);
+        hookupHigherDimPointers(pointerArray, 0, 0);
         
         // MARK: - Calculate offset of first pointer that points to data rather then another pointer (start of 2nd-lowest dim)
         std::array<int, N> dimsArray;
@@ -125,7 +126,7 @@ public:
         }, dimsArray);
         
         // MARK: - Get number of data pointers (length of 2nd-lowest dim)
-        int numDataPointers = IntArrayOperations::productCapped(N-1, m_dimensionExtents);
+        int numDataPointers = StdArrayOperations::productCapped(N-1, m_dimensionExtents);
 //        int numDataPointers = VarArgOperations::apply([](auto&&... args)
 //        {
 //            if (N < 2) { return 0; }
@@ -140,35 +141,36 @@ public:
     }
     
     template<typename T, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
-    static void hookupHigherDimPointers(T** pointerArray, int arrayIndex, int dimIndex, const int (&dimExtents)[N])
+    void hookupHigherDimPointers(T** pointerArray, int arrayIndex, int dimIndex)
     {
         if (dimIndex >= N-2) {
             return;
         }
 
         // SumCumProd Capped
-        auto intTuple = VarArgOperations::makeIntTuple(dimExtents);
+        auto intTuple = VarArgOperations::makeIntTuple(m_dimensionExtents);
         int sumCumProdUntilDimIndex = VarArgOperations::apply([dimIndex](auto&&... args)
         {
             return VarArgOperations::sumOfCumulativeProductCapped(dimIndex+1, std::forward<decltype(args)>(args)...);
         }, intTuple);
 
-        int prodUntilDimIndex = IntArrayOperations::productCapped(dimIndex+1, dimExtents);
+        int prodUntilDimIndex = StdArrayOperations::productCapped(dimIndex+1, m_dimensionExtents);
 
         
         for (int index = 0; index < prodUntilDimIndex; ++index) {
             std::cout << "DimIndex=" << dimIndex << " Element= " << index <<  std::endl;
-            int offset = sumCumProdUntilDimIndex + dimExtents[dimIndex+1] * index;
+            int offset = sumCumProdUntilDimIndex + m_dimensionExtents[dimIndex+1] * index;
             std::cout << "[" << arrayIndex+index << "] = offset " << offset << std::endl;
             pointerArray[arrayIndex + index] = (T*) &(pointerArray)[offset];
         }
         
         // recursive call to lower-order dimension
-        hookupHigherDimPointers(pointerArray, arrayIndex+prodUntilDimIndex, dimIndex+1, dimExtents);
+        hookupHigherDimPointers(pointerArray, arrayIndex+prodUntilDimIndex, dimIndex+1);
         
     }
                                                      
 private:
-    int m_dimensionExtents[N];
+    //int m_dimensionExtents[N];
+    std::array<int, N> m_dimensionExtents;
     
 };
