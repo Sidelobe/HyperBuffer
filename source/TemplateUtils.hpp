@@ -69,6 +69,19 @@ constexpr int sum(Args... args)
     return result;
 }
 
+/** Multiply all args in parameter pack - until 'cap' index */
+template<typename... Args, typename T = typename std::common_type<Args...>::type>
+constexpr int productCapped(int maxLength, Args... args)
+{
+    assert(maxLength > 0 && "Cannot cap a length-one argument list");
+    int product{1};
+    T values[]{ args... };
+    for (int i=0; i < maxLength; ++i) {
+        product *= values[i];
+    }
+    return product;
+}
+
 /** Multiply all args in parameter pack */
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
 constexpr int product(Args... args)
