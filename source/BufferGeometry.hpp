@@ -124,11 +124,12 @@ public:
         }, dimsArray);
         
         // MARK: - Get number of data pointers (length of 2nd-lowest dim)
-        int numDataPointers = VarArgOperations::apply([](auto&&... args)
-        {
-            if (N < 2) { return 0; }
-            return VarArgOperations::productCapped(N-1, std::forward<decltype(args)>(args)...);
-        }, dimsArray);
+        int numDataPointers = IntArrayOperations::productCapped(N-1, m_dimensionExtents);
+//        int numDataPointers = VarArgOperations::apply([](auto&&... args)
+//        {
+//            if (N < 2) { return 0; }
+//            return VarArgOperations::productCapped(N-1, std::forward<decltype(args)>(args)...);
+//        }, dimsArray);
         
         // MARK: - Hook up pointer that point to data (second lowest-order dimension)
         for (int i=0; i < numDataPointers; ++i) {
@@ -144,15 +145,15 @@ public:
             return;
         }
 
+        // SumCumProd Capped
         auto intTuple = VarArgOperations::makeIntTuple(dimExtents);
         int sumCumProdUntilDimIndex = VarArgOperations::apply([dimIndex](auto&&... args)
         {
             return VarArgOperations::sumOfCumulativeProductCapped(dimIndex+1, std::forward<decltype(args)>(args)...);
         }, intTuple);
-        int prodUntilDimIndex = VarArgOperations::apply([dimIndex](auto&&... args)
-        {
-            return VarArgOperations::productCapped(dimIndex+1, std::forward<decltype(args)>(args)...);
-        }, intTuple);
+
+        int prodUntilDimIndex = IntArrayOperations::productCapped(dimIndex+1, dimExtents);
+
         
         for (int index = 0; index < prodUntilDimIndex; ++index) {
             std::cout << "DimIndex=" << dimIndex << " Element= " << index <<  std::endl;

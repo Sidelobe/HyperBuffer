@@ -55,8 +55,30 @@ template<class T> constexpr int getRawArrayLength(const T& a)
     return sizeof(a) / sizeof(typename std::remove_all_extents<T>::type);
 }
 
-// MARK: - Variadic arguments / parameter pack helpers
+// MARK: - Integer Array Operations
+namespace IntArrayOperations
+{
+/** Calculates the product of the elements in range [start, end[ of the supplied array */
+template<std::size_t N>
+constexpr int productOverRange(int begin, int end, const int (&array)[N])
+{
+    assert(end-begin > 0 && "Cannot cap a length-one argument list");
+    int product{1};
+    for (int i=begin; i < end; ++i) {
+        product *= array[i];
+    }
+    return product;
+}
+/** Calculates the product of the elements in range [0, cap[ of the supplied array */
+template<std::size_t N>
+constexpr int productCapped(int cap, const int (&array)[N])
+{
+    return productOverRange(0, cap, array);
+}
 
+} // namespace IntArrayOperations
+
+// MARK: - Variadic arguments / parameter pack helpers
 namespace VarArgOperations
 {
 /** Calculate the sum of all args in parameter pack */
@@ -69,22 +91,19 @@ constexpr int sum(Args... args)
     return result;
 }
 
+
+
+
 /** Multiply all args in parameter pack - until 'cap' index */
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
-constexpr int productCapped(int maxLength, Args... args)
+constexpr T productCapped(int cap, Args... args)
 {
-    assert(maxLength > 0 && "Cannot cap a length-one argument list");
-    int product{1};
-    T values[]{ args... };
-    for (int i=0; i < maxLength; ++i) {
-        product *= values[i];
-    }
-    return product;
+    return productCapped(cap, {args...});
 }
 
 /** Multiply all args in parameter pack */
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
-constexpr int product(Args... args)
+constexpr T product(Args... args)
 {
     using unused = int[];
     T result{1};
@@ -119,23 +138,27 @@ constexpr int sumOfCumulativeProduct(Args... args)
 
 // Make Tuple from std::array
 template<std::size_t... I, std::size_t N>
-constexpr auto makeIntTuple(const std::array<int, N>& arr, std::index_sequence<I...>) {
+constexpr auto makeIntTuple(const std::array<int, N>& arr, std::index_sequence<I...>)
+{
     return std::make_tuple(arr[I]...);
 }
 
 template<std::size_t N>
-constexpr auto makeIntTuple(const std::array<int, N>& arr) {
+constexpr auto makeIntTuple(const std::array<int, N>& arr)
+{
     return makeIntTuple(arr, std::make_index_sequence<N>{});
 }
 
 // Make Tuple from Raw Array
 template<std::size_t... I, std::size_t N>
-constexpr auto makeIntTuple(const int (&arr)[N], std::index_sequence<I...>) {
+constexpr auto makeIntTuple(const int (&arr)[N], std::index_sequence<I...>)
+{
     return std::make_tuple(arr[I]...);
 }
 
 template<std::size_t N>
-constexpr auto makeIntTuple(const int (&arr)[N]) {
+constexpr auto makeIntTuple(const int (&arr)[N])
+{
     return makeIntTuple(arr, std::make_index_sequence<N>{});
 }
 
