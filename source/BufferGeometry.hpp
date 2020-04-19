@@ -12,36 +12,6 @@
 #include "TemplateUtils.hpp"
 #include "IntArrayOperations.hpp"
 
-namespace OffsetCalculation
-{
-/** Calculates the product of the elements in range [start, end[ of the supplied array */
-template<int N>
-int arrayProduct(int const* array, int start = 0, int end = N)
-{
-    int product = 1;
-    for (int i = start; i < end; ++i) {
-        product *= array[i];
-    }
-    return product;
-}
-
-template<int Nmax>
-int getOffset(int dimIndex, int cumulativeOffset, const int* dimExtents, int d0)
-{
-    return cumulativeOffset + d0; // lowest-order dimension (dimIndex = N)
-}
-
-template<int Nmax, typename... I>
-int getOffset(int dimIndex, int cumulativeOffset, const int* dimExtents, int dn, I... dk)
-{
-    //int p = StdArrayOperations::productOverRange(dimIndex, Nmax, std::array<int, Nmax>{dimExtents, dimExtents+Nmax});
-    int p = arrayProduct<Nmax>(dimExtents, dimIndex, Nmax); // Size of a block of data "above" this dimIndex
-    int index = p * dn + cumulativeOffset;
-    return getOffset<Nmax>(dimIndex+1, index, dimExtents, dk...); // recusive call
-}
-
-} // namespace OffsetCalculation
-
 template<int N>
 class BufferGeometry
 {
@@ -58,7 +28,7 @@ public:
     int getOffsetInDataArray(int dn, I... dk) const
     {
         static_assert(sizeof...(I) == N-1, "Incorrect number of arguments");
-        return OffsetCalculation::getOffset<N>(1, 0, m_dimensionExtents.data(), dn, dk...);  // NOTE: start with dimIndex=1 - don't care about highest dimension's value
+        return getOffset<N>(1, 0, dn, dk...);  // NOTE: start with dimIndex=1 - don't care about highest dimension's value
     }
     
     /** DimIdx corresponds to index in dimensions array, i.e. DimIdx=0 is the highest-order dimension */
@@ -71,7 +41,7 @@ public:
         int sumOfAllHigherDimPointers = 0;
         // --> sum of cumulative product "stopped early"
         for (int i=0; i < DimIdx; ++i) {
-            int p = OffsetCalculation::arrayProduct<N>(m_dimensionExtents.data(), 0, i+1);
+            int p = StdArrayOperations::productOverRange(0, i+1, m_dimensionExtents);
             sumOfAllHigherDimPointers += p;
         }
         
@@ -85,7 +55,8 @@ public:
 //        }
 //        std::cout << "sumOfAllHigherDimPointers=" << sumOfAllHigherDimPointers;
 //        std::cout << " ... getOffsetMinusOne(DimIdx)=" << OffsetCalculation::getOffset<N-1>(1, 0, m_dimensionExtents, dn, dk...) << std::endl;
-        return sumOfAllHigherDimPointers + OffsetCalculation::getOffset<N-1>(1, 0, m_dimensionExtents.data(), dn, dk...);
+        int offset = getOffset<N-1>(1, 0, dn, dk...);
+        return sumOfAllHigherDimPointers + offset;
     }
     
 public:
@@ -168,9 +139,23 @@ public:
         hookupHigherDimPointers(pointerArray, arrayIndex+prodUntilDimIndex, dimIndex+1);
         
     }
+    
+private:
+    template<std::size_t Nmax>
+    int getOffset(int dimIndex, int cumulativeOffset, int d0) const
+    {
+        return cumulativeOffset + d0; // lowest-order dimension (dimIndex = N)
+    }
+
+    template<std::size_t Nmax, typename... I>
+    int getOffset(int dimIndex, int cumulativeOffset, int dn, I... dk) const
+    {
+        int p = StdArrayOperations::productOverRange(dimIndex, Nmax, m_dimensionExtents); // Size of a block of data "above" this dimIndex
+        int index = p * dn + cumulativeOffset;
+        return getOffset<Nmax>(dimIndex+1, index, dk...); // recusive call
+    }
                                                      
 private:
-    //int m_dimensionExtents[N];
     std::array<int, N> m_dimensionExtents;
     
 };
