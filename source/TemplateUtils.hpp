@@ -128,6 +128,18 @@ constexpr auto makeIntTuple(const std::array<int, N>& arr) {
     return makeIntTuple(arr, std::make_index_sequence<N>{});
 }
 
+// Make Tuple from Raw Array
+template<std::size_t... I, std::size_t N>
+constexpr auto makeIntTuple(const int (&arr)[N], std::index_sequence<I...>) {
+    return std::make_tuple(arr[I]...);
+}
+
+template<std::size_t N>
+constexpr auto makeIntTuple(const int (&arr)[N]) {
+    return makeIntTuple(arr, std::make_index_sequence<N>{});
+}
+
+
 /**
  * Helper to call a function with a std::tuple of arguments (standardized in C++17 as std::apply)
  * source: https://www.programming-books.io/essential/cpp/iterating-with-stdinteger-sequence-cca589107b7a499e9e7275427a994f97
@@ -139,6 +151,14 @@ namespace detail
     {
         return std::forward<F>(f)(std::get<Is>(std::forward<Tuple>(tpl))...);
     }
+}
+
+template <class F, class Tuple>
+decltype(auto) apply(F&& f, Tuple&& tpl)
+{
+    return detail::apply_impl(std::forward<F>(f),
+        std::forward<Tuple>(tpl),
+        std::make_index_sequence<std::tuple_size<std::decay_t<Tuple>>::value>{});
 }
 
 // apply from std::array (directly)
