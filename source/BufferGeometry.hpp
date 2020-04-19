@@ -74,15 +74,15 @@ public:
         }
         
         // Calcualte offset within DimIdx
-        std::cout << "Getting: <DimIndex=" << DimIdx <<"> " << dn << " ";
-        int values[]{ dk... };
-        if (sizeof...(dk) > 0){
-            for (int i=0; i< sizeof...(dk); ++i) {
-                std::cout << values[i] << " ";
-            }
-        }
-        std::cout << "sumOfAllHigherDimPointers=" << sumOfAllHigherDimPointers;
-        std::cout << " ... getOffsetMinusOne(DimIdx)=" << OffsetCalculation::getOffset<N-1>(1, 0, m_dimensionExtents, dn, dk...) << std::endl;
+//        std::cout << "Getting: <DimIndex=" << DimIdx <<"> " << dn << " ";
+//        int values[]{ dk... };
+//        if (sizeof...(dk) > 0){
+//            for (int i=0; i< sizeof...(dk); ++i) {
+//                std::cout << values[i] << " ";
+//            }
+//        }
+//        std::cout << "sumOfAllHigherDimPointers=" << sumOfAllHigherDimPointers;
+//        std::cout << " ... getOffsetMinusOne(DimIdx)=" << OffsetCalculation::getOffset<N-1>(1, 0, m_dimensionExtents, dn, dk...) << std::endl;
         return sumOfAllHigherDimPointers + OffsetCalculation::getOffset<N-1>(1, 0, m_dimensionExtents, dn, dk...);
     }
     
@@ -108,44 +108,51 @@ public:
         }
         std::cout << std::endl;
         
-        std::array<int, N> indices;
-    
-        //
-        indices[N-1] = 0;
         
-        // Intertwine pointer array: connect all pointers to itself -- skips 2 lowest-order dimensions
-        int lowestOrderPointerDimStart = hookupHigherDimPointers(pointerArray, 0, 0, m_dimensionExtents);
+        // MARK: - Intertwine pointer array: connect all pointers to itself -- skips 2 lowest-order dimensions
+        hookupHigherDimPointers(pointerArray, 0, 0, m_dimensionExtents);
         
-//
-//        // Create a sub-array for all-but-lowest dimension extents
-//        std::array<int, N-1> higherOrderDims;
-//        for (int i=0; i < higherOrderDims.size(); ++i) {
-//            higherOrderDims[i] = m_dimensionExtents[i];
-//        }
+        // MARK: - Calculate offset of first pointer that points to data rather then another pointer (start of 2nd-lowest dim)
+        std::array<int, N> dimsArray;
+        for (int i=0; i < N; ++i) {
+             dimsArray[i] = m_dimensionExtents[i];
+        }
+        int nMinus2DimStart = VarArgOperations::apply([](auto&&... args)
+        {
+            if (N < 3) { return 0; }
+            return VarArgOperations::sumOfCumulativeProductCapped(N-2, std::forward<decltype(args)>(args)...);
+        }, dimsArray);
         
-        // Hook up second lowest-order dimension to data
-        for (int i=0; i < m_dimensionExtents[1]*m_dimensionExtents[0]; ++i) {
-            int dataOffset = i * m_dimensionExtents[0];
-            pointerArray[lowestOrderPointerDimStart + i] = &dataArray[dataOffset];
+        // MARK: - Get number of data pointers (length of 2nd-lowest dim)
+        int numDataPointers = VarArgOperations::apply([](auto&&... args)
+        {
+            if (N < 2) { return 0; }
+            return VarArgOperations::productCapped(N-1, std::forward<decltype(args)>(args)...);
+        }, dimsArray);
+        
+        // MARK: - Hook up pointer that point to data (second lowest-order dimension)
+        for (int i=0; i < numDataPointers; ++i) {
+            int dataOffset = i * m_dimensionExtents[N-1];
+            pointerArray[nMinus2DimStart + i] = &dataArray[dataOffset];
         }
     }
     
     template<typename T, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
-    int hookupHigherDimPointers(T** pointerArray, int arrayIndex, int dimIndex, int const* dimExtents)
+    static void hookupHigherDimPointers(T** pointerArray, int arrayIndex, int dimIndex, int const* dimExtents)
     {
         if (dimIndex >= N-2) {
-            return arrayIndex;
+            return;
         }
         
         for (int index = 0; index < dimExtents[dimIndex]; ++index) {
             std::cout << "DimIndex=" << dimIndex << " Element= " << index << std::endl;
-            int offset = dimExtents[dimIndex] + dimExtents[dimIndex+1] * index;
+            int offset = arrayIndex + dimExtents[dimIndex] + dimExtents[dimIndex+1] * index;
             pointerArray[arrayIndex + index] = (T*) &(pointerArray)[offset];
             std::cout << "[" << arrayIndex+index << "] = offset " << offset << std::endl;
             
         }
         // recursive call to lower-order dimension
-        return hookupHigherDimPointers(pointerArray, dimExtents[dimIndex], dimIndex+1, dimExtents);
+        hookupHigherDimPointers(pointerArray, dimExtents[dimIndex], dimIndex+1, dimExtents);
     }
                                                      
 private:
