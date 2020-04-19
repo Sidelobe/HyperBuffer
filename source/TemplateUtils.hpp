@@ -47,6 +47,14 @@ static_assert(std::is_same<remove_all_pointers_from_type<float***>::type, float>
 static_assert(std::is_same<remove_all_pointers_from_type<int**>::type, int>{}, "");
 static_assert(std::is_same<remove_all_pointers_from_type<float>::type, float>{}, "");
 
+/**
+ * Returns the size of a static C array in number of elements. Also works for multidimensional arrays.
+ */
+template<class T> constexpr int getRawArrayLength(const T& a)
+{
+    return sizeof(a) / sizeof(typename std::remove_all_extents<T>::type);
+}
+
 // MARK: - Variadic arguments / parameter pack helpers
 
 namespace VarArgOperations
@@ -75,6 +83,7 @@ constexpr int product(Args... args)
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
 constexpr int sumOfCumulativeProductCapped(int maxLength, Args... args)
 {
+    assert(maxLength > 0 && "Cannot cap a length-one argument list");
     int sum{0};
     T values[]{ args... };
     for (int i=0; i < maxLength; ++i) {
