@@ -127,15 +127,16 @@ constexpr T product(Args... args)
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
 constexpr T sumOfCumulativeProductOverRange(int begin, int end, Args... args)
 {
-    assert(end-begin > 0 && "Cannot cap a length-one argument list");
     int sum{0};
-    T values[]{ args... };
-    for (int i=begin; i < end; ++i) {
-        int cumulativeProduct{1};
-        for (int j=0; j <= i; ++j) {
-            cumulativeProduct *= values[j];
+    if (end-begin > 0) {
+        T values[]{ args... };
+        for (int i=begin; i < end; ++i) {
+            int cumulativeProduct{1};
+            for (int j=0; j <= i; ++j) {
+                cumulativeProduct *= values[j];
+            }
+            sum += cumulativeProduct;
         }
-        sum += cumulativeProduct;
     }
     return sum;
 }
