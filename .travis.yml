@@ -20,7 +20,7 @@ matrix:
           env: COMPILER='g++-7'
          
         - os: windows
-          compiler: vs2019-64
+          compiler: vs2017-64
           
 before_script:
     # Export CXX to tell cmake which compiler to use
@@ -33,7 +33,7 @@ before_script:
     - mkdir -p build
     - cd build
     - if [ "$TRAVIS_OS_NAME" != "windows" ]; then cmake -H. -j 2 ../.. -DCMAKE_BUILD_TYPE=Debug; fi
-    - if [ "$TRAVIS_OS_NAME" == "windows" ]; then cmake -G "Visual Studio 16 2019" -DCMAKE_GENERATOR_PLATFORM=x64; fi
+    - if [ "$TRAVIS_OS_NAME" == "windows" ]; then cmake -G "Visual Studio 15 2017" -DCMAKE_GENERATOR_PLATFORM=x64; fi
     
 script:
     - if [ "$TRAVIS_OS_NAME" != "windows" ]; then make -j 2; fi
