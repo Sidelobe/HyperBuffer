@@ -71,8 +71,10 @@ target_compile_options(${TEST_NAME} PRIVATE
     >
     # MSVC warnings
     $<$<CXX_COMPILER_ID:MSVC>:
-    "/Wall" >
+    "/W4" >
 )
+
+
 
 ## ENABLE THE USE OF CTEST 
 include("test/external-utils/catch2/ParseAndAddCatchTests.cmake")
