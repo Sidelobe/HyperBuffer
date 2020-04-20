@@ -20,7 +20,8 @@ matrix:
           env: COMPILER='g++-7'
          
         - os: windows
-
+          dist: bionic
+          
 before_script:
     # Export CXX to tell cmake which compiler to use
     - export CXX=${COMPILER}
