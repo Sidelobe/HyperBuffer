@@ -19,6 +19,8 @@ matrix:
                   packages: ['g++-7']
           env: COMPILER='g++-7'
          
+        - os: windows
+
 before_script:
     # Export CXX to tell cmake which compiler to use
     - export CXX=${COMPILER}
