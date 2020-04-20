@@ -5,7 +5,7 @@
 
 ```
 
-### A C++ structure to allocate and/or access multi-dimensional data
+### A C++ structure to manage multi-dimensional data
 
 ![](https://img.shields.io/badge/dependencies-C++14,_STL-brightgreen)
 ![](https://img.shields.io/badge/source-header--only-brightgreen)
@@ -19,11 +19,14 @@ The main use case for this container is to hold dynamically-allocated N-dimensio
 
 * **data types**: defined at compile-time (template argument), identical for all dimensions
 * **number of dimensions** : defined at compile-time (template argument)
-* **size of these dimensions**: defined at run-time, but cannot be changed once the object is constructed: `HyperBuffer` is non-resizable.
+* **extent of these dimensions**: defined at run-time, but cannot be changed once the object is constructed: `HyperBuffer` is non-resizable.
 
->NOTE: All dimensions are uniform, i.e. each 'slice' in a given dimension has equal length.
+>NOTE: For the time being, I've constrained all dimensions to be uniform, i.e. each 'slice' in a given dimension has equal length.
 
-* no allocation after construction - allocation free move() semantics
+Memory management:
+
+* no allocation after construction
+* allocation-free move() semantics
  
 
 ```

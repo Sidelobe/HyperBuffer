@@ -24,6 +24,9 @@ public:
         static_assert(sizeof...(I) == N, "Incorrect number of arguments");
     }
     
+    /** Constructor that takes the extents of the dimensions as a std::array */
+    explicit BufferGeometry(const std::array<int, N>& dimensionExtents) : m_dimensionExtents(dimensionExtents) {}
+
     const std::array<int, N>& getDimensionExtents() const { return m_dimensionExtents; }
     int* getDimensionExtentsPointer() const { return m_dimensionExtents.data(); }
     
