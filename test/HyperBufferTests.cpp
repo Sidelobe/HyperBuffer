@@ -11,6 +11,7 @@
 #include <random>
 
 #include "HyperBuffer.hpp"
+#include "MemorySentinel.hpp"
 
 template<typename T = float>
 static inline std::vector<T> createRandomVector(int length, int seed=0)
@@ -85,8 +86,11 @@ TEST_CASE("HyperBuffer Tests - External Memory Allocation")
 {
     std::vector<int>preAllocData { 1, 2, 3, 4, 5 };
 
-                                        // not casting to int leads to very weird errors
-    HyperBuffer<int, 1> buffer(preAllocData.data(), preAllocData.size()); // data is not copied
+    { // Verify no memory is allocated
+        ScopedMemorySentinel sentinel;
+        HyperBufferPreAlloc<int, 1> buffer(preAllocData.data(), preAllocData.size());
+    }
+    HyperBufferPreAlloc<int, 1> buffer(preAllocData.data(), preAllocData.size());
     std::vector<int> dims(buffer.dims(), buffer.dims() + 1);
     REQUIRE(dims == std::vector<int>{(int)preAllocData.size()});
     //buffer(0) = 99;

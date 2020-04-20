@@ -5,62 +5,123 @@
 //
 //  © 2020 Lorenz Bucher - all rights reserved
 
-#include <memory>
+#include <array>
 #include <vector>
 
-#include "HyperBufferData.hpp"
 #include "TemplateUtils.hpp"
+#include "IHyperBuffer.hpp"
 
-// MARK: - HyperBuffer declaration
-template<typename T, int N>
-class HyperBuffer
+#pragma once
+
+
+// function to get offset/index on flat array based on var number of multi-dim indices
+// recursive template?
+
+template<typename T>
+struct DimensionData
 {
-    using size_type = int;
-    using data_type = typename add_pointers_to_type<T, N>::type;
+    using dimension_index = int;
+    using size_type = size_t;
+    
+    DimensionData(int size) : m_size(size), m_subDimensionPointers(size) {}
+    int m_size;
+    std::vector<T*> m_subDimensionPointers;
+//
+//    size_type getIndex(dimension_index pos, size_type prevIndex, size_type m1, T...k1) const
+//    {
+//        size_type index = (prevIndex* m_dimensions[pos]) + m1;
+//
+//        if constexpr (sizeof...(k1) > 0)
+//        {
+//            return GetIndex(pos + 1, index, k1...);
+//        }
+//        else
+//        {
+//            return index;
+//        }
+//    }
+};
 
+// MARK: - HyperBufferOwning
+template<typename T, int N>
+class HyperBuffer : public IHyperBuffer<T, N>
+{
+    using size_type = typename IHyperBuffer<T, N>::size_type;
+    using pointer_type = typename IHyperBuffer<T, N>::pointer_type;
+    
 public:
-    /** Construct from dimesions sizes, allocate data */
     template<typename... I>
-    explicit HyperBuffer(I... i)
+    explicit HyperBuffer(I... i) :
+        m_data(multiplyArgs(i...)), m_dimensions{{i...}}
     {
         static_assert(sizeof...(I) == N, "Incorrect number of arguments");
-        m_dataObject = std::make_unique<HyperBufferDataOwning<T, N>>(i...);
-        m_dataPointers = m_dataObject->getDataPointers();
-    }
-
-    /** Construct from pre-allocated, multi-dimensional data */
-    template<typename... I>
-    explicit HyperBuffer(data_type preAllocatedData, I... i)
-    {
-        static_assert(sizeof...(I) == N, "Incorrect number of arguments");
-        m_dataObject = std::make_unique<HyperBufferDataPreAlloc<T, N>>(preAllocatedData, i...);
-        m_dataPointers = m_dataObject->getDataPointers();
+        // TODO: remove this uglyness
+        auto begin = m_dimensions.begin();
+        auto end = m_dimensions.end();
+        std::vector<size_t> dimsSizeT(begin, end);
+        m_dataPointers = callocArray<pointer_type>(dimsSizeT.data());
     }
     
-    /** Construct from pre-allocated, flat (1D) data */
-    template<typename... I, int V=N, typename std::enable_if<V!=1>::type>
-    explicit HyperBuffer(T* preAllocatedDataFlat, I... i)
+    ~HyperBuffer()
     {
-        // TODO:
+         // TODO: remove this uglyness
+        auto begin = m_dimensions.begin();
+        auto end = m_dimensions.end();
+        std::vector<size_t> dimsSizeT(begin, end);
+        deleteArray(m_dataPointers, dimsSizeT.data());
     }
-
     decltype(auto) operator[] (size_type i) { return m_dataPointers[i]; }
-
-    template<int... I>
-    decltype(auto) operator() (size_type i...)
-    {
-        static_assert(sizeof...(I) == N, "Incorrect number of arguments");
-        return m_dataPointers[i];
-    }
-
-    data_type data() const { return m_dataPointers; }
-    decltype(auto) at(size_type offset) const;
     
-    int* dims() const { return m_dataObject->m_dimensions.data(); }
-    int dim(int i) const { return m_dataObject->m_dimensions[i]; }
+    pointer_type getDataPointers() const override
+    {
+        return m_dataPointers;
+    }
 
 private:
-    std::unique_ptr<HyperBufferData<T, N>> m_dataObject;
+    /** we store the data in a 1D structure and access with offsets to simulate multi-dimensionality */
+    std::vector<T> m_data;
+    pointer_type m_dataPointers;
+    std::array<int, N> m_dimensions;
+};
+
+
+// MARK: - HyperBufferPreAlloc
+/** Construct from pre-allocated, multi-dimensional data */
+template<typename T, int N>
+class HyperBufferPreAlloc : public IHyperBuffer<T, N>
+{
+    using size_type = typename IHyperBuffer<T, N>::size_type;
+    using pointer_type = typename IHyperBuffer<T, N>::pointer_type;
     
-    data_type m_dataPointers;
+public:
+    template<typename... I>
+    explicit HyperBufferPreAlloc(pointer_type preAllocatedData, I... i) :
+        m_dataPointers(preAllocatedData)
+    {
+        static_assert(sizeof...(I) == N, "Incorrect number of arguments");
+    }
+    
+    pointer_type getDataPointers() const override
+    {
+        return m_dataPointers;
+    }
+    
+private:
+    pointer_type m_dataPointers;
+};
+
+// MARK: - HyperBufferPreAllocFlat
+/** Construct from pre-allocated, flat (1D) data */
+template<typename T, int N>
+class HyperBufferPreAllocFlat : public HyperBuffer<T, N>
+{
+    using size_type = typename IHyperBuffer<T, N>::size_type;
+    using pointer_type = typename IHyperBuffer<T, N>::pointer_type;
+    
+public:
+//    explicit HyperBufferPreAllocFlat(T* preAllocatedDataFlat, I... i)
+//    {
+//        // TODO:
+//    }
+    
 };
