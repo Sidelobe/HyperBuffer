@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <type_traits>
 
+#define UNUSED(x) (void)x
 
 // MARK: - Add pointers to type
 // Recursive Template trick to add an arbitrary number of pointers to a type
@@ -60,16 +61,6 @@ namespace VarArgOperations
 {
 
 // MARK: - Sum
-/** Calculate the sum of all args in parameter pack */
-template<typename... Args, typename T = typename std::common_type<Args...>::type>
-constexpr T sum(Args... args)
-{
-    using unused = int[];
-    T sum{0};
-    (void)unused { 0, ( sum += args, 0 ) ... };
-    return sum;
-}
-
 /** Calculate the sum of all args in parameter pack - in range [start, end[ */
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
 constexpr T sumOverRange(int begin, int end, Args... args)
@@ -90,7 +81,15 @@ constexpr T sumCapped(int cap, Args... args)
     return sumOverRange(0, cap, args...);
 }
 
+/** Calculate the sum of all args in parameter pack */
+template<typename... Args, typename T = typename std::common_type<Args...>::type>
+constexpr T sum(Args... args)
+{
+    return sumCapped(sizeof...(args), args...);
+}
+
 // MARK: - Product
+
 /** Calculate the product of all args in parameter pack - in range [start, end[ */
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
 constexpr T productOverRange(int begin, int end, Args... args)
@@ -115,10 +114,7 @@ constexpr T productCapped(int cap, Args... args)
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
 constexpr T product(Args... args)
 {
-    using unused = int[];
-    T result{1};
-    (void)unused { 0, ( result *= args, 0 ) ... };
-    return result;
+    return productCapped(sizeof...(args), args...);
 }
 
 // MARK: - Sum of Cumulative Product
@@ -127,11 +123,11 @@ constexpr T product(Args... args)
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
 constexpr T sumOfCumulativeProductOverRange(int begin, int end, Args... args)
 {
-    int sum{0};
+    T sum{0};
     if (end-begin > 0) {
         T values[]{ args... };
         for (int i=begin; i < end; ++i) {
-            int cumulativeProduct{1};
+            T cumulativeProduct{1};
             for (int j=0; j <= i; ++j) {
                 cumulativeProduct *= values[j];
             }
