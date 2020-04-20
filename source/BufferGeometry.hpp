@@ -110,6 +110,7 @@ private:
     template<std::size_t Nmax>
     int getOffset(int dimIndex, int cumulativeOffset, int d0) const
     {
+        UNUSED(dimIndex);
         return cumulativeOffset + d0; // lowest-order dimension (dimIndex = N)
     }
 
