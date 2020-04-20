@@ -15,14 +15,14 @@
 
 // MARK: - Add pointers to type
 // Recursive Template trick to add an arbitrary number of pointers to a type
-template<class T,int N>
+template<class T, int N>
 struct add_pointers_to_type
 {
-  using type = typename add_pointers_to_type<T*,N-1>::type;
+  using type = typename add_pointers_to_type<T*, N-1>::type;
 };
 
 template<class T>
-struct add_pointers_to_type<T,0>
+struct add_pointers_to_type<T, 0>
 {
   using type = T;
 };
@@ -32,6 +32,26 @@ static_assert(std::is_same<add_pointers_to_type<float,3>::type, float***>{}, "")
 static_assert(std::is_same<add_pointers_to_type<float,0>::type, float>{}, "");
 
 // MARK: - Remove pointers from type
+// Recursive Template trick to remove an arbitrary number of pointers from a type
+
+template<class T, int N>
+struct remove_pointers_from_type
+{
+  using type = typename remove_pointers_from_type<typename std::remove_pointer<T>::type, N-1>::type;
+};
+
+template<class T>
+struct remove_pointers_from_type<T, 0>
+{
+  using type = T;
+};
+
+static_assert(std::is_same<remove_pointers_from_type<int*,1>::type, int>{}, "");
+static_assert(std::is_same<remove_pointers_from_type<float***,2>::type, float*>{}, "");
+static_assert(std::is_same<remove_pointers_from_type<float**,2>::type, float>{}, "");
+static_assert(std::is_same<remove_pointers_from_type<float,0>::type, float>{}, "");
+
+// Recursive Template trick to remove all pointers from a type
 template<class T>
 struct remove_all_pointers_from_type
 {

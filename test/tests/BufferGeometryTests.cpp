@@ -20,6 +20,11 @@ TEST_CASE("BufferGeometry Tests")
         CHECK(bufferGeo.getOffsetInDataArray(0) == 0);
         CHECK(bufferGeo.getOffsetInDataArray(1) == 1);
         CHECK(bufferGeo.getOffsetInDataArray(2) == 2);
+        
+        float data [3] {0};
+        float* pointers [1] {nullptr};
+        bufferGeo.hookupPointerArrayToData(data, pointers);
+        REQUIRE(pointers[0] == data);
     }
     
     SECTION("2D") {

@@ -10,6 +10,7 @@
 
 #include "TemplateUtils.hpp"
 
+// TODO: REMOVE THIS?
 template<class T>
 struct ArrayBaseType
 {
@@ -33,15 +34,6 @@ protected:
     using pointer_type = typename add_pointers_to_type<T, N>::type;
 
 public:
-//    template<int... I>
-//    decltype(auto) operator() (size_type i...) = 0;
-//
-    virtual pointer_type data() const {}
-    virtual pointer_type at(size_type offset) const {}
-    
-    virtual pointer_type getDataPointers() const = 0;
-    
-    virtual int* dims() const {}
-    virtual int dim(int i) const {}
+    // TODO:
 };
 

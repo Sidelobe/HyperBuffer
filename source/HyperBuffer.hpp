@@ -8,49 +8,11 @@
 #include <array>
 #include <vector>
 
-#include "TemplateUtils.hpp"
 #include "IHyperBuffer.hpp"
+#include "TemplateUtils.hpp"
+#include "BufferGeometry.hpp"
 
 #pragma once
-
-
-
-// function to get offset/index on flat array based on var number of multi-dim indices
-// recursive template?
-
-template<int N>
-struct BufferGeometry
-{
-    using dim_type = int;
-    template<typename... I>
-    explicit BufferGeometry(I... i) : m_dimensions{i...}
-    {
-        static_assert(sizeof...(I) == N, "Incorrect number of arguments");
-    }
-    
-    template<typename... I>
-    int getOffsetForIndex(int d0, I... dn) const
-    {
-        int offset = getOffset(0, 0, d0, dn...);
-        return offset;
-    }
-    
-private:
-    template<typename... I>
-    int getOffset(int pos, int prevOffset, int d0) const
-    {
-        return prevOffset + d0;
-    }
-    // recursive function to calculate offset
-    template<typename... I>
-    int getOffset(int pos, int prevOffset, int d0, I... dn) const
-    {
-        int index = (d0 * m_dimensions[pos]) + prevOffset;
-        return getOffset(pos + 1, index, dn...); // recusive call
-    }
-    
-    std::array<int, N> m_dimensions;
-};
 
 // MARK: - HyperBufferOwning
 template<typename T, int N>
@@ -58,46 +20,64 @@ class HyperBuffer : public IHyperBuffer<T, N>
 {
     using size_type = typename IHyperBuffer<T, N>::size_type;
     using pointer_type = typename IHyperBuffer<T, N>::pointer_type;
-    
+    using subdim_pointer_type = typename remove_pointers_from_type<pointer_type, 1>::type;
+
 public:
     template<typename... I>
     explicit HyperBuffer(I... i) :
-        m_data(multiplyArgs(i...)),
-        m_dataPointersSubdimensions(multiplyArgsExceptLast(i...)),
-        m_dimensions{{i...}}
+        m_bufferGeometry(i...),
+        m_data(m_bufferGeometry.getRequiredDataArraySize()),
+        m_pointers(m_bufferGeometry.getRequiredDataArraySize())
     {
         static_assert(sizeof...(I) == N, "Incorrect number of arguments");
-        // TODO: remove this uglyness
-        auto begin = m_dimensions.begin();
-        auto end = m_dimensions.end();
-        std::vector<size_t> dimsSizeT(begin, end);
-        m_dataPointers = callocArray<pointer_type>(dimsSizeT.data());
         
-        //for (int m_dataPointersSubdimensions
+        m_bufferGeometry.hookupPointerArrayToData(m_data.data(), m_pointers.data());
     }
     
-    ~HyperBuffer()
+    // MARK: - operator[]
+    template<int M=N, std::enable_if_t<(M>1), int> = 0>
+    subdim_pointer_type operator[] (size_type i)
     {
-         // TODO: remove this uglyness
-        auto begin = m_dimensions.begin();
-        auto end = m_dimensions.end();
-        std::vector<size_t> dimsSizeT(begin, end);
-        deleteArray(m_dataPointers, dimsSizeT.data());
+        // TODO: should we return a reference here --??
+        // TODO: return sub-buffer? something like: HyperBuffer<T, N-1>(*this, i)
+        assert(i < m_bufferGeometry.getDimensionExtents()[0] && "index out range");
+        int offset = m_bufferGeometry.template getOffsetInPointerArray<0>(i);
+        return reinterpret_cast<subdim_pointer_type>(m_pointers[offset]);
     }
-             
-    decltype(auto) operator[] (size_type i) { return m_dataPointers[i]; }
-                    
-    pointer_type getDataPointers() const override
+    
+    template<int M=N, std::enable_if_t<(M>1), int> = 0>
+    const subdim_pointer_type operator[] (size_type i) const { return this->operator[](i); }
+        
+    template<int M=N, std::enable_if_t<(M<=1), int> = 0> T& operator[] (size_type i) { return m_data[i]; }
+    template<int M=N, std::enable_if_t<(M<=1), int> = 0> const T& operator[] (size_type i) const { return m_data[i]; }
+
+    // TODO: operator(varArg) -- returns a sub-buffer or value, depending on number of arguments
+    //    template<int... I>
+    //    decltype(auto) operator() (size_type i...) = 0;
+    
+    // MARK: dimension extents
+    int dim(int i) const { return m_bufferGeometry.getDimensionExtents()[i]; }
+    const int* dims() const { return m_bufferGeometry.getDimensionExtentsPointer(); }
+
+    // MARK: data()
+    template<int M=N, std::enable_if_t<(M>1), int> = 0> pointer_type data() { return getTopDimPointer(); }
+    template<int M=N, std::enable_if_t<(M>1), int> = 0> const pointer_type data() const { return getTopDimPointer(); }
+    template<int M=N, std::enable_if_t<(M==1), int> = 0> T* data() { return m_pointers[0]; }
+    template<int M=N, std::enable_if_t<(M==1), int> = 0> const T* data() const { return m_pointers.data(); }
+    
+private:
+    /** returns a (multi-dim) pointer to the first entry in the highest-order dimension, e.g. float*** for T=float,N=3 */
+    pointer_type getTopDimPointer()
     {
-        return m_dataPointers;
+        return reinterpret_cast<pointer_type>(m_pointers.data());
     }
 
 private:
+    BufferGeometry<N> m_bufferGeometry;
+    
     /** we store the data in a 1D structure and access with offsets to simulate multi-dimensionality */
     std::vector<T> m_data;
-    std::vector<T*> m_dataPointersSubdimensions; // to base class
-    pointer_type m_dataPointers;
-    std::array<int, N> m_dimensions;
+    std::vector<T*> m_pointers; // TODO: move to base class
 };
 
 
@@ -117,7 +97,7 @@ public:
         static_assert(sizeof...(I) == N, "Incorrect number of arguments");
     }
     
-    pointer_type getDataPointers() const override
+    pointer_type getDataPointers() const
     {
         return m_dataPointers;
     }
@@ -129,7 +109,7 @@ private:
 // MARK: - HyperBufferPreAllocFlat
 /** Construct from pre-allocated, flat (1D) data */
 template<typename T, int N>
-class HyperBufferPreAllocFlat : public HyperBuffer<T, N>
+class HyperBufferPreAllocFlat : public IHyperBuffer<T, N>
 {
     using size_type = typename IHyperBuffer<T, N>::size_type;
     using pointer_type = typename IHyperBuffer<T, N>::pointer_type;

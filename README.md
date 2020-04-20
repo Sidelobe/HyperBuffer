@@ -26,6 +26,7 @@ The main use case for this container is to hold dynamically-allocated N-dimensio
 API requirements:
 
 * need to be able to provide a raw pointer (e.g. `float***` to the data)
+* support initializer lists
 
 Memory management requirements:
 

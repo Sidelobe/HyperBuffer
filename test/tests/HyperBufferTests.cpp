@@ -29,9 +29,10 @@ static inline std::vector<T> createRandomVector(int length, int seed=0)
 TEST_CASE("HyperBuffer Tests - Internal Memory Allocation")
 {
     SECTION("Build 1D owning") {
-        HyperBuffer<int, 1> bufferI1(4);
-        REQUIRE(bufferI1.dims()[0] == 4);
+        constexpr int N = 1;
+        HyperBuffer<int, N> bufferI1(4);
         REQUIRE(bufferI1.dim(0) == 4);
+        REQUIRE(bufferI1.dims()[0] == 4);
         bufferI1[0] = 0;
         bufferI1[1] = -1;
         bufferI1[2] = -2;
@@ -44,10 +45,10 @@ TEST_CASE("HyperBuffer Tests - Internal Memory Allocation")
         REQUIRE(rawData[3] == -3);
     }
     SECTION("Build 2D owning") {
-        HyperBuffer<int, 2> bufferI1(4, 2);
-        REQUIRE(bufferI1.dims()[0] == 4);
-        REQUIRE(bufferI1.dims()[1] == 2);
-        REQUIRE(bufferI1.dim(1) == 2);
+        HyperBuffer<int, 2> bufferI1(2, 4);
+        REQUIRE(bufferI1.dims()[0] == 2);
+        REQUIRE(bufferI1.dims()[1] == 4);
+        REQUIRE(bufferI1.dim(1) == 4);
         bufferI1[0][0] = 0;
         bufferI1[0][1] = -1;
         bufferI1[0][2] = -2;
@@ -86,14 +87,14 @@ TEST_CASE("HyperBuffer Tests - External Memory Allocation")
 {
     std::vector<int>preAllocData { 1, 2, 3, 4, 5 };
 
-    { // Verify no memory is allocated
-        ScopedMemorySentinel sentinel;
-        HyperBufferPreAlloc<int, 1> buffer(preAllocData.data(), preAllocData.size());
-    }
-    HyperBufferPreAlloc<int, 1> buffer(preAllocData.data(), preAllocData.size());
-    std::vector<int> dims(buffer.dims(), buffer.dims() + 1);
-    REQUIRE(dims == std::vector<int>{(int)preAllocData.size()});
-    //buffer(0) = 99;
+//    { // Verify no memory is allocated
+//        ScopedMemorySentinel sentinel;
+//        HyperBufferPreAlloc<int, 1> buffer(preAllocData.data(), preAllocData.size());
+//    }
+//    HyperBufferPreAlloc<int, 1> buffer(preAllocData.data(), preAllocData.size());
+//    std::vector<int> dims(buffer.dims(), buffer.dims() + 1);
+//    REQUIRE(dims == std::vector<int>{(int)preAllocData.size()});
+//    //buffer(0) = 99;
 //    REQUIRE(buffer[0] == 99);
 //    REQUIRE(buffer.dims()[0] == 5);
 }

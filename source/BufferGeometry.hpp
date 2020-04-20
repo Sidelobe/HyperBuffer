@@ -28,7 +28,7 @@ public:
     explicit BufferGeometry(const std::array<int, N>& dimensionExtents) : m_dimensionExtents(dimensionExtents) {}
 
     const std::array<int, N>& getDimensionExtents() const { return m_dimensionExtents; }
-    int* getDimensionExtentsPointer() const { return m_dimensionExtents.data(); }
+    const int* getDimensionExtentsPointer() const { return m_dimensionExtents.data(); }
     
     /** @return the number of required data entries (lowest-order dimension) given the configured geometry */
     int getRequiredDataArraySize() const
@@ -71,7 +71,10 @@ public:
     template<typename T, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
     void hookupPointerArrayToData(T* dataArray, T** pointerArray) const
     {
-        static_assert(N > 1, "Cannt use this function in 1-dimensional case");
+        if (N == 1) {
+            pointerArray[0] = dataArray;
+            return;
+        }
         
         // Intertwine pointer array: connect all pointers to itself -- skips 2 lowest-order dimensions
         int dataPointerStartOffset = hookupHigherDimPointers(pointerArray, 0, 0);
