@@ -21,6 +21,7 @@ matrix:
          
         - os: windows
           compiler: vs2017-64
+          env: MSBUILD_PATH="c:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
           
 before_script:
     # Export CXX to tell cmake which compiler to use
@@ -34,6 +35,7 @@ before_script:
     - cd build
     - if [ "$TRAVIS_OS_NAME" != "windows" ]; then cmake -H. -j 2 ../.. -DCMAKE_BUILD_TYPE=Debug; fi
     - if [ "$TRAVIS_OS_NAME" == "windows" ]; then cmake -G "Visual Studio 15 2017" -DCMAKE_GENERATOR_PLATFORM=x64 ../..; fi
+    - if [ "$TRAVIS_OS_NAME" == "windows" ]; then export PATH=$MSBUILD_PATH:$PATH; fi
 
 script:
     - |
