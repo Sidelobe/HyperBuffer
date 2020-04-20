@@ -120,6 +120,7 @@ TEST_CASE("BufferGeometry Tests")
     SECTION("4D") {
         constexpr int N = 4;
         BufferGeometry<N> bufferGeo(1, 3, 2, 2);
+
         CHECK(bufferGeo.getOffsetInDataArray(0, 0, 0, 0) == 0);
         CHECK(bufferGeo.getOffsetInDataArray(0, 0, 0, 1) == 1);
         CHECK(bufferGeo.getOffsetInDataArray(0, 0, 1, 0) == 2);
@@ -246,9 +247,43 @@ TEST_CASE("BufferGeometry Tests")
                                     2, 2, 2, 2, 2, 2, 2, 2,
                                     2, 2, 2, 2, 2, 2, 2, 2);
         
+        std::array<int, N> dims{3};
+        BufferGeometry<N> bufferGeo2(dims);
     }
     
-    SECTION("Dynamioc Memory Allocation Tests") {
+    SECTION("Allocation in Dynamic containers") {
+        constexpr int N = 3;
+        int dim1 = 2;
+        int dim2 = 5;
+        int dim3 = 6;
+        
+        std::array<int, N> dims;
+        dims[0] = dim1;
+        dims[1] = dim2;
+        dims[2] = dim3;
+        
+        BufferGeometry<N> bufferGeo(dims);
+        
+        std::vector<float> data(bufferGeo.getRequiredDataArraySize(), 0);
+        std::vector<float*> pointers(bufferGeo.getRequiredPointerArraySize(), nullptr);
+        REQUIRE(data.size() == 60);
+        REQUIRE(pointers.size() == 12);
+
+        bufferGeo.hookupPointerArrayToData(data.data(), pointers.data());
+        
+        for (int i=0; i < pointers.size(); ++i) {
+            REQUIRE(pointers[i] != nullptr);
+        }
+
+        REQUIRE((float**)(pointers[0]) == &(pointers[2]));
+        REQUIRE((float**)(pointers[1]) == &(pointers[7]));
+        REQUIRE(pointers[2] == &data[(bufferGeo.getOffsetInDataArray(0, 0, 0))]);
+        REQUIRE(pointers[6] == &data[(bufferGeo.getOffsetInDataArray(0, 4, 0))]);
+        REQUIRE(pointers[7] == &data[(bufferGeo.getOffsetInDataArray(1, 0, 0))]);
+        REQUIRE(pointers[11] == &data[(bufferGeo.getOffsetInDataArray(1, 4, 0))]);
+    }
+    
+    SECTION("Dynamic Memory Allocation Tests") {
         // Verify none of these operations allocate memory dynamically
         {
             ScopedMemorySentinel sentinel;
@@ -274,6 +309,13 @@ TEST_CASE("BufferGeometry Tests")
             constexpr int pointerDimensions = 4;
             float* pointers [VarArgOperations::sumOfCumulativeProductCapped(pointerDimensions, 2, 3, 2, 3, 6)] {nullptr};
             bufferGeo5.hookupPointerArrayToData(data, pointers);
+            
+            // dims as array rather than var arg
+            int dim1 = 2;
+            int dim2 = 5;
+            int dim3 = 6;
+            std::array<int, 3> dims { dim1, dim2, dim3 };
+            BufferGeometry<3> bufferGeo(dims);
         }
     }
 }
