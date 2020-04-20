@@ -14,32 +14,42 @@
 #pragma once
 
 
+
 // function to get offset/index on flat array based on var number of multi-dim indices
 // recursive template?
 
-template<typename T>
-struct DimensionData
+template<int N>
+struct BufferGeometry
 {
-    using dimension_index = int;
-    using size_type = size_t;
+    using dim_type = int;
+    template<typename... I>
+    explicit BufferGeometry(I... i) : m_dimensions{i...}
+    {
+        static_assert(sizeof...(I) == N, "Incorrect number of arguments");
+    }
     
-    DimensionData(int size) : m_size(size), m_subDimensionPointers(size) {}
-    int m_size;
-    std::vector<T*> m_subDimensionPointers;
-//
-//    size_type getIndex(dimension_index pos, size_type prevIndex, size_type m1, T...k1) const
-//    {
-//        size_type index = (prevIndex* m_dimensions[pos]) + m1;
-//
-//        if constexpr (sizeof...(k1) > 0)
-//        {
-//            return GetIndex(pos + 1, index, k1...);
-//        }
-//        else
-//        {
-//            return index;
-//        }
-//    }
+    template<typename... I>
+    int getOffsetForIndex(int d0, I... dn) const
+    {
+        int offset = getOffset(0, 0, d0, dn...);
+        return offset;
+    }
+    
+private:
+    template<typename... I>
+    int getOffset(int pos, int prevOffset, int d0) const
+    {
+        return prevOffset + d0;
+    }
+    // recursive function to calculate offset
+    template<typename... I>
+    int getOffset(int pos, int prevOffset, int d0, I... dn) const
+    {
+        int index = (d0 * m_dimensions[pos]) + prevOffset;
+        return getOffset(pos + 1, index, dn...); // recusive call
+    }
+    
+    std::array<int, N> m_dimensions;
 };
 
 // MARK: - HyperBufferOwning
@@ -52,7 +62,9 @@ class HyperBuffer : public IHyperBuffer<T, N>
 public:
     template<typename... I>
     explicit HyperBuffer(I... i) :
-        m_data(multiplyArgs(i...)), m_dimensions{{i...}}
+        m_data(multiplyArgs(i...)),
+        m_dataPointersSubdimensions(multiplyArgsExceptLast(i...)),
+        m_dimensions{{i...}}
     {
         static_assert(sizeof...(I) == N, "Incorrect number of arguments");
         // TODO: remove this uglyness
@@ -60,6 +72,8 @@ public:
         auto end = m_dimensions.end();
         std::vector<size_t> dimsSizeT(begin, end);
         m_dataPointers = callocArray<pointer_type>(dimsSizeT.data());
+        
+        //for (int m_dataPointersSubdimensions
     }
     
     ~HyperBuffer()
@@ -70,8 +84,9 @@ public:
         std::vector<size_t> dimsSizeT(begin, end);
         deleteArray(m_dataPointers, dimsSizeT.data());
     }
+             
     decltype(auto) operator[] (size_type i) { return m_dataPointers[i]; }
-    
+                    
     pointer_type getDataPointers() const override
     {
         return m_dataPointers;
@@ -80,6 +95,7 @@ public:
 private:
     /** we store the data in a 1D structure and access with offsets to simulate multi-dimensionality */
     std::vector<T> m_data;
+    std::vector<T*> m_dataPointersSubdimensions; // to base class
     pointer_type m_dataPointers;
     std::array<int, N> m_dimensions;
 };
