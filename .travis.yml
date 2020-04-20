@@ -38,8 +38,8 @@ before_script:
 script:
     - |
     if [ "${TRAVIS_OS_NAME}" == "windows" ]; then
-        cmd.exe /C '"C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" amd64'
-        cmd.exe /C 'MSBuild.exe HyperBuffer.sln /m:2 /nologo /verbosity:minimal /p:Configuration=Debug /p:Platform=x64'
+        cmd.exe //C '"C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" amd64'
+        cmd.exe //C 'MSBuild.exe HyperBuffer.sln /m:2 /nologo /verbosity:minimal /p:Configuration=Debug /p:Platform=x64'
         ./HyperBufferTest.exe
     else
         make -j 2
