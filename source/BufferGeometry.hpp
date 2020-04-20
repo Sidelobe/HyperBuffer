@@ -12,11 +12,12 @@
 #include "TemplateUtils.hpp"
 #include "IntArrayOperations.hpp"
 
+/** Performs the 'geometry' calculations for certain set of dimension extents */
 template<int N>
 class BufferGeometry
 {
 public:
-    /** Take the extents of the dimensions as a variable argument list */
+    /** Constructor that takes the extents of the dimensions as a variable argument list */
     template<typename... I>
     explicit BufferGeometry(I... i) : m_dimensionExtents{i...}
     {
@@ -25,6 +26,18 @@ public:
     
     const std::array<int, N>& getDimensionExtents() const { return m_dimensionExtents; }
     int* getDimensionExtentsPointer() const { return m_dimensionExtents.data(); }
+    
+    /** @return the number of required data entries (lowest-order dimension) given the configured geometry */
+    int getRequiredDataArraySize() const
+    {
+        return StdArrayOperations::product(m_dimensionExtents);
+    }
+    
+    /** @return the number of required pointer entries given the configured geometry */
+    int getRequiredPointerArraySize() const
+    {
+        return StdArrayOperations::sumOfCumulativeProductCapped(N-1, m_dimensionExtents);
+    }
 
     /** The data is saved in row-major ordering */
     template<typename... I>
@@ -48,7 +61,9 @@ public:
     /**
      * Set up the supplied pointer array as a self-referencing array and point the lowest dimension
      * pointers at the supplied data array.
-     * @note: we can choose any pointer type here, since all pointers types are same size
+     *
+     * @param dataArray an array of T. Size must match result given by getRequiredDataArraySize()
+     * @param pointerArray an array of T*. Size must match result given by getRequiredPointerArraySize()
      */
     template<typename T, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
     void hookupPointerArrayToData(T* dataArray, T** pointerArray) const
