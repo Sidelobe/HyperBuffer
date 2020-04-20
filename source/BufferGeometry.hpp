@@ -22,6 +22,9 @@ public:
     {
         static_assert(sizeof...(I) == N, "Incorrect number of arguments");
     }
+    
+    const std::array<int, N>& getDimensionExtents() const { return m_dimensionExtents; }
+    int* getDimensionExtentsPointer() const { return m_dimensionExtents.data(); }
 
     /** The data is saved in row-major ordering */
     template<typename... I>
@@ -42,10 +45,13 @@ public:
         return startOfThisDimension + getOffset<N-1>(1, 0, dn, dk...); // We ignore the 'data dimension', therefore N-1
     }
     
-public:
-    // NOTE: we can choose any pointer type here, since all pointers types are same size
+    /**
+     * Set up the supplied pointer array as a self-referencing array and point the lowest dimension
+     * pointers at the supplied data array.
+     * @note: we can choose any pointer type here, since all pointers types are same size
+     */
     template<typename T, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
-    void hookupPointerArrayToData(T* dataArray, T** pointerArray)
+    void hookupPointerArrayToData(T* dataArray, T** pointerArray) const
     {
         static_assert(N > 1, "Cannt use this function in 1-dimensional case");
         
@@ -64,7 +70,7 @@ public:
     
 private:
     template<typename T, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
-    int hookupHigherDimPointers(T** pointerArray, int arrayIndex, int dimIndex)
+    int hookupHigherDimPointers(T** pointerArray, int arrayIndex, int dimIndex) const
     {
         if (dimIndex >= N-2) {
             return arrayIndex; // end recursion
@@ -98,6 +104,6 @@ private:
     }
                                                      
 private:
-    std::array<int, N> m_dimensionExtents;
+    const std::array<int, N> m_dimensionExtents;
     
 };
