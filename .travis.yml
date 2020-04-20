@@ -20,7 +20,7 @@ matrix:
           env: COMPILER='g++-7'
          
         - os: windows
-          dist: bionic
+          compiler: vs2019-64
           
 before_script:
     # Export CXX to tell cmake which compiler to use
@@ -32,11 +32,13 @@ before_script:
     - cd deploy
     - mkdir -p build
     - cd build
-    - cmake -H. -j 2 ../.. -DCMAKE_BUILD_TYPE=Debug
+    - if [ "$TRAVIS_OS_NAME" != "windows" ]; then cmake -H. -j 2 ../.. -DCMAKE_BUILD_TYPE=Debug; fi
+    - if [ "$TRAVIS_OS_NAME" == "windows" ]; then cmake -G "Visual Studio 16 2019" -DCMAKE_GENERATOR_PLATFORM=x64; fi
     
 script:
-    - make -j 2
-    - ./HyperBufferTest
-    #- ctest -V -j 2
+    - if [ "$TRAVIS_OS_NAME" != "windows" ]; then make -j 2; fi
+    - if [ "$TRAVIS_OS_NAME" == "windows" ]; then cmd.exe /C ‘MSBuild.exe HyperBuffer.sln /m:2 /nologo /verbosity:minimal /p:Configuration=Debug /p:Platform=x64; fi
+    #- ./HyperBufferTest
+    - ctest -V -j 2
 
     
