@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "BufferGeometry.hpp"
+#include "MemorySentinel.hpp"
 
 TEST_CASE("BufferGeometry Tests")
 {
@@ -196,16 +197,16 @@ TEST_CASE("BufferGeometry Tests")
         CHECK(bufferGeo.getOffsetInPointerArray<2>(0, 0, 0) == 8);
         CHECK(bufferGeo.getOffsetInPointerArray<2>(0, 1, 0) == 14);
         CHECK(bufferGeo.getOffsetInPointerArray<2>(1, 0, 0) == 26);
-        
+        CHECK(bufferGeo.getOffsetInPointerArray<3>(1, 0, 0, 0) == 38);
+        CHECK(bufferGeo.getOffsetInPointerArray<3>(1, 1, 1, 1) == 48);
+    
         float data [VarArgOperations::product(2, 3, 2, 3, 6)] {0};
         constexpr int pointerDimensions = N-1;
         float* pointers [VarArgOperations::sumOfCumulativeProductCapped(pointerDimensions, 2, 3, 2, 3, 6)] {nullptr};
         REQUIRE(getRawArrayLength(pointers) == 56);
-        
-        for (int i=0; i<getRawArrayLength(pointers); ++i) {
-            pointers[i] = (float*)0xdeadbeef;
-        }
-        
+        REQUIRE(bufferGeo.getRequiredDataArraySize() == getRawArrayLength(data));
+        REQUIRE(bufferGeo.getRequiredPointerArraySize() == getRawArrayLength(pointers));
+
         bufferGeo.hookupPointerArrayToData(data, pointers);
         
         for (int i=0; i<getRawArrayLength(pointers); ++i) {
@@ -236,5 +237,43 @@ TEST_CASE("BufferGeometry Tests")
         REQUIRE(pointers5D[0][0][1][1] == &data[(bufferGeo.getOffsetInDataArray(0, 0, 1, 1, 0))]);
         REQUIRE(pointers5D[0][2][0][0] == &data[(bufferGeo.getOffsetInDataArray(0, 2, 0, 0, 0))]);
         REQUIRE(pointers5D[1][2][0][1] == &data[(bufferGeo.getOffsetInDataArray(1, 2, 0, 1, 0))]);
+    }
+    
+    SECTION("Absurdly high dimension") {
+        constexpr int N = 32;
+        BufferGeometry<N> bufferGeo(2, 2, 2, 2, 2, 2, 2, 2,
+                                    2, 2, 2, 2, 2, 2, 2, 2,
+                                    2, 2, 2, 2, 2, 2, 2, 2,
+                                    2, 2, 2, 2, 2, 2, 2, 2);
+        
+    }
+    
+    SECTION("Dynamioc Memory Allocation Tests") {
+        // Verify none of these operations allocate memory dynamically
+        {
+            ScopedMemorySentinel sentinel;
+            
+            BufferGeometry<1> bufferGeo1(2);
+            BufferGeometry<2> bufferGeo2(2, 3);
+            BufferGeometry<3> bufferGeo3(2, 3, 2);
+            BufferGeometry<4> bufferGeo4(2, 3, 2, 3);
+            BufferGeometry<5> bufferGeo5(2, 3, 2, 3, 6);
+            
+            bufferGeo1.getOffsetInDataArray(1);
+            bufferGeo2.getOffsetInDataArray(0, 1);
+            bufferGeo3.getOffsetInDataArray(1, 0, 1);
+            bufferGeo4.getOffsetInDataArray(0, 1, 0, 1);
+            bufferGeo5.getOffsetInDataArray(0, 0, 0, 1, 0);
+            
+            bufferGeo5.getOffsetInPointerArray<0>(0);
+            bufferGeo5.getOffsetInPointerArray<1>(0, 0);
+            bufferGeo5.getOffsetInPointerArray<2>(1, 0, 0);
+            bufferGeo5.getOffsetInPointerArray<3>(1, 1, 1, 1);
+            
+            float data [VarArgOperations::product(2, 3, 2, 3, 6)] {0};
+            constexpr int pointerDimensions = 4;
+            float* pointers [VarArgOperations::sumOfCumulativeProductCapped(pointerDimensions, 2, 3, 2, 3, 6)] {nullptr};
+            bufferGeo5.hookupPointerArrayToData(data, pointers);
+        }
     }
 }
