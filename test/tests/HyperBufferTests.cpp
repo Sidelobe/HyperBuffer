@@ -25,27 +25,20 @@ static inline std::vector<T> createRandomVector(int length, int seed=0)
     return result;
 }
 
+// functions to test the integrity of the different variants throught the same API
+template<typename T, int N> void testHyperBuffer1D_size4(IHyperBuffer<T, N>& buffer);
+
 
 TEST_CASE("HyperBuffer Tests - Internal Memory Allocation")
 {
     SECTION("Build 1D owning") {
         constexpr int N = 1;
-        HyperBuffer<int, N> bufferI1(4);
-        REQUIRE(bufferI1.dim(0) == 4);
-        REQUIRE(bufferI1.dims()[0] == 4);
-        bufferI1[0] = 0;
-        bufferI1[1] = -1;
-        bufferI1[2] = -2;
-        bufferI1[3] = -3;
-        REQUIRE(bufferI1.data() != nullptr);
-        int* rawData = bufferI1.data();
-        REQUIRE(rawData[0] == 0);
-        REQUIRE(rawData[1] == -1);
-        REQUIRE(rawData[2] == -2);
-        REQUIRE(rawData[3] == -3);
+        HyperBuffer<int, N> buffer(4);
+        testHyperBuffer1D_size4(buffer);
     }
     SECTION("Build 2D owning") {
-        HyperBuffer<int, 2> bufferI1(2, 4);
+        constexpr int N = 2;
+        HyperBuffer<int, N> bufferI1(2, 4);
         REQUIRE(bufferI1.dims()[0] == 2);
         REQUIRE(bufferI1.dims()[1] == 4);
         REQUIRE(bufferI1.dim(1) == 4);
@@ -114,4 +107,22 @@ TEST_CASE("HyperBuffer Tests - External Memory Allocation")
 //
 //    MultiDimArray<float, 1> buffer2sub1 = buffer2(0);
 //}
+
+
+template<typename T, int N>
+void testHyperBuffer1D_size4(IHyperBuffer<T, N>& buffer)
+{
+    REQUIRE(buffer.dim(0) == 4);
+    REQUIRE(buffer.dims()[0] == 4);
+    buffer[0] = 0;
+    buffer[1] = -1;
+    buffer[2] = -2;
+    buffer[3] = -3;
+    REQUIRE(buffer.data() != nullptr);
+    int* rawData = buffer.data();
+    REQUIRE(rawData[0] == 0);
+    REQUIRE(rawData[1] == -1);
+    REQUIRE(rawData[2] == -2);
+    REQUIRE(rawData[3] == -3);
+}
 

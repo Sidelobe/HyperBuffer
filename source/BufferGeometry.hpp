@@ -5,6 +5,8 @@
 //
 //  © 2020 Lorenz Bucher - all rights reserved
 
+#pragma once
+
 #include <memory>
 #include <array>
 #include <iostream>
