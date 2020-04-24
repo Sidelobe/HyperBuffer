@@ -46,9 +46,8 @@ TEST_CASE("HyperBuffer Tests - Internal Memory Allocation")
     }
     SECTION("Build 3D owning") {
         constexpr int N = 3;
-        HyperBuffer<float, N> bufferF3(3, 3, 8);
-
-
+        HyperBuffer<int, N> buffer(3, 3, 8);
+        testHyperBuffer3D_sizes3_3_8(buffer);
 
 
     }
@@ -78,6 +77,13 @@ TEST_CASE("HyperBuffer Tests - External Memory Allocation (Flat)")
         std::vector<int> preAllocData(3*3*8);
         std::iota(preAllocData.begin(), preAllocData.end(), 1);
         HyperBufferPreAllocFlat<int, N> buffer(preAllocData.data(), 3, 3, 8);
+        
+        REQUIRE(buffer[0][0][0] == 1);
+        REQUIRE(buffer[0][0][7] == 8);
+        REQUIRE(buffer[0][1][0] == 9);
+        REQUIRE(buffer[1][0][0] == 25);
+        REQUIRE(buffer[2][2][7] == 72);
+
         testHyperBuffer3D_sizes3_3_8(buffer);
         
 //        { // Verify no memory is allocated
@@ -89,6 +95,7 @@ TEST_CASE("HyperBuffer Tests - External Memory Allocation (Flat)")
 
 TEST_CASE("HyperBuffer Tests - External Memory Allocation (MultiDim)")
 {
+    // TODO
     std::vector<float> dataDim2_1 = createRandomVector(8, 333);
     std::vector<float> dataDim2_2 = createRandomVector(8, 666);
     std::vector<float> dataDim2_3 = createRandomVector(8, 999);
@@ -162,13 +169,7 @@ template<typename T, int N> void
 testHyperBuffer3D_sizes3_3_8(HyperBufferBase<T, N>& buffer)
 {
     std::vector<int> dims(buffer.dims(), buffer.dims() + 3);
-    REQUIRE(dims == std::vector<int>{3, 3, 8});
-    REQUIRE(buffer[0][0][0] == 1);
-    REQUIRE(buffer[0][0][7] == 8);
-    REQUIRE(buffer[0][1][0] == 9);
-    REQUIRE(buffer[1][0][0] == 25);
-    REQUIRE(buffer[2][2][7] == 72);
-    
+    REQUIRE(dims == std::vector<int>{3, 3, 8});    
     buffer[0][1][0] = -1;
     buffer[0][2][0] = -2;
     buffer[0][3][0] = -3;
