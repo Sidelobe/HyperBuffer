@@ -25,6 +25,8 @@ TEST_CASE("BufferGeometry Tests")
         float* pointers [1] {nullptr};
         bufferGeo.hookupPointerArrayToData(data, pointers);
         REQUIRE(pointers[0] == data);
+        
+        CHECK(bufferGeo.getOffsetInPointerArray<0>(2) == 2);
     }
     
     SECTION("2D") {

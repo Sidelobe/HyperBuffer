@@ -57,7 +57,7 @@ public:
     int getOffsetInPointerArray(int dn, I... dk) const
     {
         static_assert(sizeof...(I) == DimIdx, "Number of arguments should be DimIdx+1");
-        static_assert(DimIdx < N-1, "Can only get pointers for any but the lowest-order dimension");
+        static_assert(N==1 || DimIdx < N-1, "Can only get pointers for any but the lowest-order dimension");
 
         int startOfThisDimension = StdArrayOperations::sumOfCumulativeProductCapped(DimIdx, m_dimensionExtents);
         return startOfThisDimension + getOffset<N-1>(1, 0, dn, dk...); // We ignore the 'data dimension', therefore N-1

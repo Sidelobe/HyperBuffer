@@ -12,23 +12,8 @@
 
 #include "TemplateUtils.hpp"
 
-// TODO: REMOVE THIS?
-template<class T>
-struct ArrayBaseType
-{
-  using type = T;
-};
-template<class T, size_t n>
-struct ArrayBaseType<T[n]>
-{
-    using type = typename ArrayBaseType<T>::type;
-};
-#define TypeOfArrayBase(T) ArrayBaseType<T>::type
-
-
-// For 1-dimensional case: N = 1
-#define FOR_N1 template<int M=N, std::enable_if_t<(M<=1), int> = 0>
-// For higher dimensions: N > 1
+// Macros to restrict a function declaration to 1-dimensional and higher-dimensional case only
+#define FOR_N1 template<int M=N, std::enable_if_t<(M==1), int> = 0>
 #define FOR_Nx template<int M=N, std::enable_if_t<(M>1), int> = 0>
 
 // MARK: - TODO: rename to HyperBuffer Base Class
@@ -38,7 +23,14 @@ class IHyperBuffer
 protected:
     using size_type = int;
     using pointer_type = typename add_pointers_to_type<T, N>::type;
-    using subdim_pointer_type = typename remove_pointers_from_type<pointer_type, 1>::type;
+    
+    /**
+     * NOTE: should be simply  `using subdim_pointer_type = typename remove_pointers_from_type<pointer_type, 1>::type;`
+     * Otherwise, getTopDimensionData_Nx (which is never called for N=1 anyway) won't compile.
+     * We cannot use enable_if on this function because it's virtual!
+     * C++17 would allow us to place an `if constexpr`, but in C++14, we have to resort to this hack.
+     */
+    using subdim_pointer_type = std::conditional_t<(N==1), T*, typename remove_pointers_from_type<pointer_type, 1>::type>;
 
 public:
     // MARK: dimension extents

@@ -37,22 +37,20 @@ public:
 private:
     T& getTopDimensionData_N1(size_type i) override
     {
+        assert(N==1 && "this should only be called for N==1 !");
         return m_data[i];
     }
     
     subdim_pointer_type getTopDimensionData_Nx(size_type i) override
     {
+        assert(N>1 && "this should only be called for N>1 !");
+        assert(i < m_bufferGeometry.getDimensionExtents()[0] && "index out range");
         // TODO: should we return a reference here --??
         // TODO: return sub-buffer? something like: HyperBuffer<T, N-1>(*this, i)
         
-        // TODO: how can I get this not to compile for N=1 in a virtual function?
-        if constexpr (N>1) {
-            assert(i < m_bufferGeometry.getDimensionExtents()[0] && "index out range");
-            int offset = m_bufferGeometry.template getOffsetInPointerArray<0>(i);
-            return reinterpret_cast<subdim_pointer_type>(IHyperBuffer<T, N>::m_pointers[offset]);
-        } else {
-            return 0;
-        }
+        // syntax weirdness: https://stackoverflow.com/questions/4942703/
+        int offset = m_bufferGeometry.template getOffsetInPointerArray<0>(i);
+        return reinterpret_cast<subdim_pointer_type>(IHyperBuffer<T, N>::m_pointers[offset]);
     }
 
 private:
