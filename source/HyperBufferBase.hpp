@@ -56,8 +56,10 @@ protected:
     template<typename... I>
     explicit HyperBufferBase(I... i) :
         m_dimensionExtents{i...},
-        m_pointers(std::max(VarArgOperations::sumOfCumulativeProductCapped(N-1, i...), 1))
-    {}
+        m_pointers(std::max(VarArgOperations::sumOfCumulativeProductCapped(N-1, i...), 1)) // pointer array size at least 1
+    {
+        static_assert(sizeof...(I) == N, "Incorrect number of arguments");
+    }
 
     virtual T& getTopDimensionData_N1(size_type i) = 0;
     virtual subdim_pointer_type getTopDimensionData_Nx(size_type i) = 0;

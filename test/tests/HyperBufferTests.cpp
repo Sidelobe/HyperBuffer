@@ -9,6 +9,7 @@
 
 #include <vector>
 #include <random>
+#include <numeric>
 
 #include "HyperBuffer.hpp"
 #include "MemorySentinel.hpp"
@@ -27,6 +28,8 @@ static inline std::vector<T> createRandomVector(int length, int seed=0)
 
 // functions to test the integrity of the different variants throught the same API
 template<typename T, int N> void testHyperBuffer1D_size4(HyperBufferBase<T, N>& buffer);
+template<typename T, int N> void testHyperBuffer2D_sizes2_4(HyperBufferBase<T, N>& buffer);
+template<typename T, int N> void testHyperBuffer3D_sizes3_3_8(HyperBufferBase<T, N>& buffer);
 
 
 TEST_CASE("HyperBuffer Tests - Internal Memory Allocation")
@@ -38,58 +41,61 @@ TEST_CASE("HyperBuffer Tests - Internal Memory Allocation")
     }
     SECTION("Build 2D owning") {
         constexpr int N = 2;
-        HyperBuffer<int, N> bufferI1(2, 4);
-        REQUIRE(bufferI1.dims()[0] == 2);
-        REQUIRE(bufferI1.dims()[1] == 4);
-        REQUIRE(bufferI1.dim(1) == 4);
-        bufferI1[0][0] = 0;
-        bufferI1[0][1] = -1;
-        bufferI1[0][2] = -2;
-        bufferI1[0][3] = -3;
-        bufferI1[1][0] = -10;
-        bufferI1[1][1] = -11;
-        bufferI1[1][2] = -22;
-        bufferI1[1][3] = -33;
-        REQUIRE(bufferI1.data() != nullptr);
-        int** rawData = bufferI1.data();
-        REQUIRE(rawData[0][0] == 0);
-        REQUIRE(rawData[0][1] == -1);
-        REQUIRE(rawData[0][2] == -2);
-        REQUIRE(rawData[0][3] == -3);
-        REQUIRE(rawData[1][0] == -10);
-        REQUIRE(rawData[1][1] == -11);
-        REQUIRE(rawData[1][2] == -22);
-        REQUIRE(rawData[1][3] == -33);
-        
+        HyperBuffer<int, N> buffer(2, 4);
+        testHyperBuffer2D_sizes2_4(buffer);
     }
     SECTION("Build 3D owning") {
-        HyperBuffer<float, 3> bufferF3(3, 3, 8);
-        std::vector<int> dims(bufferF3.dims(), bufferF3.dims() + 3);
-        REQUIRE(dims == std::vector<int>{3, 3, 8});
+        constexpr int N = 3;
+        HyperBuffer<float, N> bufferF3(3, 3, 8);
 
-        std::vector<float> dataDim2_1 = createRandomVector(8, 333);
-        std::vector<float> dataDim2_2 = createRandomVector(8, 666);
-        std::vector<float> dataDim2_3 = createRandomVector(8, 999);
-        float* dataDim1[] = { dataDim2_1.data(), dataDim2_2.data(), dataDim2_3.data() };
-        float** dataDim0[] = { dataDim1, dataDim1, dataDim1 };
+
+
 
     }
 }
 
-TEST_CASE("HyperBuffer Tests - External Memory Allocation")
+TEST_CASE("HyperBuffer Tests - External Memory Allocation (Flat)")
 {
-    std::vector<int>preAllocData { 1, 2, 3, 4, 5 };
+    SECTION("Build 1D owning") {
+        int preAllocData[4];
+        constexpr int N = 1;
+        HyperBufferPreAllocFlat<int, N> buffer(preAllocData, 4);
+        testHyperBuffer1D_size4(buffer);
+        
+//        { // Verify no memory is allocated
+//            ScopedMemorySentinel sentinel;
+//            HyperBufferPreAllocFlat<int, N> buffer(preAllocData, 4);
+//        }
+    }
+    SECTION("Build 2D owning") {
+        constexpr int N = 2;
+        int preAllocData[2*4];
+        HyperBufferPreAllocFlat<int, N> buffer(preAllocData, 2, 4);
+        testHyperBuffer2D_sizes2_4(buffer);
+    }
+    SECTION("Build 3D owning") {
+        constexpr int N = 3;
+        std::vector<int> preAllocData(3*3*8);
+        std::iota(preAllocData.begin(), preAllocData.end(), 1);
+        HyperBufferPreAllocFlat<int, N> buffer(preAllocData.data(), 3, 3, 8);
+        testHyperBuffer3D_sizes3_3_8(buffer);
+        
+//        { // Verify no memory is allocated
+//            ScopedMemorySentinel sentinel;
+//            HyperBufferPreAllocFlat<int, N> buffer(preAllocData.data(), 3, 3, 8);
+//        }
+    }
+}
 
-//    { // Verify no memory is allocated
-//        ScopedMemorySentinel sentinel;
-//        HyperBufferPreAlloc<int, 1> buffer(preAllocData.data(), preAllocData.size());
-//    }
-//    HyperBufferPreAlloc<int, 1> buffer(preAllocData.data(), preAllocData.size());
-//    std::vector<int> dims(buffer.dims(), buffer.dims() + 1);
-//    REQUIRE(dims == std::vector<int>{(int)preAllocData.size()});
-//    //buffer(0) = 99;
-//    REQUIRE(buffer[0] == 99);
-//    REQUIRE(buffer.dims()[0] == 5);
+TEST_CASE("HyperBuffer Tests - External Memory Allocation (MultiDim)")
+{
+    std::vector<float> dataDim2_1 = createRandomVector(8, 333);
+    std::vector<float> dataDim2_2 = createRandomVector(8, 666);
+    std::vector<float> dataDim2_3 = createRandomVector(8, 999);
+    float* dataDim1[] = { dataDim2_1.data(), dataDim2_2.data(), dataDim2_3.data() };
+    float** dataDim0[] = { dataDim1, dataDim1, dataDim1 };
+    
+    
 }
 
 //TEST_CASE("Initializer List Construction")
@@ -126,3 +132,57 @@ void testHyperBuffer1D_size4(HyperBufferBase<T, N>& buffer)
     REQUIRE(rawData[3] == -3);
 }
 
+template<typename T, int N>
+void testHyperBuffer2D_sizes2_4(HyperBufferBase<T, N>& buffer)
+{
+    REQUIRE(buffer.dims()[0] == 2);
+    REQUIRE(buffer.dims()[1] == 4);
+    REQUIRE(buffer.dim(1) == 4);
+    buffer[0][0] = 0;
+    buffer[0][1] = -1;
+    buffer[0][2] = -2;
+    buffer[0][3] = -3;
+    buffer[1][0] = -10;
+    buffer[1][1] = -11;
+    buffer[1][2] = -22;
+    buffer[1][3] = -33;
+    REQUIRE(buffer.data() != nullptr);
+    int** rawData = buffer.data();
+    REQUIRE(rawData[0][0] == 0);
+    REQUIRE(rawData[0][1] == -1);
+    REQUIRE(rawData[0][2] == -2);
+    REQUIRE(rawData[0][3] == -3);
+    REQUIRE(rawData[1][0] == -10);
+    REQUIRE(rawData[1][1] == -11);
+    REQUIRE(rawData[1][2] == -22);
+    REQUIRE(rawData[1][3] == -33);
+}
+
+template<typename T, int N> void
+testHyperBuffer3D_sizes3_3_8(HyperBufferBase<T, N>& buffer)
+{
+    std::vector<int> dims(buffer.dims(), buffer.dims() + 3);
+    REQUIRE(dims == std::vector<int>{3, 3, 8});
+    REQUIRE(buffer[0][0][0] == 1);
+    REQUIRE(buffer[0][0][7] == 8);
+    REQUIRE(buffer[0][1][0] == 9);
+    REQUIRE(buffer[1][0][0] == 25);
+    REQUIRE(buffer[2][2][7] == 72);
+    
+    buffer[0][1][0] = -1;
+    buffer[0][2][0] = -2;
+    buffer[0][3][0] = -3;
+    buffer[1][0][6] = -10;
+    buffer[1][1][6] = -11;
+    buffer[1][2][6] = -22;
+    buffer[1][3][6] = -33;
+    REQUIRE(buffer.data() != nullptr);
+    int*** rawData = buffer.data();
+    REQUIRE(rawData[0][1][0] == -1);
+    REQUIRE(rawData[0][2][0] == -2);
+    REQUIRE(rawData[0][3][0] == -3);
+    REQUIRE(rawData[1][0][6] == -10);
+    REQUIRE(rawData[1][1][6] == -11);
+    REQUIRE(rawData[1][2][6] == -22);
+    REQUIRE(rawData[1][3][6] == -33);
+}
