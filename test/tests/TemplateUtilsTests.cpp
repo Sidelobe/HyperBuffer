@@ -115,3 +115,27 @@ TEST_CASE("TemplateUtils VarArgOperations apply() Tests")
         return VarArgOperations::sum(std::forward<decltype(args)>(args)...);
     }, array) == 9);
 }
+
+template<typename... I>
+static constexpr int constExprFunction(I... i)
+{
+    return VarArgOperations::sumOfCumulativeProduct(i...);
+};
+
+TEST_CASE("TemplateUtils VarArgOperations are constexpr")
+{
+    // this should be assignable to a constexpr
+    constexpr int a = VarArgOperations::sum(1, 2);
+    static_assert(a == 3, "");
+    constexpr int b = VarArgOperations::product(1, 2);
+    static_assert(b == 2, "");
+    constexpr int c = VarArgOperations::sumCapped(2, 1, 2, 3);
+    static_assert(c == 3, "");
+    constexpr int d = VarArgOperations::sumOfCumulativeProduct(1, 2, 3);
+    static_assert(d == 9, "");
+
+    constexpr int e = constExprFunction(1, 2, 3);
+    static_assert(e == 9, "");
+}
+
+
