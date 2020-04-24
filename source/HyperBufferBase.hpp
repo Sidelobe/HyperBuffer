@@ -16,7 +16,6 @@
 #define FOR_N1 template<int M=N, std::enable_if_t<(M==1), int> = 0>
 #define FOR_Nx template<int M=N, std::enable_if_t<(M>1), int> = 0>
 
-// MARK: - TODO: rename to HyperBuffer Base Class
 template<typename T, int N>
 class HyperBufferBase
 {

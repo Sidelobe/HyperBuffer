@@ -10,28 +10,28 @@
 #include <array>
 #include <vector>
 
-#include "IHyperBuffer.hpp"
+#include "HyperBufferBase.hpp"
 #include "TemplateUtils.hpp"
 #include "BufferGeometry.hpp"
 
 // MARK: - HyperBufferOwning
 template<typename T, int N>
-class HyperBuffer : public IHyperBuffer<T, N>
+class HyperBuffer : public HyperBufferBase<T, N>
 {
-    using size_type = typename IHyperBuffer<T, N>::size_type;
-    using pointer_type = typename IHyperBuffer<T, N>::pointer_type;
-    using subdim_pointer_type = typename IHyperBuffer<T, N>::subdim_pointer_type;
+    using size_type = typename HyperBufferBase<T, N>::size_type;
+    using pointer_type = typename HyperBufferBase<T, N>::pointer_type;
+    using subdim_pointer_type = typename HyperBufferBase<T, N>::subdim_pointer_type;
 
 public:
     template<typename... I>
     explicit HyperBuffer(I... i) :
-        IHyperBuffer<T, N>(i...),
+        HyperBufferBase<T, N>(i...),
         m_bufferGeometry(i...),
         m_data(m_bufferGeometry.getRequiredDataArraySize())
     {
         static_assert(sizeof...(I) == N, "Incorrect number of arguments");
         
-        m_bufferGeometry.hookupPointerArrayToData(m_data.data(), IHyperBuffer<T, N>::m_pointers.data());
+        m_bufferGeometry.hookupPointerArrayToData(m_data.data(), HyperBufferBase<T, N>::m_pointers.data());
     }
     
 private:
@@ -50,7 +50,7 @@ private:
         
         // syntax weirdness: https://stackoverflow.com/questions/4942703/
         int offset = m_bufferGeometry.template getOffsetInPointerArray<0>(i);
-        return reinterpret_cast<subdim_pointer_type>(IHyperBuffer<T, N>::m_pointers[offset]);
+        return reinterpret_cast<subdim_pointer_type>(HyperBufferBase<T, N>::m_pointers[offset]);
     }
 
 private:
@@ -64,10 +64,10 @@ private:
 // MARK: - HyperBufferPreAlloc
 /** Construct from pre-allocated, multi-dimensional data */
 template<typename T, int N>
-class HyperBufferPreAlloc : public IHyperBuffer<T, N>
+class HyperBufferPreAlloc : public HyperBufferBase<T, N>
 {
-    using size_type = typename IHyperBuffer<T, N>::size_type;
-    using pointer_type = typename IHyperBuffer<T, N>::pointer_type;
+    using size_type = typename HyperBufferBase<T, N>::size_type;
+    using pointer_type = typename HyperBufferBase<T, N>::pointer_type;
     
 public:
     template<typename... I>
@@ -89,10 +89,10 @@ private:
 // MARK: - HyperBufferPreAllocFlat
 /** Construct from pre-allocated, flat (1D) data */
 template<typename T, int N>
-class HyperBufferPreAllocFlat : public IHyperBuffer<T, N>
+class HyperBufferPreAllocFlat : public HyperBufferBase<T, N>
 {
-    using size_type = typename IHyperBuffer<T, N>::size_type;
-    using pointer_type = typename IHyperBuffer<T, N>::pointer_type;
+    using size_type = typename HyperBufferBase<T, N>::size_type;
+    using pointer_type = typename HyperBufferBase<T, N>::pointer_type;
     
 public:
 //    explicit HyperBufferPreAllocFlat(T* preAllocatedDataFlat, I... i)

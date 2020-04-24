@@ -26,7 +26,7 @@ static inline std::vector<T> createRandomVector(int length, int seed=0)
 }
 
 // functions to test the integrity of the different variants throught the same API
-template<typename T, int N> void testHyperBuffer1D_size4(IHyperBuffer<T, N>& buffer);
+template<typename T, int N> void testHyperBuffer1D_size4(HyperBufferBase<T, N>& buffer);
 
 
 TEST_CASE("HyperBuffer Tests - Internal Memory Allocation")
@@ -110,7 +110,7 @@ TEST_CASE("HyperBuffer Tests - External Memory Allocation")
 
 
 template<typename T, int N>
-void testHyperBuffer1D_size4(IHyperBuffer<T, N>& buffer)
+void testHyperBuffer1D_size4(HyperBufferBase<T, N>& buffer)
 {
     REQUIRE(buffer.dim(0) == 4);
     REQUIRE(buffer.dims()[0] == 4);
