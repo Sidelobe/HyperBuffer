@@ -48,16 +48,11 @@ script:
           cmd.exe //C 'C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat' amd64
           cmd.exe //C "MSBuild.exe HyperBuffer.sln" //m:2 //nologo //verbosity:quiet //p:Configuration=Debug //p:Platform=x64
           ./Debug/HyperBufferTest.exe
-    
       elif [ "${TRAVIS_OS_NAME}" == "linux" ]; then
-    # Wraps the compilation with the Build Wrapper to generate configuration (used
-    # later by the SonarScanner) into the "bw-output" folder
-          build-wrapper-linux-x86-64 --out-dir build_wrapper_output_directory make -j 2
-          ctest -V -j 2 # run tests
-          
-          # And finally run the SonarCloud analysis - read the "sonar-project.properties" file to see the specific configuration
+          build-wrapper-linux-x86-64 --out-dir build_wrapper_output_directory make -j 2 # Wraps the compilation with the Build Wrapper to generate configuration (used later by the SonarScanner) into the "bw-output" folder
+          ctest -V -j 2
           cd ..
-          sonar-scanner -Dsonar.cfamily.build-wrapper-output=bw-output;
+          sonar-scanner -Dsonar.cfamily.build-wrapper-output=bw-output; # And finally run the SonarCloud analysis - read the "sonar-project.properties" file to see the specific configuration
       else
           make -j 2
           ctest -V -j 2
