@@ -49,10 +49,11 @@ script:
           cmd.exe //C "MSBuild.exe HyperBuffer.sln" //m:2 //nologo //verbosity:quiet //p:Configuration=Debug //p:Platform=x64
           ./Debug/HyperBufferTest.exe
       elif [ "${TRAVIS_OS_NAME}" == "linux" ]; then
-          build-wrapper-linux-x86-64 --out-dir build_wrapper_output_directory make -j 2 # Wraps the compilation with the Build Wrapper to generate configuration (used later by the SonarScanner) into the "bw-output" folder
+          cp ../sonar-project.properties . # hack to get the build-wrapper to find the .properties file
+          build-wrapper-linux-x86-64 --out-dir build_wrapper_output_directory make -j 2  # Wraps the compilation with the Build Wrapper to generate configuration (used later by the SonarScanner) into the "bw-output" folder
           ctest -V -j 2
           cd ..
-          sonar-scanner -Dsonar.cfamily.build-wrapper-output=bw-output; # And finally run the SonarCloud analysis - read the "sonar-project.properties" file to see the specific configuration
+          sonar-scanner -Dsonar.cfamily.build-wrapper-output=bw-output;
       else
           make -j 2
           ctest -V -j 2
