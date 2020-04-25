@@ -97,9 +97,6 @@ private:
     {
         assert(N>1 && "this should only be called for N>1 !");
         assert((i < HyperBufferBase<T, N>::m_dimensionExtents[0]) && "index out range");
-        // TODO: should we return a reference here --??
-        // TODO: return sub-buffer? something like: HyperBuffer<T, N-1>(*this, i)
-        
         // syntax weirdness: https://stackoverflow.com/questions/4942703/
         int offset = m_bufferGeometry.template getOffsetInPointerArray<0>(i);
         return reinterpret_cast<subdim_pointer_type>(HyperBufferBase<T, N>::m_pointers[offset]);
@@ -120,20 +117,35 @@ class HyperBufferPreAlloc : public HyperBufferBase<T, N>
 {
     using size_type = typename HyperBufferBase<T, N>::size_type;
     using pointer_type = typename HyperBufferBase<T, N>::pointer_type;
+    using subdim_pointer_type = typename HyperBufferBase<T, N>::subdim_pointer_type;
     
 public:
+    /** Constructor that takes the extents of the dimensions as a variable argument list */
     template<typename... I>
     explicit HyperBufferPreAlloc(pointer_type preAllocatedData, I... i) :
-        m_dataPointers(preAllocatedData)
+        HyperBufferBase<T, N>(i...),
+        m_externalData(preAllocatedData) {}
+    
+    /** Constructor that takes the extents of the dimensions as a std::array */
+    explicit HyperBufferPreAlloc(T* preAllocatedData, std::array<int, N> dimensionExtents) :
+        HyperBufferBase<T, N>(dimensionExtents),
+        m_externalData(preAllocatedData) {}
+   
+private:
+    T& getTopDimensionData_N1(size_type i) override
     {
-        static_assert(sizeof...(I) == N, "Incorrect number of arguments");
+        assert(N==1 && "this should only be called for N==1 !");
+        return m_externalData[i];
     }
     
-    pointer_type getDataPointers() const
+    subdim_pointer_type getTopDimensionData_Nx(size_type i) override
     {
-        return m_dataPointers;
+        assert(N>1 && "this should only be called for N>1 !");
+        assert((i < HyperBufferBase<T, N>::m_dimensionExtents[0]) && "index out range");
+        return m_externalData[i];
     }
+
     
 private:
-    pointer_type m_dataPointers;
+    pointer_type m_externalData;
 };

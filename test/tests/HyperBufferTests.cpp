@@ -48,7 +48,7 @@ TEST_CASE("HyperBuffer Tests - Internal Memory Allocation")
         constexpr int N = 3;
         HyperBuffer<int, N> buffer(3, 3, 8);
         testHyperBuffer3D_sizes3_3_8(buffer);
-
+        
         // Constructor via std::array
         std::array<int, N> dims  {3, 3, 8};
         HyperBuffer<int, N> bufferFromStdArray(dims);
@@ -58,19 +58,19 @@ TEST_CASE("HyperBuffer Tests - Internal Memory Allocation")
 
 TEST_CASE("HyperBuffer Tests - External Memory Allocation (Flat)")
 {
-    SECTION("Build 1D owning") {
+    SECTION("Build 1D prealloc flat") {
         int preAllocData[4];
         constexpr int N = 1;
         HyperBufferPreAllocFlat<int, N> buffer(preAllocData, 4);
         testHyperBuffer1D_size4(buffer);
     }
-    SECTION("Build 2D owning") {
+    SECTION("Build 2D prealloc flat") {
         constexpr int N = 2;
         int preAllocData[2*4];
         HyperBufferPreAllocFlat<int, N> buffer(preAllocData, 2, 4);
         testHyperBuffer2D_sizes2_4(buffer);
     }
-    SECTION("Build 3D owning") {
+    SECTION("Build 3D prealloc flat") {
         constexpr int N = 3;
         std::vector<int> preAllocData(3*3*8);
         std::iota(preAllocData.begin(), preAllocData.end(), 1);
@@ -81,7 +81,7 @@ TEST_CASE("HyperBuffer Tests - External Memory Allocation (Flat)")
         REQUIRE(buffer[0][1][0] == 9);
         REQUIRE(buffer[1][0][0] == 25);
         REQUIRE(buffer[2][2][7] == 72);
-
+        
         testHyperBuffer3D_sizes3_3_8(buffer);
         
         // Constructor via std::array
@@ -101,6 +101,38 @@ TEST_CASE("HyperBuffer Tests - External Memory Allocation (MultiDim)")
     float* dataDim1[] = { dataDim2_1.data(), dataDim2_2.data(), dataDim2_3.data() };
     float** dataDim0[] = { dataDim1, dataDim1, dataDim1 };
     
+    SECTION("Build 1D prealloc flat") {
+        int preAllocData[4];
+        constexpr int N = 1;
+        HyperBufferPreAllocFlat<int, N> buffer(preAllocData, 4);
+        testHyperBuffer1D_size4(buffer);
+    }
+    SECTION("Build 2D prealloc flat") {
+        constexpr int N = 2;
+        int preAllocData[2*4];
+        HyperBufferPreAllocFlat<int, N> buffer(preAllocData, 2, 4);
+        testHyperBuffer2D_sizes2_4(buffer);
+    }
+    SECTION("Build 3D prealloc flat") {
+        constexpr int N = 3;
+        std::vector<int> preAllocData(3*3*8);
+        std::iota(preAllocData.begin(), preAllocData.end(), 1);
+        HyperBufferPreAllocFlat<int, N> buffer(preAllocData.data(), 3, 3, 8);
+        
+        REQUIRE(buffer[0][0][0] == 1);
+        REQUIRE(buffer[0][0][7] == 8);
+        REQUIRE(buffer[0][1][0] == 9);
+        REQUIRE(buffer[1][0][0] == 25);
+        REQUIRE(buffer[2][2][7] == 72);
+        
+        testHyperBuffer3D_sizes3_3_8(buffer);
+        
+        // Constructor via std::array
+        std::array<int, N> dims  {3, 3, 8};
+        HyperBufferPreAllocFlat<int, N> bufferFromStdArray(preAllocData.data(), dims);
+        testHyperBuffer3D_sizes3_3_8(bufferFromStdArray);
+        
+    }
     
 }
 
