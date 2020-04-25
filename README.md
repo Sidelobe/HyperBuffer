@@ -15,34 +15,9 @@
 
 The main use case for this container is to hold dynamically-allocated N-dimensional datasets in memory and provide convenient access to it, while minimizing performance/memory overhead and unnecessary dynamic allocation.
 
-### Main design paradigms and parameters:
-
-* **data types**: defined at compile-time (template argument), identical for all dimensions
-* **number of dimensions** : defined at compile-time (template argument)
-* **extent of these dimensions**: defined at run-time, but cannot be changed once the object is constructed: `HyperBuffer` is non-resizable.
-
->NOTE: For the time being, I've constrained all dimensions to be uniform, i.e. each 'slice' in a given dimension has equal length.
-
-API requirements:
-
-* need to be able to provide a raw pointer (e.g. `float***` to the data)
-* support initializer lists
-
-Memory management requirements:
-
-* no dynamic allocation after construction ('owning' mode only)
-* no dynamic allocation at all (all modes except 'owning')
-* dynamic allocation-free move() semantics
-* alignment of the data (lowest-order dimension) can be specified ('owning' mode only)
- 
-
+## Usage Example
 ```
-
-TBD : code examples
-
-
-
-
+<TBD> : code examples
 
 
 
@@ -53,23 +28,41 @@ TBD : code examples
 ```
 
 #### Requirements / Compatibility
- - C++14, STL
- - tested with GCC 7 and clang 11
+ - C++14, STL only
+ - Compiled & Tested with:
+ 	- GCC/g++ 7 (Linux)
+	- Clang 11 (Xcode 11.3, macos)
+	- MSVC++ 14.1 (Visual Studio 2017, Windows) 
 
 
+## Main design paradigms and parameters:
+
+* **data types**: defined at compile-time (template argument), identical for all dimensions
+* **number of dimensions**: defined at compile-time (template argument)
+* **extent of dimensions**: defined at run-time, but cannot be changed once the object is constructed: `HyperBuffer` is non-resizable.
+
+>NOTE: For the time being, I've constrained all dimensions to be uniform, i.e. each 'slice' in a given dimension has equal length.
+
+API features:
+
+* can provide a multi-dimensional raw pointer (e.g. `float***`) to the data
+* (*planned*) support initializer lists
+* (*planned*) support initializer lists
+
+Memory management details:
+
+* no dynamic allocation after construction
+* dynamic allocation-free move() semantics
+* (*planned*) alignment of the data (lowest-order dimension) can be specified ('owning' mode only)
  
 ### Data Access Modes
-There are several
+There are 3 variants of `HyperBuffer`:
 
-#### Owning
+1. `HyperBuffer`: internally allocates the memory for the dimensions it was configured for.
+1. `HyperBufferPreAlloc`: wraps around already-allocated multi-dimensional data and pointers. No dynamic memory allocation.
+1. `HyperBufferPreAllocFlat`: uses an already-allocated memory area for its data, but manages it using its internal memory model. Only allocates memory for the pointers.
 
-
-
-#### Pre-Allocated Multi-Dimensional (MultDim View)
-
-#### Pre-Allocated Flat (Flat View)
-
-### Memory Model for 'Owning' Mode
+## Memory Model for 'Owning' Mode
 In C++/C, there are two common ways of allocating a multi-dimensional data structure:
 
 1. **contiguous / linear**: e.g. C-Style `int[2][3][5]`, which is just 'view' for a 1D `2*3*5` int array. All dimensions have to be uniform, alignment is achieved through padding. Other than this, there is zero memory overhead, unless you need to produce an `int***` to the data.
@@ -103,7 +96,7 @@ For a `HyperBuffer<float, 3>(2, 4, 5)` this would mean:
 
 
 
-### Lessons Learned: Unwanted Dynamic Memory Allocation
+## Lessons Learned: Unwanted Dynamic Memory Allocation
 
 Since we could potentially use any data structure for both the pointers and data, `std::vector<>` is an obvious candidate. However, the default constructor `std::vector<>` will allocate in some STL implementations, and not in others)!
 
