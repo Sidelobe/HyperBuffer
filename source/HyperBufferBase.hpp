@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "TemplateUtils.hpp"
+#include "IntArrayOperations.hpp"
 
 // Macros to restrict a function declaration to 1-dimensional and higher-dimensional case only
 #define FOR_N1 template<int M=N, std::enable_if_t<(M==1), int> = 0>
@@ -53,12 +54,21 @@ public:
     FOR_N1 const T* data() const { return m_pointers.data(); }
 
 protected:
+    /** Constructor that takes the extents of the dimensions as a variable argument list */
     template<typename... I>
     explicit HyperBufferBase(I... i) :
         m_dimensionExtents{i...},
-        m_pointers(std::max(VarArgOperations::sumOfCumulativeProductCapped(N-1, i...), 1)) // pointer array size at least 1
+        m_pointers(std::max(VarArgOperations::sumOfCumulativeProductCapped(N-1, i...), 1)) // at least size 1
     {
         static_assert(sizeof...(I) == N, "Incorrect number of arguments");
+    }
+    
+    /** Constructor that takes the extents of the dimensions as a std::array */
+    explicit HyperBufferBase(const std::array<int, N>& dimensionExtents) :
+        m_dimensionExtents{dimensionExtents},
+        m_pointers(std::max(StdArrayOperations::sumOfCumulativeProductCapped(N-1, dimensionExtents), 1)) // at least size 1
+    {
+        
     }
 
     virtual T& getTopDimensionData_N1(size_type i) = 0;

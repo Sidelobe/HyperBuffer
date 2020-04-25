@@ -67,6 +67,7 @@ class HyperBufferPreAllocFlat : public HyperBufferBase<T, N>
     using subdim_pointer_type = typename HyperBufferBase<T, N>::subdim_pointer_type;
     
 public:
+    /** Constructor that takes the extents of the dimensions as a variable argument list */
     template<typename... I>
     explicit HyperBufferPreAllocFlat(T* preAllocatedDataFlat, I... i) :
         HyperBufferBase<T, N>(i...),
@@ -76,6 +77,15 @@ public:
         m_bufferGeometry.hookupPointerArrayToData(m_externalData, HyperBufferBase<T, N>::m_pointers.data());
     }
     
+    /** Constructor that takes the extents of the dimensions as a std::array */
+    explicit HyperBufferPreAllocFlat(T* preAllocatedDataFlat, std::array<int, N> dimensionExtents) :
+        HyperBufferBase<T, N>(dimensionExtents),
+        m_bufferGeometry(dimensionExtents),
+        m_externalData(preAllocatedDataFlat)
+    {
+        m_bufferGeometry.hookupPointerArrayToData(m_externalData, HyperBufferBase<T, N>::m_pointers.data());
+    }
+   
 private:
     T& getTopDimensionData_N1(size_type i) override
     {

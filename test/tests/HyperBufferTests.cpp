@@ -49,7 +49,10 @@ TEST_CASE("HyperBuffer Tests - Internal Memory Allocation")
         HyperBuffer<int, N> buffer(3, 3, 8);
         testHyperBuffer3D_sizes3_3_8(buffer);
 
-
+        // Constructor via std::array
+        std::array<int, N> dims  {3, 3, 8};
+        HyperBuffer<int, N> bufferFromStdArray(dims);
+        testHyperBuffer3D_sizes3_3_8(bufferFromStdArray);
     }
 }
 
@@ -60,11 +63,6 @@ TEST_CASE("HyperBuffer Tests - External Memory Allocation (Flat)")
         constexpr int N = 1;
         HyperBufferPreAllocFlat<int, N> buffer(preAllocData, 4);
         testHyperBuffer1D_size4(buffer);
-        
-//        { // Verify no memory is allocated
-//            ScopedMemorySentinel sentinel;
-//            HyperBufferPreAllocFlat<int, N> buffer(preAllocData, 4);
-//        }
     }
     SECTION("Build 2D owning") {
         constexpr int N = 2;
@@ -86,10 +84,11 @@ TEST_CASE("HyperBuffer Tests - External Memory Allocation (Flat)")
 
         testHyperBuffer3D_sizes3_3_8(buffer);
         
-//        { // Verify no memory is allocated
-//            ScopedMemorySentinel sentinel;
-//            HyperBufferPreAllocFlat<int, N> buffer(preAllocData.data(), 3, 3, 8);
-//        }
+        // Constructor via std::array
+        std::array<int, N> dims  {3, 3, 8};
+        HyperBufferPreAllocFlat<int, N> bufferFromStdArray(preAllocData.data(), dims);
+        testHyperBuffer3D_sizes3_3_8(bufferFromStdArray);
+        
     }
 }
 
