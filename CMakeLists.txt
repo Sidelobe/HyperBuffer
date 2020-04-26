@@ -19,7 +19,15 @@ function(assign_include_dirs_from_sources _target)
     target_include_directories(${_target} PRIVATE ${_include_dirs})
 endfunction()
 
-# MAIN
+# build target with code coverage information
+function(generate_code_coverage_data _target)
+    target_compile_options(${_target} PRIVATE
+            $<$<COMPILE_LANGUAGE:CXX>:-fprofile-arcs -ftest-coverage>
+            $<$<COMPILE_LANGUAGE:C>:-fprofile-arcs -ftest-coverage>)
+    target_link_options(${_target} PRIVATE -fprofile-arcs -ftest-coverage)
+endfunction()
+
+#### MAIN
 project(HyperBuffer)
 
 # Set C++ standard to C++14
@@ -30,13 +38,14 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # SOURCE TARGET
 file(GLOB_RECURSE source "source/*.h*" "source/*.c*")
 
-set (LIB_NAME "HyperBuffer")
+set(LIB_NAME "HyperBuffer")
 
 # TEST TARGET
 set (TEST_NAME "${LIB_NAME}Test")
 file(GLOB_RECURSE source_test "test/tests/*.c*" "test/tests/*.c*")
 add_executable(${TEST_NAME} ${source} ${source_test})
 assign_include_dirs_from_sources(${TEST_NAME})
+generate_code_coverage_data(${TEST_NAME})
 
 # Add external-utils
 target_sources(${TEST_NAME} PRIVATE "test/main.cpp")
