@@ -31,7 +31,7 @@ matrix:
         - os: windows
           env: MSBUILD_PATH="c:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
 
-install:
+before_install:
     #update cmake
     - |
       if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
