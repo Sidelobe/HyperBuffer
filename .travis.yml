@@ -38,13 +38,7 @@ before_script:
     - export CPP_STANDARD=14
     # Check versions
     - cmake --version
-    # Run your build commands next
-    - cd deploy
-    - mkdir -p build
-    - cd build
-    - if [ "$TRAVIS_OS_NAME" != "windows" ]; then cmake -H. -j 2 ../.. -DCMAKE_BUILD_TYPE=Debug; fi
-    - if [ "$TRAVIS_OS_NAME" == "windows" ]; then export PATH=$MSBUILD_PATH:$PATH; cmake -G "Visual Studio 15 2017" -DCMAKE_GENERATOR_PLATFORM=x64 ../..; fi
-    
+
     #update cmake
     - |
       if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
@@ -52,6 +46,13 @@ before_script:
           mkdir cmake && travis_retry wget --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
           export PATH=${DEPS_DIR}/cmake/bin:${PATH}
       fi
+      
+    # Run your build commands next
+    - cd deploy
+    - mkdir -p build
+    - cd build
+    - if [ "$TRAVIS_OS_NAME" != "windows" ]; then cmake -H. -j 2 ../.. -DCMAKE_BUILD_TYPE=Debug; fi
+    - if [ "$TRAVIS_OS_NAME" == "windows" ]; then export PATH=$MSBUILD_PATH:$PATH; cmake -G "Visual Studio 15 2017" -DCMAKE_GENERATOR_PLATFORM=x64 ../..; fi
       
 script:
     - |
