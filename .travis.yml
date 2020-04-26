@@ -36,17 +36,16 @@ install:
   - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
   - echo ${TRAVIS_OS_NAME}
   - |
-    if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
+    if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
       export CMAKE_URL="https://github.com/Kitware/CMake/releases/download/v3.17.0/cmake-3.17.0-Linux-x86_64.tar.gz"
       mkdir cmake
       travis_retry wget --no-check-certificate -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
       export PATH=${DEPS_DIR}/cmake/bin:${PATH}
       echo ${PATH}
       echo "Cmake Updated!"
-    else
+    elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then
       brew install cmake || brew upgrade cmake;
     fi
-  - cmake --version
   
 before_script:    
     # Export CXX to tell cmake which compiler to use
@@ -54,6 +53,7 @@ before_script:
     - export CPP_STANDARD=14
     # Check versions
     - cmake --version
+    - pwd
     # Run your build commands next
     - cd deploy
     - mkdir -p build
