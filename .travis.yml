@@ -31,16 +31,15 @@ matrix:
         - os: windows
           env: MSBUILD_PATH="c:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
 
-before_install:
-    #update cmake
+before_script:
+    #update cmake on linux bionic
     - |
       if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
           CMAKE_URL="https://github.com/Kitware/CMake/releases/download/v3.17.1/cmake-3.17.1-Linux-x86_64.tar.gz"
           mkdir cmake && travis_retry wget --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
           export PATH=${DEPS_DIR}/cmake/bin:${PATH}
-      fi      
-
-before_script:
+          echo "Cmake Updated!"
+      fi     
     # Export CXX to tell cmake which compiler to use
     - export CXX=${COMPILER}
     - export CPP_STANDARD=14
