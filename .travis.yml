@@ -34,9 +34,14 @@ matrix:
 install:
   - |
     if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
-      sudo apt-get install cmake
+      export CMAKE_URL="https://github.com/Kitware/CMake/releases/download/v3.17.0/cmake-3.17.0-Linux-x86_64.tar.gz"
+      export DEPS_DIR=$PWD
+      echo ${TRAVIS_OS_NAME}
+      mkdir cmake
+      travis_retry wget --no-check-certificate -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
+      export PATH=${DEPS_DIR}/cmake/bin:${PATH}
+      echo ${PATH}
       echo "Cmake Updated!"
-      cmake --version
     elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then
       brew install cmake || brew upgrade cmake;
     fi
