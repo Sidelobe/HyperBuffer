@@ -71,9 +71,9 @@ script:
           ctest -V -j 2
           cd ..
           mkdir -p report
-          gcovr -r .. -f ../source --sonarqube -o report/coverage.xml  # Generate coverage report in "Cobertura" format
+          gcovr -r .. -f ../source --sonarqube -o report/coverage.xml  # Generate coverage report
           cd ..
-          sonar-scanner -Dsonar.cfamily.build-wrapper-output=deploy/build/bw-output
+          sonar-scanner
       else
           make -j 2
           ctest -V -j 2
