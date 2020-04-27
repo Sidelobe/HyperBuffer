@@ -91,6 +91,7 @@ target_compile_options(${TEST_NAME} PRIVATE
     -Wsign-conversion # warn on sign conversions
     -Wsign-compare # warn on compare signed against unsigned
     -Wnull-dereference # warn if a null dereference is detected
+    -Wpedantic
     >
     # additional warnings for GCC
     $<$<CXX_COMPILER_ID:GNU>:

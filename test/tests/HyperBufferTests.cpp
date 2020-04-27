@@ -156,6 +156,9 @@ void testHyperBuffer1D_size4(HyperBufferBase<T, N>& buffer)
     REQUIRE(rawData[1] == -1);
     REQUIRE(rawData[2] == -2);
     REQUIRE(rawData[3] == -3);
+    
+    rawData[1] = -99;
+    REQUIRE(rawData[1] == 99);
 }
 
 template<typename T, int N>

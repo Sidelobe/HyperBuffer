@@ -116,7 +116,7 @@ template<typename... I>
 static constexpr int constExprFunction(I... i)
 {
     return VarArgOperations::sumOfCumulativeProduct(i...);
-};
+}
 
 TEST_CASE("TemplateUtils VarArgOperations are constexpr")
 {

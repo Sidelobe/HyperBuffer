@@ -86,6 +86,7 @@ template<typename... Args, typename T = typename std::common_type<Args...>::type
 constexpr T sumOverRange(int begin, int end, Args... args)
 {
     assert(end-begin > 0 && "Cannot cap a length-one argument list");
+    assert(static_cast<unsigned>(end) <= sizeof...(args));
     T sum{0};
     T values[]{ args... };
     for (int i=begin; i < end; ++i) {
@@ -115,6 +116,7 @@ template<typename... Args, typename T = typename std::common_type<Args...>::type
 constexpr T productOverRange(int begin, int end, Args... args)
 {
     assert(end-begin > 0 && "Cannot cap a length-one argument list");
+    assert(static_cast<unsigned>(end) <= sizeof...(args));
     T product{1};
     T values[]{ args... };
     for (int i=begin; i < end; ++i) {
@@ -143,16 +145,18 @@ constexpr T product(Args... args)
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
 constexpr T sumOfCumulativeProductOverRange(int begin, int end, Args... args)
 {
+    assert(static_cast<unsigned>(end) <= sizeof...(args));
+    if (end-begin == 0) {
+        return 0;
+    }
     T sum{0};
-    if (end-begin > 0) {
-        T values[]{ args... };
-        for (int i=begin; i < end; ++i) {
-            T cumulativeProduct{1};
-            for (int j=0; j <= i; ++j) {
-                cumulativeProduct *= values[j];
-            }
-            sum += cumulativeProduct;
+    T values[]{ args... };
+    for (int i=begin; i < end; ++i) {
+        T cumulativeProduct{1};
+        for (int j=0; j <= i; ++j) {
+            cumulativeProduct *= values[j];
         }
+        sum += cumulativeProduct;
     }
     return sum;
 }
