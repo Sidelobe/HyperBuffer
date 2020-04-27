@@ -22,7 +22,7 @@
     #define WARNINGS_DISABLE_CAST_ALIGN _Pragma("gcc diagnostic ignored \"-Wcast-align\"")
 
 #elif defined(_MSC_VER)
-    #define WARNINGS_OVERRIDE __pragma( warning(push) )
+    #define WARNINGS_OVERRIDE __pragma( warning(push) )
     #define WARNINGS_RESTORE_ALL __pragma( warning(pop) )
     #define WARNINGS_DISABLE_SIGN_UNSIGNED __pragma(warning( disable : 4245) )
     #define WARNINGS_DISABLE_C_CAST
