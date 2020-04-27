@@ -42,6 +42,10 @@ install:
       export PATH=${DEPS_DIR}/cmake/bin:${PATH}
       echo ${PATH}
       echo "Cmake Updated!"
+      sudo apt-get update
+      sudo apt-get install gcovr
+      echo "Gcovr Updated!"
+      gcovr --version
     elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then
       brew install cmake || brew upgrade cmake;
     fi
