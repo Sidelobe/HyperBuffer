@@ -82,44 +82,42 @@ TEST_CASE("HyperBuffer Tests - External Memory Allocation (Flat)")
 
 TEST_CASE("HyperBuffer Tests - External Memory Allocation (MultiDim)")
 {
-    // TODO
-    std::vector<float> dataDim2_1 = TestCommon::createRandomVector(8, 333);
-    std::vector<float> dataDim2_2 = TestCommon::createRandomVector(8, 666);
-    std::vector<float> dataDim2_3 = TestCommon::createRandomVector(8, 999);
-    float* dataDim1[] = { dataDim2_1.data(), dataDim2_2.data(), dataDim2_3.data() };
-    float** dataDim0[] = { dataDim1, dataDim1, dataDim1 };
-    
-    SECTION("Build 1D prealloc flat") {
-        int preAllocData[4];
+    SECTION("Build 1D prealloc multidim") {
         constexpr int N = 1;
-        HyperBufferPreAllocFlat<int, N> buffer(preAllocData, 4);
+        std::vector<int> oneD = TestCommon::createRandomVectorInt(4, 123);
+        HyperBufferPreAlloc<int, N> buffer(oneD.data(), oneD.size());
         testHyperBuffer1D_size4(buffer);
+        
+        std::array<int, 1> dims {4};
+        HyperBufferPreAlloc<int, N> bufferFromStdArray(oneD.data(), dims); // dims as array
+        testHyperBuffer1D_size4(bufferFromStdArray);
     }
-    SECTION("Build 2D prealloc flat") {
+    SECTION("Build 2D prealloc multidim") {
         constexpr int N = 2;
-        int preAllocData[2*4];
-        HyperBufferPreAllocFlat<int, N> buffer(preAllocData, 2, 4);
-        testHyperBuffer2D_sizes2_4(buffer);
+        std::vector<int> dataDim0_1 = TestCommon::createRandomVectorInt(4, 333);
+        std::vector<int> dataDim0_2 = TestCommon::createRandomVectorInt(4, 666);
+        int* dataDim1_0[] = { dataDim0_1.data(), dataDim0_2.data() };
+        HyperBufferPreAlloc<int, N> buffer(dataDim1_0, 2, 4);
+        //testHyperBuffer2D_sizes2_4(buffer);
     }
-    SECTION("Build 3D prealloc flat") {
-        constexpr int N = 3;
-        std::vector<int> preAllocData(3*3*8);
-        std::iota(preAllocData.begin(), preAllocData.end(), 1);
-        HyperBufferPreAllocFlat<int, N> buffer(preAllocData.data(), 3, 3, 8);
-        
-        REQUIRE(buffer[0][0][0] == 1);
-        REQUIRE(buffer[0][0][7] == 8);
-        REQUIRE(buffer[0][1][0] == 9);
-        REQUIRE(buffer[1][0][0] == 25);
-        REQUIRE(buffer[2][2][7] == 72);
-        
-        testHyperBuffer3D_sizes3_3_8(buffer);
-        
-        // Constructor via std::array
-        std::array<int, N> dims  {3, 3, 8};
-        HyperBufferPreAllocFlat<int, N> bufferFromStdArray(preAllocData.data(), dims);
-        testHyperBuffer3D_sizes3_3_8(bufferFromStdArray);
-        
+    SECTION("Build 3D prealloc multidim") {
+        //TODO
+//        constexpr int N = 3;
+//        std::vector<int> dataDim0_1 = TestCommon::createRandomVectorInt(8, 333);
+//        std::vector<int> dataDim0_2 = TestCommon::createRandomVectorInt(8, 666);
+//        std::vector<int> dataDim0_3 = TestCommon::createRandomVectorInt(8, 999);
+//        int* dataDim1_0[] = { dataDim0_1.data(), dataDim0_2.data(), dataDim0_3.data() };
+//        int* dataDim1_1[] = { dataDim0_1.data(), dataDim0_2.data(), dataDim0_3.data() };
+//        int* dataDim1_2[] = { dataDim0_1.data(), dataDim0_2.data(), dataDim0_3.data() };
+//        int** dataDim2_0[] = { dataDim1_0, dataDim1_1, dataDim1_2 };
+//        HyperBufferPreAlloc<int, N> buffer(dataDim2_0, 3, 3, 8);
+//
+//        testHyperBuffer3D_sizes3_3_8(buffer);
+//
+//        // Constructor via std::array
+//        std::array<int, N> dims  {3, 3, 8};
+//        HyperBufferPreAlloc<int, N> bufferFromStdArray(dataDim2_0, dims);
+//        testHyperBuffer3D_sizes3_3_8(bufferFromStdArray);
     }
     
 }

@@ -129,14 +129,24 @@ public:
         HyperBufferBase<T, N>(i...),
         m_externalData(preAllocatedData)
     {
-        this->assignPointers(preAllocatedData);
+        if (N == 1) {
+            m_pointers.push_back(reinterpret_cast<T*>(preAllocatedData));
+            this->assignPointers(m_pointers.data());
+        } else {
+            for (int j=0; j < HyperBuffer<T, N>::m_dimensionExtents[0]; ++j) {
+                m_pointers.push_back(reinterpret_cast<T*>(preAllocatedData[j]));
+            }
+        }
+
     }
     
 private:
     T& getTopDimensionData_N1(size_type i) override
     {
         assert(N==1 && "this should only be called for N==1 !");
-        return m_externalData[i];
+        if constexpr (N==1) {
+            return m_externalData[i];
+        }
     }
     
     subdim_pointer_type getTopDimensionData_Nx(size_type i) override
@@ -149,4 +159,5 @@ private:
     
 private:
     pointer_type m_externalData;
+    std::vector<T*> m_pointers;
 };
