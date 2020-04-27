@@ -102,7 +102,7 @@ target_compile_options(${TEST_NAME} PRIVATE
     
     # MSVC warnings
     $<$<CXX_COMPILER_ID:MSVC>:
-    /W4
+    /WAll
     >
 )
 

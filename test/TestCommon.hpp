@@ -9,20 +9,21 @@
 
 #include <catch2/catch.hpp>
 
-#define STRINGIFY(a) #a
-// Turn off sign warnings in Tests
+// Turn off some warnings in tests -- Otherwise some things just become very annoying
 #if defined(__clang__) || defined(__GNUC__)
-    #define DISABLE_SIGN_UNSIGNED_WARNINGS \
-        _Pragma("clang diagnostic push") \
+    #define WARNINGS_OVERRIDE _Pragma("clang diagnostic push")
+    #define WARNINGS_RESTORE_ALL _Pragma("clang diagnostic pop")
+    #define  WARNINGS_DISABLE_SIGN_UNSIGNED \
         _Pragma("clang diagnostic ignored \"-Wconversion\"") \
         _Pragma("clang diagnostic ignored \"-Wsign-conversion\"")
-    #define RESTORE_SIGN_UNSIGNED_WARNINGS \
-         _Pragma("clang diagnostic pop")
+    #define WARNINGS_DISABLE_CAST _Pragma("clang diagnostic ignored \"-Wold-style-cast\"")
 
 #elif defined(_MSC_VER)
-    #define DISABLE_SIGN_UNSIGNED_WARNINGS \
-        __pragma(warning(suppress : 4245))
-    #define RESTORE_SIGN_UNSIGNED_WARNINGS
+    #define WARNINGS_OVERRIDE __pragma( warning(push) )
+    #define WARNINGS_RESTORE_ALL __pragma( warning(pop) )
+    #define WARNINGS_DISABLE_SIGN_UNSIGNED __pragma(warning( disable : 4245) )
+    #define WARNINGS_DISABLE_CAST // Does not exist in MSCV
+
 #endif
 
 namespace TestCommon

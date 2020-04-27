@@ -105,7 +105,7 @@ private:
         for (int index = 0; index < numPointersInThisDimension; ++index) {
             int nextDimExtent = m_dimensionExtents[static_cast<unsigned>(dimIndex) + 1];
             int offset = startOfNextDimension + nextDimExtent * index;
-            pointerArray[arrayIndex + index] = (T*) &(pointerArray)[offset]; // hook up pointer to element of next dimension
+            pointerArray[arrayIndex + index] = reinterpret_cast<T*>(&(pointerArray)[offset]); // hook up pointer to element of next dimension
         }
         
         // recursive call to lower-order dimension

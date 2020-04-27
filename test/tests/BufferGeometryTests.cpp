@@ -12,7 +12,9 @@
 #include "BufferGeometry.hpp"
 #include "MemorySentinel.hpp"
 
-DISABLE_SIGN_UNSIGNED_WARNINGS
+WARNINGS_OVERRIDE
+WARNINGS_DISABLE_SIGN_UNSIGNED
+WARNINGS_DISABLE_CAST
 
 TEST_CASE("BufferGeometry Tests")
 {
@@ -329,4 +331,4 @@ TEST_CASE("BufferGeometry Tests")
     }
 }
 
-RESTORE_SIGN_UNSIGNED_WARNINGS
+WARNINGS_RESTORE_ALL
