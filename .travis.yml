@@ -67,15 +67,15 @@ script:
           cmd.exe //C "MSBuild.exe HyperBuffer.sln" //m:2 //nologo //verbosity:quiet //p:Configuration=Debug //p:Platform=x64
           ./Debug/HyperBufferTest.exe
       elif [ "${TRAVIS_OS_NAME}" == "linux" ]; then
-          build-wrapper-linux-x86-64 --out-dir bw-output make -j 2  # Wraps the compilation with the Build Wrapper to generate configuration (used later by the SonarScanner) into the "bw-output" folder
-          ctest -V -j 2
+          build-wrapper-linux-x86-64 --out-dir bw-output make -j 4  # Wraps the compilation with the Build Wrapper to generate configuration (used later by the SonarScanner) into the "bw-output" folder
+          ctest -V -j 4
           cd ..
           mkdir -p report
           gcovr -r .. -f ../source -k --xml -o report/coverage.xml  # Generate coverage report, -k keeps the .gcov files
           cd ..
           sonar-scanner
       else
-          make -j 2
-          ctest -V -j 2
+          make -j 4
+          ctest -V -j 4
           #- ./HyperBufferTest
       fi
