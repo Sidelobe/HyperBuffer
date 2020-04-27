@@ -42,10 +42,6 @@ install:
       export PATH=${DEPS_DIR}/cmake/bin:${PATH}
       echo ${PATH}
       echo "Cmake Updated!"
-
-      pip3 install gcovr
-      echo "Gcovr Updated!"
-      gcovr --version
     elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then
       brew install cmake || brew upgrade cmake;
     fi
@@ -61,7 +57,7 @@ before_script:
     - cd deploy
     - mkdir -p build
     - cd build
-    - if [ "$TRAVIS_OS_NAME" != "windows" ]; then echo "COV="; echo $COV; cmake -H. -j 2 ../.. -DCMAKE_BUILD_TYPE=Debug -DCODE_COVERAGE="$COV"; fi
+    - if [ "$TRAVIS_OS_NAME" != "windows" ]; then cmake -H. -j 4 ../.. -DCMAKE_BUILD_TYPE=Debug -DCODE_COVERAGE="$COV"; fi
     - if [ "$TRAVIS_OS_NAME" == "windows" ]; then export PATH=$MSBUILD_PATH:$PATH; cmake -G "Visual Studio 15 2017" -DCMAKE_GENERATOR_PLATFORM=x64 ../..; fi
       
 script:
@@ -71,8 +67,8 @@ script:
           cmd.exe //C 'C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat' amd64
           cmd.exe //C "MSBuild.exe HyperBuffer.sln" //m:2 //nologo //verbosity:quiet //p:Configuration=Debug //p:Platform=x64
           ./Debug/HyperBufferTest.exe
-      elif [ "${TRAVIS_OS_NAME}" == "linux" ]; then
-          build-wrapper-linux-x86-64 --out-dir bw-output make -j 4  # Wraps the compilation with the Build Wrapper to generate configuration (used later by the SonarScanner) into the "bw-output" folder
+      elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then
+          build-wrapper-macosx-x86 --out-dir bw-output make -j 4  # Wraps the compilation with the Build Wrapper to generate configuration (used later by the SonarScanner) into the "bw-output" folder
           ctest -V -j 4 # run the tests
           cd ..
           mkdir -p report
