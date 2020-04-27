@@ -12,14 +12,14 @@
 // Turn off some warnings in tests -- Otherwise some things just become very annoying
 // Clang accepts gcc diagnostic, not the other way around
 #if defined(__clang__) || defined(__GNUC__)
-    #define WARNINGS_OVERRIDE _Pragma("gcc diagnostic push")
-    #define WARNINGS_RESTORE_ALL _Pragma("gcc diagnostic pop")
+    #define WARNINGS_OVERRIDE _Pragma("GCC diagnostic push")
+    #define WARNINGS_RESTORE_ALL _Pragma("GCC diagnostic pop")
     #define  WARNINGS_DISABLE_SIGN_UNSIGNED \
-        _Pragma("gcc diagnostic ignored \"-Wconversion\"") \
-        _Pragma("gcc diagnostic ignored \"-Wsign-conversion\"") \
-        _Pragma("gcc diagnostic ignored \"-Wsign-compare\"")
-    #define WARNINGS_DISABLE_C_CAST _Pragma("gcc diagnostic ignored \"-Wold-style-cast\"")
-    #define WARNINGS_DISABLE_CAST_ALIGN _Pragma("gcc diagnostic ignored \"-Wcast-align\"")
+        _Pragma("GCC diagnostic ignored \"-Wconversion\"") \
+        _Pragma("GCC diagnostic ignored \"-Wsign-conversion\"") \
+        _Pragma("GCC diagnostic ignored \"-Wsign-compare\"")
+    #define WARNINGS_DISABLE_C_CAST _Pragma("GCC diagnostic ignored \"-Wold-style-cast\"")
+    #define WARNINGS_DISABLE_CAST_ALIGN _Pragma("GCC diagnostic ignored \"-Wcast-align\"")
 
 #elif defined(_MSC_VER)
     #define WARNINGS_OVERRIDE __pragma( warning(push) )
