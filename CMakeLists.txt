@@ -24,7 +24,7 @@ function(generate_code_coverage_data _target)
     target_compile_options(${_target} PRIVATE
             $<$<COMPILE_LANGUAGE:CXX>:-fprofile-arcs -ftest-coverage>
             $<$<COMPILE_LANGUAGE:C>:-fprofile-arcs -ftest-coverage>)
-    target_link_options(${_target} PRIVATE -fprofile-arcs -ftest-coverage)
+        target_link_options(${_target} PRIVATE -fprofile-arcs -ftest-coverage)
 endfunction()
 
 #### MAIN
@@ -34,6 +34,8 @@ project(HyperBuffer)
 set(CMAKE_CXX_STANDARD 14)
 set(CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+set(CODE_COVERAGE OFF CACHE BOOL "Build with instrumentation and code coverage")
 
 # SOURCE TARGET
 file(GLOB_RECURSE source "source/*.h*" "source/*.c*")
@@ -45,7 +47,10 @@ set (TEST_NAME "${LIB_NAME}Test")
 file(GLOB_RECURSE source_test "test/tests/*.c*" "test/tests/*.c*")
 add_executable(${TEST_NAME} ${source} ${source_test})
 assign_include_dirs_from_sources(${TEST_NAME})
-generate_code_coverage_data(${TEST_NAME})
+
+if(CODE_COVERAGE)
+    generate_code_coverage_data(${TEST_NAME})
+endif(CODE_COVERAGE)
 
 # Add external-utils
 target_sources(${TEST_NAME} PRIVATE "test/main.cpp")

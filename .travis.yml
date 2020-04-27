@@ -7,7 +7,7 @@ matrix:
         - os: osx
           osx_image: xcode11.3
           compiler: clang
-          env: COMPILER='clang++'
+          env: COMPILER='clang++' COV=no
           
         - os: linux
           dist: bionic
@@ -26,10 +26,10 @@ matrix:
                   token:
                       secure: "A0Qtq8CLpu5aFLElfkhJYSvuvtwTUNsyUQJIVstKn/XUIehsaU8o1xbSG475O3P3BvJHgYWcj/dW+Hf3yTCfML+5jtA5fj9uijloN4GrJVmlCBX7r7GUbcrWWP9BTwnIM7HOEf5Pjw5USfMcqjYBL3ztVizGfUkdexROP92REqweeke2CEJiICm7/H1yxZ/kKDmxy1w74B58tLDiVhTmjcE7+aQkMGWFx80cFEE+RC00efFXCfeCtWcpVITh08kinsaT8mf9KkfV+e9DQx00JQGrDmiwAPXoecgwqF27cCNhiAtyKXGbhZawTX29qYYmhySCF88keBwxuWanNEAAujaoySIVkL1LYAkHYt9Dg2TXdGZhAJ7mt9ccukDJJpCpPcoXLU1vS6E4f2Ug9zMgwjppRhy9/BQXZZ2qUAlPSumNAFQP7waQ0Vm2xRYJ/Rc8XUXZ3ObnfMDhzP+/AKm1VbburWTtvacxf8QEg3hBZX5zWylZqo1/LzF0DLOLGM+DEKA0LnSbZhaIVY8Xcp3nVyPP3N+LzC4fVWonZxXXwi8bJVJdiaeKL4P9L4wtc4W99z7BEdqOL+/05KGNYi0yaHCLht2Uca1c3X7AzlVHuUnRnGeYCWVOmlTan+oXDMfg3KdZkmPvkOpAndL2ydIemmfrYOYQbYVL5KoISmGhi8A="
 
-          env: COMPILER='g++-9'
+          env: COMPILER='g++-9' COV=yes
          
         - os: windows
-          env: MSBUILD_PATH="c:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
+          env: COV=no MSBUILD_PATH="c:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
 
 install:
   - |
@@ -57,7 +57,7 @@ before_script:
     - cd deploy
     - mkdir -p build
     - cd build
-    - if [ "$TRAVIS_OS_NAME" != "windows" ]; then cmake -H. -j 2 ../.. -DCMAKE_BUILD_TYPE=Debug; fi
+    - if [ "$TRAVIS_OS_NAME" != "windows" ]; then cmake -H. -j 2 ../.. -DCMAKE_BUILD_TYPE=Debug -DCODE_COVERAGE="$COV"; fi
     - if [ "$TRAVIS_OS_NAME" == "windows" ]; then export PATH=$MSBUILD_PATH:$PATH; cmake -G "Visual Studio 15 2017" -DCMAKE_GENERATOR_PLATFORM=x64 ../..; fi
       
 script:
