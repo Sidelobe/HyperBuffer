@@ -77,7 +77,7 @@ script:
           cd ..
           mkdir -p report
           gcovr -r .. -f ../source --sonarqube -o report/coverage.xml  # Generate coverage report
-          gcovr -r .. -f ../source
+          gcovr -v -r .. -f ../source
           cd ..
           sonar-scanner
       else
