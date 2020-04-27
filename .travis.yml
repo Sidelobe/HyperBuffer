@@ -45,6 +45,9 @@ install:
       echo "Cmake Updated!"
     elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then
       brew install cmake || brew upgrade cmake;
+      pip3 install gcovr
+      echo "Gcovr Updated!"
+      gcovr --version
     fi
   
 before_script:    
