@@ -136,9 +136,7 @@ private:
     T& getTopDimensionData_N1(size_type i) override
     {
         assert(N==1 && "this should only be called for N==1 !");
-        if constexpr (N==1) {
         return m_externalData[i];
-        }
     }
     
     subdim_pointer_type getTopDimensionData_Nx(size_type i) override
