@@ -7,7 +7,7 @@ matrix:
         - os: osx
           osx_image: xcode10.1
           compiler: clang
-          env: COMPILER='clang++' COV='yes'
+          env: COMPILER='clang++' COV="yes"
           addons:
             sonarcloud:
                 organization: "idelobe" # the key of the org you chose at step #3
@@ -18,7 +18,7 @@ matrix:
         - os: linux
           dist: bionic
           compiler: gcc
-          env: COMPILER='g++-9' COV='no'
+          env: COMPILER='g++-9' COV="no"
           addons:
               apt:
                   sources: ['ubuntu-toolchain-r-test']
@@ -30,18 +30,12 @@ matrix:
 
          
         - os: windows
-          env: COV=no MSBUILD_PATH="c:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
+          env: COV="no" MSBUILD_PATH="c:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
 
 install:
   - |
     if [ "${TRAVIS_OS_NAME}" == "linux" ] || [ "${TRAVIS_OS_NAME}" == "osx" ]; then
-      export CMAKE_URL="https://github.com/Kitware/CMake/releases/download/v3.17.0/cmake-3.17.0-Linux-x86_64.tar.gz"
-      export DEPS_DIR=$PWD
-      echo ${TRAVIS_OS_NAME}
-      mkdir cmake
-      travis_retry wget --quiet --no-check-certificate -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
-      export PATH=${DEPS_DIR}/cmake/bin:${PATH}
-      echo ${PATH}
+      brew install cmake
       echo "Cmake Updated!"
     fi
     if ["$COV" == "yes"]; then
