@@ -37,10 +37,7 @@ protected:
     using stl_size_type = typename std::vector<T*>::size_type;
     
 public:
-    virtual ~HyperBufferBase()
-    {
-        free(m_pointers);
-    }
+    virtual ~HyperBufferBase() = default;
     
     // MARK: dimension extents
     int dim(int i) const { return m_dimensionExtents[STL(i)]; }
@@ -59,8 +56,8 @@ public:
     // MARK: data()
     FOR_Nx pointer_type data() { return getTopDimPointer(); }
     FOR_Nx const pointer_type data() const { return getTopDimPointer(); }
-    FOR_N1 T* data() { return m_pointers[0]; }
-    FOR_N1 const T* data() const { return m_pointers; }
+    FOR_N1 T* data() { return m_BasePointers[0]; }
+    FOR_N1 const T* data() const { return m_BasePointers; }
 
 protected:
     /** Constructor that takes the extents of the dimensions as a variable argument list */
@@ -69,23 +66,21 @@ protected:
         m_dimensionExtents{static_cast<int>(i)...}
     {
         static_assert(sizeof...(I) == N, "Incorrect number of arguments");
-        m_pointers = reinterpret_cast<int**>( calloc(STL(getNumberOfPointers(m_dimensionExtents)), sizeof(T*)));
     }
     
     /** Constructor that takes the extents of the dimensions as a std::array */
     explicit HyperBufferBase(const std::array<int, N>& dimensionExtents) :
-        m_dimensionExtents{dimensionExtents}
-    {
-        m_pointers = reinterpret_cast<int**>( calloc(STL(getNumberOfPointers(m_dimensionExtents)), sizeof(T*)));
-    }
+        m_dimensionExtents{dimensionExtents} {}
 
-    constexpr int getNumberOfPointers(const std::array<int, N>& dimensionExtents) const
+    void assignPointers(T** pointers) { m_BasePointers = pointers; }
+    
+    static constexpr int getNumberOfPointers(const std::array<int, N>& dimensionExtents)
     {
         return std::max(StdArrayOperations::sumOfCumulativeProductCapped(N-1, dimensionExtents), 1); // at least size 1
     }
     
     template<typename... I>
-    constexpr int getNumberOfPointers(I... i) const
+    static constexpr int getNumberOfPointers(I... i)
     {
         return getNumberOfPointers({static_cast<int>(i)...});
     }
@@ -99,11 +94,13 @@ protected:
     /** returns a (multi-dim) pointer to the first entry in the highest-order dimension, e.g. float*** for T=float,N=3 */
     pointer_type getTopDimPointer()
     {
-        return reinterpret_cast<pointer_type>(m_pointers);
+        return reinterpret_cast<pointer_type>(m_BasePointers);
     }
 
 protected:
     std::array<int, N> m_dimensionExtents;
-    T** m_pointers;
+    
+private:
+    T** m_BasePointers; // duplicate...
 };
 

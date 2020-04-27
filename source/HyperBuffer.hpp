@@ -28,11 +28,14 @@ public:
     explicit HyperBuffer(I... i) :
         HyperBufferBase<T, N>(i...),
         m_bufferGeometry(i...),
-        m_data(STL(m_bufferGeometry.getRequiredDataArraySize()))
+        m_data(STL(m_bufferGeometry.getRequiredDataArraySize())),
+        m_pointers(STL(HyperBufferBase<T, N>::getNumberOfPointers(i...)))
     {
-        m_bufferGeometry.hookupPointerArrayToData(m_data.data(), HyperBufferBase<T, N>::m_pointers);
+        m_bufferGeometry.hookupPointerArrayToData(m_data.data(), m_pointers.data());
+        this->assignPointers(m_pointers.data());
     }
     
+    // TODO: std::array ctor
 private:
     T& getTopDimensionData_N1(size_type i) override
     {
@@ -49,7 +52,7 @@ private:
         
         // syntax weirdness: https://stackoverflow.com/questions/4942703/
         int offset = m_bufferGeometry.template getOffsetInPointerArray<0>(i);
-        return reinterpret_cast<subdim_pointer_type>(HyperBufferBase<T, N>::m_pointers[STL(offset)]);
+        return reinterpret_cast<subdim_pointer_type>(m_pointers[STL(offset)]);
     }
 
 private:
@@ -57,6 +60,8 @@ private:
     
     /** we store the data in a 1D structure and access with offsets to simulate multi-dimensionality */
     std::vector<T> m_data;
+    
+    std::vector<T*> m_pointers;
 };
 
 
@@ -75,18 +80,22 @@ public:
     explicit HyperBufferPreAllocFlat(T* preAllocatedDataFlat, I... i) :
         HyperBufferBase<T, N>(i...),
         m_bufferGeometry(i...),
-        m_externalData(preAllocatedDataFlat)
+        m_externalData(preAllocatedDataFlat),
+        m_pointers(STL(HyperBufferBase<T, N>::getNumberOfPointers(i...)))
     {
-        m_bufferGeometry.hookupPointerArrayToData(m_externalData, HyperBufferBase<T, N>::m_pointers);
+        m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
+        this->assignPointers(m_pointers.data());
     }
     
     /** Constructor that takes the extents of the dimensions as a std::array */
     explicit HyperBufferPreAllocFlat(T* preAllocatedDataFlat, std::array<int, N> dimensionExtents) :
         HyperBufferBase<T, N>(dimensionExtents),
         m_bufferGeometry(dimensionExtents),
-        m_externalData(preAllocatedDataFlat)
+        m_externalData(preAllocatedDataFlat),
+        m_pointers(STL(HyperBufferBase<T, N>::getNumberOfPointers(dimensionExtents)))
     {
-        m_bufferGeometry.hookupPointerArrayToData(m_externalData, HyperBufferBase<T, N>::m_pointers);
+        m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
+        this->assignPointers(m_pointers.data());
     }
    
 private:
@@ -102,13 +111,14 @@ private:
         assert((i < HyperBufferBase<T, N>::m_dimensionExtents[0]) && "index out range");
         // syntax weirdness: https://stackoverflow.com/questions/4942703/
         int offset = m_bufferGeometry.template getOffsetInPointerArray<0>(i);
-        return reinterpret_cast<subdim_pointer_type>(HyperBufferBase<T, N>::m_pointers[STL(offset)]);
+        return reinterpret_cast<subdim_pointer_type>(m_pointers[STL(offset)]);
     }
 
     
 private:
     BufferGeometry<N> m_bufferGeometry;
     T* m_externalData;
+    std::vector<T*> m_pointers;
 };
 
 
@@ -121,31 +131,40 @@ class HyperBufferPreAlloc : public HyperBufferBase<T, N>
     using size_type = typename HyperBufferBase<T, N>::size_type;
     using pointer_type = typename HyperBufferBase<T, N>::pointer_type;
     using subdim_pointer_type = typename HyperBufferBase<T, N>::subdim_pointer_type;
+    using HyperBufferBase<T, N>::STL;
     
 public:
     /** Constructor that takes the extents of the dimensions as a variable argument list */
     template<typename... I>
     explicit HyperBufferPreAlloc(pointer_type preAllocatedData, I... i) :
         HyperBufferBase<T, N>(i...),
-        m_externalData(preAllocatedData) {}
+        m_externalData(preAllocatedData)
+    {
+        this->assignPointers(preAllocatedData);
+    }
     
     /** Constructor that takes the extents of the dimensions as a std::array */
-    explicit HyperBufferPreAlloc(T* preAllocatedData, std::array<int, N> dimensionExtents) :
+    explicit HyperBufferPreAlloc(pointer_type preAllocatedData, std::array<int, N> dimensionExtents) :
         HyperBufferBase<T, N>(dimensionExtents),
-        m_externalData(preAllocatedData) {}
+        m_externalData(preAllocatedData)
+    {
+        this->assignPointers(preAllocatedData);
+    }
    
 private:
     T& getTopDimensionData_N1(size_type i) override
     {
         assert(N==1 && "this should only be called for N==1 !");
+        if constexpr (N==1) {
         return m_externalData[i];
+        }
     }
     
     subdim_pointer_type getTopDimensionData_Nx(size_type i) override
     {
         assert(N>1 && "this should only be called for N>1 !");
         assert((i < HyperBufferBase<T, N>::m_dimensionExtents[0]) && "index out range");
-        return m_externalData[i];
+        return reinterpret_cast<subdim_pointer_type>(m_externalData[i]);
     }
 
     
