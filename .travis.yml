@@ -44,7 +44,7 @@ install:
       echo ${PATH}
       echo "Cmake Updated!"
     fi
-    if ["$COV" == "yes" ]; then
+    if [ "$COV" == "yes" ]; then
       pip3 install gcovr
       echo "Gcovr Updated!"
       gcovr --version
