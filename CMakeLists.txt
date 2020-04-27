@@ -89,6 +89,7 @@ target_compile_options(${TEST_NAME} PRIVATE
     -Wpedantic # warn if non-standard C++ is used
     -Wconversion # warn on type conversions that may lose data
     -Wsign-conversion # warn on sign conversions
+    -Wsign-compare # warn on compare signed against unsigned
     -Wnull-dereference # warn if a null dereference is detected
     >
     # additional warnings for GCC

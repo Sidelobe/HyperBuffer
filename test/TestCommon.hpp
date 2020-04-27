@@ -15,7 +15,8 @@
     #define WARNINGS_RESTORE_ALL _Pragma("clang diagnostic pop")
     #define  WARNINGS_DISABLE_SIGN_UNSIGNED \
         _Pragma("clang diagnostic ignored \"-Wconversion\"") \
-        _Pragma("clang diagnostic ignored \"-Wsign-conversion\"")
+        _Pragma("clang diagnostic ignored \"-Wsign-conversion\"") \
+        _Pragma("clang diagnostic ignored \"-Wsign-compare\"") 
     #define WARNINGS_DISABLE_C_CAST _Pragma("clang diagnostic ignored \"-Wold-style-cast\"")
     #define WARNINGS_DISABLE_CAST_ALIGN _Pragma("clang diagnostic ignored \"-Wcast-align\"")
 
