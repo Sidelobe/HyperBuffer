@@ -54,17 +54,17 @@ endif(CODE_COVERAGE)
 
 # Add external-utils
 target_sources(${TEST_NAME} PRIVATE "test/main.cpp")
-target_include_directories(${TEST_NAME} PRIVATE test/external-utils)
+target_include_directories(${TEST_NAME} SYSTEM PRIVATE test/external-utils)
 
 # Add Memory Sentinel
 add_subdirectory(test/external-utils/MemorySentinel)
-target_include_directories(${TEST_NAME} PRIVATE test/external-utils/MemorySentinel/source)
+target_include_directories(${TEST_NAME} SYSTEM PRIVATE test/external-utils/MemorySentinel/source)
 target_link_libraries(${TEST_NAME} MemorySentinel)
 
 # Compiler Setitings
 target_compile_options(${TEST_NAME} PRIVATE
     # clang/GCC warnings
-    $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
+    $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
     -Wall
     -Wextra # reasonable and standard
     -Wshadow # warn the user if a variable declaration shadows one from a parent context
@@ -76,17 +76,21 @@ target_compile_options(${TEST_NAME} PRIVATE
     -Wpedantic # warn if non-standard C++ is used
     -Wconversion # warn on type conversions that may lose data
     -Wsign-conversion # warn on sign conversions
+    -Wnull-dereference # warn if a null dereference is detected
+    >
+    # additional warnings for GCC
+    $<$<CXX_COMPILER_ID:GNU>:
     -Wmisleading-indentation # warn if identation implies blocks where blocks do not exist
     -Wduplicated-cond # warn if if / else chain has duplicated conditions
     -Wduplicated-branches # warn if if / else branches have duplicated code
-    -Wlogical-op # warn about logical operations being used where bitwise were probably wanted
-    -Wnull-dereference # warn if a null dereference is detected
     -Wuseless-cast # warn if you perform a cast to the same type
-    #-Wdouble-promotion # warn if float is implicit promoted to double
+    -Wlogical-op # warn about logical operations being used where bitwise were probably wanted    
     >
+    
     # MSVC warnings
     $<$<CXX_COMPILER_ID:MSVC>:
-    "/W4" >
+    /W4
+    >
 )
 
 
