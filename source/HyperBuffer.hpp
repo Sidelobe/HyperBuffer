@@ -86,17 +86,6 @@ public:
         m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
         this->assignPointers(m_pointers.data());
     }
-    
-    /** Constructor that takes the extents of the dimensions as a std::array */
-    explicit HyperBufferPreAllocFlat(T* preAllocatedDataFlat, std::array<int, N> dimensionExtents) :
-        HyperBufferBase<T, N>(dimensionExtents),
-        m_bufferGeometry(dimensionExtents),
-        m_externalData(preAllocatedDataFlat),
-        m_pointers(STL(HyperBufferBase<T, N>::getNumberOfPointers(dimensionExtents)))
-    {
-        m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
-        this->assignPointers(m_pointers.data());
-    }
    
 private:
     T& getTopDimensionData_N1(size_type i) override
@@ -143,14 +132,6 @@ public:
         this->assignPointers(preAllocatedData);
     }
     
-    /** Constructor that takes the extents of the dimensions as a std::array */
-    explicit HyperBufferPreAlloc(pointer_type preAllocatedData, std::array<int, N> dimensionExtents) :
-        HyperBufferBase<T, N>(dimensionExtents),
-        m_externalData(preAllocatedData)
-    {
-        this->assignPointers(preAllocatedData);
-    }
-   
 private:
     T& getTopDimensionData_N1(size_type i) override
     {
