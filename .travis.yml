@@ -71,7 +71,17 @@ script:
           ctest -V -j 2
           cd ..
           mkdir -p report
-          gcovr -r .. -f ../source --sonarqube -o report/coverage.xml  # Generate coverage report
+          
+          cd report
+          find -name '*.cpp' -exec cp -t . {} +
+          find -name '*.gcno' -exec cp -t . {} +
+          find -name '*.gcda' -exec cp -t . {} +
+          find -name '*.cpp' -exec gcov -bf {} \;
+          pwd
+          ls
+          cd ..
+          
+          #gcovr -r .. -f ../source --sonarqube -o report/coverage.xml  # Generate coverage report
           cd ..
           sonar-scanner
       else
