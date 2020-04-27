@@ -12,8 +12,6 @@ matrix:
         - os: linux
           dist: bionic
           compiler: gcc
-          python: 3.8 
-          
           addons:
               apt:
                   sources: ['ubuntu-toolchain-r-test']
@@ -21,6 +19,7 @@ matrix:
                     - g++-9
                     - gcovr
                     - cmake
+                    - python3-pip
 
               sonarcloud:
                   organization: "idelobe" # the key of the org you chose at step #3
