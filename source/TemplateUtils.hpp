@@ -149,8 +149,6 @@ constexpr T sumOfCumulativeProductOverRange(int begin, int end, Args... args)
 {
     assert(begin >= 0);
     assert(static_cast<unsigned>(end) <= sizeof...(args));
-    assert(end-begin > 0 && "Cannot cap a length-one argument list");
-    
     if (end-begin == 0) {
         return 0;
     }
