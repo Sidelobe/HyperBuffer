@@ -43,10 +43,8 @@ install:
       export PATH=${DEPS_DIR}/cmake/bin:${PATH}
       echo ${PATH}
       echo "Cmake Updated!"
-    elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then
-        brew install cmake
     fi
-    if ["$COV" == "yes"]; then
+    if ["$COV" == "yes" ]; then
       pip3 install gcovr
       echo "Gcovr Updated!"
       gcovr --version
