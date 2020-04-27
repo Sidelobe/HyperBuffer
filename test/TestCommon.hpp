@@ -16,7 +16,7 @@
     #define  WARNINGS_DISABLE_SIGN_UNSIGNED \
         _Pragma("clang diagnostic ignored \"-Wconversion\"") \
         _Pragma("clang diagnostic ignored \"-Wsign-conversion\"") \
-        _Pragma("clang diagnostic ignored \"-Wsign-compare\"") 
+        _Pragma("clang diagnostic ignored \"-Wsign-compare\"")
     #define WARNINGS_DISABLE_C_CAST _Pragma("clang diagnostic ignored \"-Wold-style-cast\"")
     #define WARNINGS_DISABLE_CAST_ALIGN _Pragma("clang diagnostic ignored \"-Wcast-align\"")
 
@@ -24,7 +24,7 @@
     #define WARNINGS_OVERRIDE __pragma( warning(push) )
     #define WARNINGS_RESTORE_ALL __pragma( warning(pop) )
     #define WARNINGS_DISABLE_SIGN_UNSIGNED __pragma(warning( disable : 4245) )
-    #define WARNINGS_DISABLE_C_CAST // Does not exist in MSCV
+    #define WARNINGS_DISABLE_C_CAST 
     #define WARNINGS_DISABLE_CAST_ALIGN
 
 #endif
