@@ -30,7 +30,7 @@ public:
         m_bufferGeometry(i...),
         m_data(STL(m_bufferGeometry.getRequiredDataArraySize()))
     {
-        m_bufferGeometry.hookupPointerArrayToData(m_data.data(), HyperBufferBase<T, N>::m_pointers.data());
+        m_bufferGeometry.hookupPointerArrayToData(m_data.data(), HyperBufferBase<T, N>::m_pointers);
     }
     
 private:
@@ -77,7 +77,7 @@ public:
         m_bufferGeometry(i...),
         m_externalData(preAllocatedDataFlat)
     {
-        m_bufferGeometry.hookupPointerArrayToData(m_externalData, HyperBufferBase<T, N>::m_pointers.data());
+        m_bufferGeometry.hookupPointerArrayToData(m_externalData, HyperBufferBase<T, N>::m_pointers);
     }
     
     /** Constructor that takes the extents of the dimensions as a std::array */
@@ -86,7 +86,7 @@ public:
         m_bufferGeometry(dimensionExtents),
         m_externalData(preAllocatedDataFlat)
     {
-        m_bufferGeometry.hookupPointerArrayToData(m_externalData, HyperBufferBase<T, N>::m_pointers.data());
+        m_bufferGeometry.hookupPointerArrayToData(m_externalData, HyperBufferBase<T, N>::m_pointers);
     }
    
 private:

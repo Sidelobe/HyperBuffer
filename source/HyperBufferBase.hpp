@@ -37,7 +37,10 @@ protected:
     using stl_size_type = typename std::vector<T*>::size_type;
     
 public:
-    virtual ~HyperBufferBase() = default;
+    virtual ~HyperBufferBase()
+    {
+        free(m_pointers);
+    }
     
     // MARK: dimension extents
     int dim(int i) const { return m_dimensionExtents[STL(i)]; }
@@ -57,24 +60,23 @@ public:
     FOR_Nx pointer_type data() { return getTopDimPointer(); }
     FOR_Nx const pointer_type data() const { return getTopDimPointer(); }
     FOR_N1 T* data() { return m_pointers[0]; }
-    FOR_N1 const T* data() const { return m_pointers.data(); }
+    FOR_N1 const T* data() const { return m_pointers; }
 
 protected:
     /** Constructor that takes the extents of the dimensions as a variable argument list */
     template<typename... I>
     explicit HyperBufferBase(I... i) :
-        m_dimensionExtents{i...},
-        m_pointers(STL(getNumberOfPointers(i...)))
+        m_dimensionExtents{static_cast<int>(i)...}
     {
         static_assert(sizeof...(I) == N, "Incorrect number of arguments");
+        m_pointers = reinterpret_cast<int**>( calloc(STL(getNumberOfPointers(m_dimensionExtents)), sizeof(T*)));
     }
     
     /** Constructor that takes the extents of the dimensions as a std::array */
     explicit HyperBufferBase(const std::array<int, N>& dimensionExtents) :
-        m_dimensionExtents{dimensionExtents},
-        m_pointers(STL(getNumberOfPointers(dimensionExtents))) // at least size 1
+        m_dimensionExtents{dimensionExtents}
     {
-        
+        m_pointers = reinterpret_cast<int**>( calloc(STL(getNumberOfPointers(m_dimensionExtents)), sizeof(T*)));
     }
 
     constexpr int getNumberOfPointers(const std::array<int, N>& dimensionExtents) const
@@ -85,7 +87,7 @@ protected:
     template<typename... I>
     constexpr int getNumberOfPointers(I... i) const
     {
-        return getNumberOfPointers({i...});
+        return getNumberOfPointers({static_cast<int>(i)...});
     }
     
     // Helper to make interfacing with STL a bit more readable
@@ -97,11 +99,11 @@ protected:
     /** returns a (multi-dim) pointer to the first entry in the highest-order dimension, e.g. float*** for T=float,N=3 */
     pointer_type getTopDimPointer()
     {
-        return reinterpret_cast<pointer_type>(m_pointers.data());
+        return reinterpret_cast<pointer_type>(m_pointers);
     }
 
 protected:
     std::array<int, N> m_dimensionExtents;
-    std::vector<T*> m_pointers;
+    T** m_pointers;
 };
 
