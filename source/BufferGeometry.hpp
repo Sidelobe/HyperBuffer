@@ -103,7 +103,8 @@ private:
         int numPointersInThisDimension = StdArrayOperations::productCapped(dimIndex+1, m_dimensionExtents);
 
         for (int index = 0; index < numPointersInThisDimension; ++index) {
-            int offset = startOfNextDimension + m_dimensionExtents[dimIndex+1] * index;
+            int nextDimExtent = m_dimensionExtents[static_cast<unsigned>(dimIndex) + 1];
+            int offset = startOfNextDimension + nextDimExtent * index;
             pointerArray[arrayIndex + index] = (T*) &(pointerArray)[offset]; // hook up pointer to element of next dimension
         }
         

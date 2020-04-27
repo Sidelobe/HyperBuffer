@@ -51,7 +51,7 @@ target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_14)
 # TEST TARGET
 set (TEST_NAME "${PROJECT_NAME}Test")
 file(GLOB_RECURSE source_test "test/tests/*.c*")
-file(GLOB main_file "test/main.cpp")
+file(GLOB main_file "test/main.cpp" "test/TestCommon.hpp")
 list(APPEND source_test ${main_file})
 add_executable(${TEST_NAME} ${source_test})
 assign_include_dirs_from_sources(${TEST_NAME})
@@ -82,7 +82,7 @@ target_compile_options(${TEST_NAME} PRIVATE
     -Wextra # reasonable and standard
     -Wshadow # warn the user if a variable declaration shadows one from a parent context
     -Wnon-virtual-dtor # warn the user if a class with virtual functions has a non-virtual destructor. This helps catch hard to track down memory errors
-    #-Wold-style-cast # warn for c-style casts
+    -Wold-style-cast # warn for c-style casts
     -Wcast-align # warn for potential performance problem casts
     -Wunused # warn on anything being unused
     -Woverloaded-virtual # warn if you overload (not override) a virtual function

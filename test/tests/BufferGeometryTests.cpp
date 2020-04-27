@@ -5,12 +5,14 @@
 //
 //  © 2020 Lorenz Bucher - all rights reserved
 
-#include <catch2/catch.hpp>
+#include "TestCommon.hpp"
 
 #include <vector>
 
 #include "BufferGeometry.hpp"
 #include "MemorySentinel.hpp"
+
+DISABLE_SIGN_UNSIGNED_WARNINGS
 
 TEST_CASE("BufferGeometry Tests")
 {
@@ -326,3 +328,5 @@ TEST_CASE("BufferGeometry Tests")
         }
     }
 }
+
+RESTORE_SIGN_UNSIGNED_WARNINGS

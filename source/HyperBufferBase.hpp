@@ -17,6 +17,7 @@
 #define FOR_N1 template<int M=N, std::enable_if_t<(M==1), int> = 0>
 #define FOR_Nx template<int M=N, std::enable_if_t<(M>1), int> = 0>
 
+
 template<typename T, int N>
 class HyperBufferBase
 {
@@ -32,9 +33,14 @@ protected:
      */
     using subdim_pointer_type = std::conditional_t<(N==1), T*, typename remove_pointers_from_type<pointer_type, 1>::type>;
 
+    // Helper to make interfacing with STL a bit more readable
+    using stl_size_type = typename std::vector<T*>::size_type;
+    
 public:
+    virtual ~HyperBufferBase() = default;
+    
     // MARK: dimension extents
-    int dim(int i) const { return m_dimensionExtents[i]; }
+    int dim(int i) const { return m_dimensionExtents[STL(i)]; }
     const int* dims() const { return m_dimensionExtents.data(); }
 
     // MARK: - operator[]
@@ -58,7 +64,7 @@ protected:
     template<typename... I>
     explicit HyperBufferBase(I... i) :
         m_dimensionExtents{i...},
-        m_pointers(std::max(VarArgOperations::sumOfCumulativeProductCapped(N-1, i...), 1)) // at least size 1
+        m_pointers(STL(getNumberOfPointers(i...)))
     {
         static_assert(sizeof...(I) == N, "Incorrect number of arguments");
     }
@@ -66,10 +72,24 @@ protected:
     /** Constructor that takes the extents of the dimensions as a std::array */
     explicit HyperBufferBase(const std::array<int, N>& dimensionExtents) :
         m_dimensionExtents{dimensionExtents},
-        m_pointers(std::max(StdArrayOperations::sumOfCumulativeProductCapped(N-1, dimensionExtents), 1)) // at least size 1
+        m_pointers(STL(getNumberOfPointers(dimensionExtents))) // at least size 1
     {
         
     }
+
+    constexpr int getNumberOfPointers(const std::array<int, N>& dimensionExtents) const
+    {
+        return std::max(StdArrayOperations::sumOfCumulativeProductCapped(N-1, dimensionExtents), 1); // at least size 1
+    }
+    
+    template<typename... I>
+    constexpr int getNumberOfPointers(I... i) const
+    {
+        return getNumberOfPointers({i...});
+    }
+    
+    // Helper to make interfacing with STL a bit more readable
+    constexpr stl_size_type STL(int i) const { return static_cast<stl_size_type>(i); }
 
     virtual T& getTopDimensionData_N1(size_type i) = 0;
     virtual subdim_pointer_type getTopDimensionData_Nx(size_type i) = 0;

@@ -5,7 +5,7 @@
 //
 //  © 2020 Lorenz Bucher - all rights reserved
 
-#include <catch2/catch.hpp>
+#include "TestCommon.hpp"
 
 #include <array>
 #include <functional>

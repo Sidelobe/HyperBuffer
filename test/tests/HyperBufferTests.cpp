@@ -5,7 +5,7 @@
 //
 //  © 2020 Lorenz Bucher - all rights reserved
 
-#include <catch2/catch.hpp>
+#include "TestCommon.hpp"
 
 #include <vector>
 #include <random>
@@ -13,18 +13,6 @@
 
 #include "HyperBuffer.hpp"
 #include "MemorySentinel.hpp"
-
-template<typename T = float>
-static inline std::vector<T> createRandomVector(int length, int seed=0)
-{
-    std::vector<T> result(length);
-    std::mt19937 engine(seed);
-    std::uniform_real_distribution<> dist(-1, 1); //(inclusive, inclusive)
-    for (auto& sample : result) {
-        sample = dist(engine);
-    }
-    return result;
-}
 
 // functions to test the integrity of the different variants throught the same API
 template<typename T, int N> void testHyperBuffer1D_size4(HyperBufferBase<T, N>& buffer);
@@ -95,9 +83,9 @@ TEST_CASE("HyperBuffer Tests - External Memory Allocation (Flat)")
 TEST_CASE("HyperBuffer Tests - External Memory Allocation (MultiDim)")
 {
     // TODO
-    std::vector<float> dataDim2_1 = createRandomVector(8, 333);
-    std::vector<float> dataDim2_2 = createRandomVector(8, 666);
-    std::vector<float> dataDim2_3 = createRandomVector(8, 999);
+    std::vector<float> dataDim2_1 = TestCommon::createRandomVector(8, 333);
+    std::vector<float> dataDim2_2 = TestCommon::createRandomVector(8, 666);
+    std::vector<float> dataDim2_3 = TestCommon::createRandomVector(8, 999);
     float* dataDim1[] = { dataDim2_1.data(), dataDim2_2.data(), dataDim2_3.data() };
     float** dataDim0[] = { dataDim1, dataDim1, dataDim1 };
     
