@@ -21,7 +21,7 @@
 
 #elif defined(_MSC_VER)
     #define DISABLE_SIGN_UNSIGNED_WARNINGS \
-        __pragma(warning(suppress : 4245) 
+        __pragma(warning(suppress : 4245))
     #define RESTORE_SIGN_UNSIGNED_WARNINGS
 #endif
 
