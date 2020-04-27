@@ -75,6 +75,7 @@ script:
           ctest -V -j 4
           cd ..
           mkdir -p report
+          gcovr --version
           gcovr -r .. -f ../source --sonarqube -o report/coverage.xml  # Generate coverage report
           cd ..
           sonar-scanner
