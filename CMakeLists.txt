@@ -28,7 +28,10 @@ function(generate_code_coverage_data _target)
 endfunction()
 
 #### MAIN
-project(HyperBuffer)
+project(HyperBuffer
+        VERSION 1.0.1
+        DESCRIPTION "A header-only C++ data structure to manage multi-dimensional data"
+        HOMEPAGE_URL "https://github.com/Sidelobe/Hypbuffer")
 
 # Set C++ standard to C++14
 set(CMAKE_CXX_STANDARD 14)
@@ -37,29 +40,39 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CODE_COVERAGE OFF CACHE BOOL "Build with instrumentation and code coverage")
 
-# SOURCE TARGET
-file(GLOB_RECURSE source "source/*.h*" "source/*.c*")
+# SOURCE TARGET --- "inteface", since we have a header-only library
 
-set(LIB_NAME "HyperBuffer")
+file(GLOB_RECURSE source "source/*.h*")
+add_library(${PROJECT_NAME} INTERFACE)
+target_sources(${PROJECT_NAME} INTERFACE ${source})
+target_include_directories(${PROJECT_NAME} INTERFACE ${source})
+target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_14)
 
 # TEST TARGET
-set (TEST_NAME "${LIB_NAME}Test")
-file(GLOB_RECURSE source_test "test/tests/*.c*" "test/tests/*.c*")
-add_executable(${TEST_NAME} ${source} ${source_test})
+set (TEST_NAME "${PROJECT_NAME}Test")
+file(GLOB_RECURSE source_test "test/tests/*.c*")
+file(GLOB main_file "test/main.cpp")
+list(APPEND source_test ${main_file})
+add_executable(${TEST_NAME} ${source_test})
 assign_include_dirs_from_sources(${TEST_NAME})
+target_include_directories(${TEST_NAME} PRIVATE "source")
+target_link_libraries(${TEST_NAME} PUBLIC ${PROJECT_NAME})
+
+# create source groups
+source_group("Sources" FILES ${source})
+source_group("Tests" FILES ${source_test})
 
 if(CODE_COVERAGE)
     generate_code_coverage_data(${TEST_NAME})
 endif(CODE_COVERAGE)
 
 # Add external-utils
-target_sources(${TEST_NAME} PRIVATE "test/main.cpp")
 target_include_directories(${TEST_NAME} SYSTEM PRIVATE test/external-utils)
 
 # Add Memory Sentinel
 add_subdirectory(test/external-utils/MemorySentinel)
 target_include_directories(${TEST_NAME} SYSTEM PRIVATE test/external-utils/MemorySentinel/source)
-target_link_libraries(${TEST_NAME} MemorySentinel)
+target_link_libraries(${TEST_NAME} PRIVATE MemorySentinel)
 
 # Compiler Setitings
 target_compile_options(${TEST_NAME} PRIVATE
