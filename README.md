@@ -30,7 +30,7 @@ The main use case for this container is to hold dynamically-allocated N-dimensio
 #### Requirements / Compatibility
  - C++14, STL only
  - Compiled & Tested with:
- 	- GCC/g++ 7 (Linux)
+ 	- GCC/g++ 9.3.0 (Linux)
 	- Clang 11 (Xcode 11.3, macos)
 	- MSVC++ 14.1 (Visual Studio 2017, Windows) 
 
