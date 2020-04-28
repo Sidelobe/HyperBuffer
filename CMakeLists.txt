@@ -74,7 +74,7 @@ add_subdirectory(test/external-utils/MemorySentinel)
 target_include_directories(${TEST_NAME} SYSTEM PRIVATE test/external-utils/MemorySentinel/source)
 target_link_libraries(${TEST_NAME} PRIVATE MemorySentinel)
 
-# Compiler Setitings
+# Compiler Settings
 target_compile_options(${TEST_NAME} PRIVATE
     # clang/GCC warnings
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
