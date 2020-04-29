@@ -73,7 +73,8 @@ script:
           ./Debug/HyperBufferTest.exe
       elif [ "${TRAVIS_OS_NAME}" == "osx" ] && [ "$COV" == "yes" ]; then
           build-wrapper-macosx-x86 --out-dir bw-output make -j 4  # Wraps the compilation with the Build Wrapper to generate configuration (used later by the SonarScanner) into the "bw-output" folder
-          ctest -V -j 4 # run the tests
+          #ctest -V -j 4 # run the tests
+          ./HyperBufferTest
           cd ..
           mkdir -p report
           gcovr -r .. -f ../source --sonarqube -o report/coverage.xml  # Generate coverage report
