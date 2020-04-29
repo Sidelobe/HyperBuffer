@@ -111,6 +111,7 @@ target_compile_options(${TEST_NAME} PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:
     /W4
     /D_USE_MATH_DEFINES
+    /external:anglebrackets # treat all #include <...> as "external" headers, don't issue warnings
     >
 )
 
