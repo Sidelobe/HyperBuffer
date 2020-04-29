@@ -79,7 +79,6 @@ target_compile_options(${TEST_NAME} PRIVATE
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
     -Wall
     -Wextra # reasonable and standard
-    -Wpedantic
     -Wreturn-type # "control reaches end of non-void function"
     -Wunreachable-code
     -Wshadow # warn the user if a variable declaration shadows one from a parent context
@@ -111,7 +110,7 @@ target_compile_options(${TEST_NAME} PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:
     /W4
     /D_USE_MATH_DEFINES
-    /external:anglebrackets # treat all #include <...> as "external" headers, don't issue warnings
+    /experimental:external /external:anglebrackets # treat all #include <...> as "external" headers, don't issue warnings
     >
 )
 
