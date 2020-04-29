@@ -80,47 +80,52 @@ TEST_CASE("HyperBuffer Tests - External Memory Allocation (Flat)")
     }
 }
 
-// TODO:
-//TEST_CASE("HyperBuffer Tests - External Memory Allocation (MultiDim)")
-//{
-//    SECTION("Build 1D prealloc multidim") {
-//        constexpr int N = 1;
-//        std::vector<int> oneD = TestCommon::createRandomVectorInt(4, 123);
-//        HyperBufferPreAlloc<int, N> buffer(oneD.data(), oneD.size());
-//        testHyperBuffer1D_size4(buffer);
-//
-//        std::array<int, 1> dims {4};
-//        HyperBufferPreAlloc<int, N> bufferFromStdArray(oneD.data(), dims); // dims as array
-//        testHyperBuffer1D_size4(bufferFromStdArray);
-//    }
-//    SECTION("Build 2D prealloc multidim") {
-//        constexpr int N = 2;
-//        std::vector<int> dataDim0_1 = TestCommon::createRandomVectorInt(4, 333);
-//        std::vector<int> dataDim0_2 = TestCommon::createRandomVectorInt(4, 666);
-//        int* dataDim1_0[] = { dataDim0_1.data(), dataDim0_2.data() };
-//        HyperBufferPreAlloc<int, N> buffer(dataDim1_0, 2, 4);
-//        testHyperBuffer2D_sizes2_4(buffer);
-//    }
-//    SECTION("Build 3D prealloc multidim") {
-//        constexpr int N = 3;
-//        std::vector<int> dataDim0_1 = TestCommon::createRandomVectorInt(8, 333);
-//        std::vector<int> dataDim0_2 = TestCommon::createRandomVectorInt(8, 666);
-//        std::vector<int> dataDim0_3 = TestCommon::createRandomVectorInt(8, 999);
-//        int* dataDim1_0[] = { dataDim0_1.data(), dataDim0_2.data(), dataDim0_3.data() };
-//        int* dataDim1_1[] = { dataDim0_1.data(), dataDim0_2.data(), dataDim0_3.data() };
-//        int* dataDim1_2[] = { dataDim0_1.data(), dataDim0_2.data(), dataDim0_3.data() };
-//        int** dataDim2_0[] = { dataDim1_0, dataDim1_1, dataDim1_2 };
-//        HyperBufferPreAlloc<int, N> buffer(dataDim2_0, 3, 3, 8);
-//
-//        testHyperBuffer3D_sizes3_3_8(buffer);
-//
-//        // Constructor via std::array
-//        std::array<int, N> dims  {3, 3, 8};
-//        HyperBufferPreAlloc<int, N> bufferFromStdArray(dataDim2_0, dims);
-//        testHyperBuffer3D_sizes3_3_8(bufferFromStdArray);
-//    }
-//
-//}
+TEST_CASE("HyperBuffer Tests - External Memory Allocation (MultiDim)")
+{
+    SECTION("Build 1D prealloc multidim") {
+        constexpr int N = 1;
+        std::vector<int> oneD = TestCommon::createRandomVectorInt(4, 123);
+        HyperBufferPreAlloc<int, N> buffer(oneD.data(), oneD.size());
+        testHyperBuffer1D_size4(buffer);
+
+        std::array<int, 1> dims {4};
+        HyperBufferPreAlloc<int, N> bufferFromStdArray(oneD.data(), dims); // dims as array
+        testHyperBuffer1D_size4(bufferFromStdArray);
+    }
+    SECTION("Build 2D prealloc multidim") {
+        constexpr int N = 2;
+        std::vector<int> dataDim0_0 = TestCommon::createRandomVectorInt(4, 333);
+        std::vector<int> dataDim0_1 = TestCommon::createRandomVectorInt(4, 666);
+        int* dataDim1_0[] = { dataDim0_0.data(), dataDim0_1.data() };
+        HyperBufferPreAlloc<int, N> buffer(dataDim1_0, 2, 4);
+        testHyperBuffer2D_sizes2_4(buffer);
+    }
+    SECTION("Build 3D prealloc multidim") {
+        constexpr int N = 3;
+        std::vector<int> dataDim0_0 = TestCommon::createRandomVectorInt(8, 333);
+        std::vector<int> dataDim0_1 = TestCommon::createRandomVectorInt(8, 666);
+        std::vector<int> dataDim0_2 = TestCommon::createRandomVectorInt(8, 999);
+        std::vector<int> dataDim1_0 = TestCommon::createRandomVectorInt(8, 1333);
+        std::vector<int> dataDim1_1 = TestCommon::createRandomVectorInt(8, 1666);
+        std::vector<int> dataDim1_2 = TestCommon::createRandomVectorInt(8, 1999);
+        std::vector<int> dataDim2_0 = TestCommon::createRandomVectorInt(8, 2333);
+        std::vector<int> dataDim2_1 = TestCommon::createRandomVectorInt(8, 2666);
+        std::vector<int> dataDim2_2 = TestCommon::createRandomVectorInt(8, 2999);
+        int* pointerDim1_0[] = { dataDim0_0.data(), dataDim0_1.data(), dataDim0_2.data() };
+        int* pointerDim1_1[] = { dataDim1_0.data(), dataDim1_1.data(), dataDim1_2.data() };
+        int* pointerDim1_2[] = { dataDim2_0.data(), dataDim2_1.data(), dataDim2_2.data() };
+        int** pointerDim2_0[] = { pointerDim1_0, pointerDim1_1, pointerDim1_2 };
+        HyperBufferPreAlloc<int, N> buffer(pointerDim2_0, 3, 3, 8);
+
+        testHyperBuffer3D_sizes3_3_8(buffer);
+
+        // Constructor via std::array
+        std::array<int, N> dims  {3, 3, 8};
+        HyperBufferPreAlloc<int, N> bufferFromStdArray(pointerDim2_0, dims);
+        testHyperBuffer3D_sizes3_3_8(bufferFromStdArray);
+    }
+
+}
 
 //TEST_CASE("Initializer List Construction")
 //{
@@ -192,18 +197,16 @@ testHyperBuffer3D_sizes3_3_8(HyperBufferBase<T, N>& buffer)
     REQUIRE(dims == std::vector<int>{3, 3, 8});    
     buffer[0][1][0] = -1;
     buffer[0][2][0] = -2;
-    buffer[0][3][0] = -3;
     buffer[1][0][6] = -10;
     buffer[1][1][6] = -11;
     buffer[1][2][6] = -22;
-    buffer[1][3][6] = -33;
+    buffer[2][2][6] = -33;
     REQUIRE(buffer.data() != nullptr);
     int*** rawData = buffer.data();
     REQUIRE(rawData[0][1][0] == -1);
     REQUIRE(rawData[0][2][0] == -2);
-    REQUIRE(rawData[0][3][0] == -3);
     REQUIRE(rawData[1][0][6] == -10);
     REQUIRE(rawData[1][1][6] == -11);
     REQUIRE(rawData[1][2][6] == -22);
-    REQUIRE(rawData[1][3][6] == -33);
+    REQUIRE(rawData[2][2][6] == -33);
 }

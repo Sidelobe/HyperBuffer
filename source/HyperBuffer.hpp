@@ -128,13 +128,13 @@ public:
     {
         if (N == 1) {
             m_pointers.push_back(reinterpret_cast<T*>(preAllocatedData));
-            this->assignPointers(m_pointers.data());
+            
         } else {
             for (int j=0; j < HyperBuffer<T, N>::m_dimensionExtents[0]; ++j) {
                 m_pointers.push_back(reinterpret_cast<T*>(preAllocatedData[j]));
             }
         }
-
+        this->assignPointers(m_pointers.data());
     }
     
 private:
