@@ -73,10 +73,9 @@ TEST_CASE("HyperBuffer Tests - External Memory Allocation (Flat)")
         testHyperBuffer3D_sizes3_3_8(buffer);
         
         // Constructor via std::array
-        std::array<int, N> dims  {3, 3, 8};
+        std::array<int, N> dims {3, 3, 8};
         HyperBufferPreAllocFlat<int, N> bufferFromStdArray(preAllocData.data(), dims);
         testHyperBuffer3D_sizes3_3_8(bufferFromStdArray);
-        
     }
 }
 

@@ -81,7 +81,6 @@ target_compile_options(${TEST_NAME} PRIVATE
     -Wall
     -Wextra # reasonable and standard
     -Wpedantic
-    -Wmissing-braces 
     -Wreturn-type # "control reaches end of non-void function"
     -Wunreachable-code
     -Wshadow # warn the user if a variable declaration shadows one from a parent context

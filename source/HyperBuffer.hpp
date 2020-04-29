@@ -45,7 +45,7 @@ private:
     subdim_pointer_type getTopDimensionData_Nx(size_type i) override
     {
         assert(N>1 && "this should only be called for N>1 !");
-        assert((i < HyperBufferBase<T, N>::m_dimensionExtents[0]) && "index out range");
+        assert((i < this->m_dimensionExtents[0]) && "index out range");
         // TODO: should we return a reference here --??
         // TODO: return sub-buffer? something like: HyperBuffer<T, N-1>(*this, i)
         
@@ -95,7 +95,7 @@ private:
     subdim_pointer_type getTopDimensionData_Nx(size_type i) override
     {
         assert(N>1 && "this should only be called for N>1 !");
-        assert((i < HyperBufferBase<T, N>::m_dimensionExtents[0]) && "index out range");
+        assert((i < this->m_dimensionExtents[0]) && "index out range");
         // syntax weirdness: https://stackoverflow.com/questions/4942703/
         int offset = m_bufferGeometry.template getOffsetInPointerArray<0>(i);
         return reinterpret_cast<subdim_pointer_type>(m_pointers[STL(offset)]);
@@ -130,8 +130,7 @@ public:
             m_pointers.push_back(reinterpret_cast<T*>(preAllocatedData));
             
         } else {
-            const int topDimensionExtent = HyperBuffer<T, N>::m_dimensionExtents[0];
-            for (int j=0; j < topDimensionExtent; ++j) {
+            for (int j=0; j < this->m_dimensionExtents[0]; ++j) {
                 m_pointers.push_back(reinterpret_cast<T*>(preAllocatedData[j]));
             }
         }
@@ -148,7 +147,7 @@ private:
     subdim_pointer_type getTopDimensionData_Nx(size_type i) override
     {
         assert(N>1 && "this should only be called for N>1 !");
-        assert((i < HyperBufferBase<T, N>::m_dimensionExtents[0]) && "index out range");
+        assert((i < this->m_dimensionExtents[0]) && "index out range");
         return reinterpret_cast<subdim_pointer_type>(m_externalData[i]);
     }
 
