@@ -81,7 +81,6 @@ target_compile_options(${TEST_NAME} PRIVATE
     -Wall
     -Wextra # reasonable and standard
     -Wpedantic
-    -Wdocumentation
     -Wmissing-braces 
     -Wreturn-type # "control reaches end of non-void function"
     -Wunreachable-code
@@ -96,6 +95,10 @@ target_compile_options(${TEST_NAME} PRIVATE
     -Wconversion # warn on type conversions that may lose data
     -Wno-sign-conversion # don't warn when implicit conversion changes signedness
     -Wno-sign-compare # deactivate warnings about comparisons of different sign integers (enabled by Wextra)
+    >
+    # additional warnings for clang only
+    $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+    -Wdocumentation
     >
     # additional warnings for GCC
     $<$<CXX_COMPILER_ID:GNU>:
