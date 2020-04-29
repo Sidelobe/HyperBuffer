@@ -54,10 +54,12 @@ public:
     //    decltype(auto) operator() (size_type i...) = 0;
 
     // MARK: data()
+    // NOTE: I cannot make this virtual function because of the differente return types required
+    // decltype(auto) is not allowed for virtual functions, so I chose an enable_if construct
     FOR_Nx pointer_type data() { return getTopDimPointer(); }
     FOR_Nx const pointer_type data() const { return getTopDimPointer(); }
-    FOR_N1 T* data() { return m_BasePointers[0]; }
-    FOR_N1 const T* data() const { return m_BasePointers; }
+    FOR_N1 T* data() { return &getTopDimensionData_N1(0); }
+    FOR_N1 const T* data() const { return &getTopDimensionData_N1(0); }
 
 protected:
     /** Constructor that takes the extents of the dimensions as a variable argument list */
@@ -94,13 +96,14 @@ protected:
     /** returns a (multi-dim) pointer to the first entry in the highest-order dimension, e.g. float*** for T=float,N=3 */
     pointer_type getTopDimPointer()
     {
+        //return reinterpret_cast<pointer_type>((void*)getTopDimensionData_Nx(0));
         return reinterpret_cast<pointer_type>(m_BasePointers);
     }
 
 protected:
-    std::array<int, N> m_dimensionExtents;
+    std::array<int, N> m_dimensionExtents; // only required by the dims functions
     
 private:
-    T** m_BasePointers; // duplicate...
+    T** m_BasePointers; // duplicate... could we get rid of this? -- I could turn getTopDimPointer into a virtual function, overridden the
 };
 
