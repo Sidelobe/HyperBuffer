@@ -130,7 +130,8 @@ public:
             m_pointers.push_back(reinterpret_cast<T*>(preAllocatedData));
             
         } else {
-            for (int j=0; j < HyperBuffer<T, N>::m_dimensionExtents[0]; ++j) {
+            const int topDimensionExtent = HyperBuffer<T, N>::m_dimensionExtents[0];
+            for (int j=0; j < topDimensionExtent; ++j) {
                 m_pointers.push_back(reinterpret_cast<T*>(preAllocatedData[j]));
             }
         }
@@ -141,9 +142,7 @@ private:
     T& getTopDimensionData_N1(size_type i) override
     {
         assert(N==1 && "this should only be called for N==1 !");
-        if constexpr (N==1) {
-            return m_externalData[i];
-        }
+        return m_pointers[0][i];
     }
     
     subdim_pointer_type getTopDimensionData_Nx(size_type i) override
