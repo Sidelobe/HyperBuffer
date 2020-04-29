@@ -13,9 +13,8 @@
 #include "HyperBufferBase.hpp"
 #include "TemplateUtils.hpp"
 #include "BufferGeometry.hpp"
-
             
-// MARK: - HyperBufferOwning
+// MARK: - HyperBuffer - owns the data
 template<typename T, int N>
 class HyperBuffer : public HyperBufferBase<T, N>
 {
@@ -65,8 +64,7 @@ private:
 };
 
 
-// MARK: - HyperBufferPreAllocFlat
-/** Construct from pre-allocated, flat (1D) data */
+// MARK: - HyperBufferPreAllocFlat - manages existing 1D data
 template<typename T, int N>
 class HyperBufferPreAllocFlat : public HyperBufferBase<T, N>
 {
@@ -112,8 +110,7 @@ private:
 
 
 
-// MARK: - HyperBufferPreAlloc
-/** Construct from pre-allocated, multi-dimensional data */
+// MARK: - HyperBufferPreAlloc - manages existing multi-dimensional data (wrapper)
 template<typename T, int N>
 class HyperBufferPreAlloc : public HyperBufferBase<T, N>
 {

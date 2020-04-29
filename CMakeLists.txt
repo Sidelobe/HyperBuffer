@@ -80,18 +80,22 @@ target_compile_options(${TEST_NAME} PRIVATE
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
     -Wall
     -Wextra # reasonable and standard
+    -Wpedantic
+    -Wdocumentation
+    -Wmissing-braces 
+    -Wreturn-type # "control reaches end of non-void function"
+    -Wunreachable-code
     -Wshadow # warn the user if a variable declaration shadows one from a parent context
     -Wnon-virtual-dtor # warn the user if a class with virtual functions has a non-virtual destructor. This helps catch hard to track down memory errors
-    -Wold-style-cast # warn for c-style casts
     -Wcast-align # warn for potential performance problem casts
-    -Wunused # warn on anything being unused
     -Woverloaded-virtual # warn if you overload (not override) a virtual function
-    -Wpedantic # warn if non-standard C++ is used
-    -Wconversion # warn on type conversions that may lose data
-    -Wsign-conversion # warn on sign conversions
-    -Wsign-compare # warn on compare signed against unsigned
     -Wnull-dereference # warn if a null dereference is detected
-    -Wpedantic
+    -Wold-style-cast # warn for c-style casts
+    -Wimplicit-fallthrough # warn when you forget a 'break' in a  switch 
+    -Wunused-variable
+    -Wconversion # warn on type conversions that may lose data
+    -Wno-sign-conversion # don't warn when implicit conversion changes signedness
+    -Wno-sign-compare # deactivate warnings about comparisons of different sign integers (enabled by Wextra)
     >
     # additional warnings for GCC
     $<$<CXX_COMPILER_ID:GNU>:
@@ -101,10 +105,11 @@ target_compile_options(${TEST_NAME} PRIVATE
     -Wuseless-cast # warn if you perform a cast to the same type
     -Wlogical-op # warn about logical operations being used where bitwise were probably wanted    
     >
-    
+
     # MSVC warnings
     $<$<CXX_COMPILER_ID:MSVC>:
     /W4
+    /D_USE_MATH_DEFINES
     >
 )
 
