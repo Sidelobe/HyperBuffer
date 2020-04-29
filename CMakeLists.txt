@@ -40,8 +40,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CODE_COVERAGE OFF CACHE BOOL "Build with instrumentation and code coverage")
 
-# SOURCE TARGET --- "inteface", since we have a header-only library
-
+# SOURCE TARGET --- "interface", since we have a header-only library
 file(GLOB_RECURSE source "source/*.h*")
 add_library(${PROJECT_NAME} INTERFACE)
 target_sources(${PROJECT_NAME} INTERFACE ${source})
@@ -115,6 +114,13 @@ target_compile_options(${TEST_NAME} PRIVATE
     >
 )
 
+# Relax certain warnings for Test Files
+file(GLOB_RECURSE files "test/tests/*")
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    set_source_files_properties(${files} PROPERTIES COMPILE_FLAGS "-Wno-old-style-cast -Wno-cast-align")
+elseif (MSVC)
+    set_source_files_properties(${files} PROPERTIES COMPILE_FLAGS "/W0")
+endif()
 
 
 ## ENABLE THE USE OF CTEST 

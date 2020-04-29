@@ -12,11 +12,6 @@
 #include "BufferGeometry.hpp"
 #include "MemorySentinel.hpp"
 
-WARNINGS_OVERRIDE
-WARNINGS_DISABLE_SIGN_UNSIGNED
-WARNINGS_DISABLE_C_CAST
-WARNINGS_DISABLE_CAST_ALIGN
-
 TEST_CASE("BufferGeometry Tests")
 {
     SECTION("1D") {
@@ -331,5 +326,3 @@ TEST_CASE("BufferGeometry Tests")
         }
     }
 }
-
-WARNINGS_RESTORE_ALL
