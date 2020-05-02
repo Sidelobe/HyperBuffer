@@ -23,14 +23,16 @@ class HyperBufferBase
 {
 protected:
     using size_type = int;
-    using pointer_type = typename add_pointers_to_type<T, N>::type;
     
     /**
-     * NOTE: should be simply  `using subdim_pointer_type = typename remove_pointers_from_type<pointer_type, 1>::type;`
-     * Otherwise, getTopDimensionData_Nx (which is never called for N=1 anyway) won't compile.
-     * We cannot use enable_if on this function because it's virtual!
+     * NOTE: should be simply:
+     *      using pointer_type = typename add_pointers_to_type<T, N>::type;
+     *      using subdim_pointer_type = typename remove_pointers_from_type<pointer_type, 1>::type;
+     * But without the std::conditional, getDataPointer_Nx and getTopDimensionData_Nx (which are never called
+     * for N=1 anyway) won't compile for N=1. We cannot use enable_if on this function because they're virtual!
      * C++17 would allow us to place an `if constexpr`, but in C++14, we have to resort to this hack.
      */
+    using pointer_type = std::conditional_t<(N==1), T*, typename add_pointers_to_type<T, N>::type>;
     using subdim_pointer_type = std::conditional_t<(N==1), T*, typename remove_pointers_from_type<pointer_type, 1>::type>;
 
     // Helper to make interfacing with STL a bit more readable
@@ -54,10 +56,10 @@ public:
     //    decltype(auto) operator() (size_type i...) = 0;
 
     // MARK: data()
-    // NOTE: I cannot make this virtual function because of the differente return types required
-    // decltype(auto) is not allowed for virtual functions, so I chose an enable_if construct
-    FOR_Nx pointer_type data() { return getTopDimPointer(); }
-    FOR_Nx const pointer_type data() const { return getTopDimPointer(); }
+    // NOTE: We cannot make these virtual functions because of the differente return types required.
+    // decltype(auto) is not allowed for virtual functions, so I chose an enable_if construct for selective compilation
+    FOR_Nx pointer_type data() { return getDataPointer_Nx(); }
+    FOR_Nx const pointer_type data() const { return getDataPointer_Nx(); }
     FOR_N1 T* data() { return &getTopDimensionData_N1(0); }
     FOR_N1 const T* data() const { return &getTopDimensionData_N1(0); }
 
@@ -71,11 +73,8 @@ protected:
     }
     
     /** Constructor that takes the extents of the dimensions as a std::array */
-    explicit HyperBufferBase(const std::array<int, N>& dimensionExtents) :
-        m_dimensionExtents{dimensionExtents} {}
+    explicit HyperBufferBase(const std::array<int, N>& dimensionExtents) : m_dimensionExtents{dimensionExtents} {}
 
-    void assignPointers(T** pointers) { m_BasePointers = pointers; }
-    
     static constexpr int getNumberOfPointers(const std::array<int, N>& dimensionExtents)
     {
         return std::max(StdArrayOperations::sumOfCumulativeProductCapped(N-1, dimensionExtents), 1); // at least size 1
@@ -92,18 +91,10 @@ protected:
 
     virtual T& getTopDimensionData_N1(size_type i) = 0;
     virtual subdim_pointer_type getTopDimensionData_Nx(size_type i) = 0;
-
-    /** returns a (multi-dim) pointer to the first entry in the highest-order dimension, e.g. float*** for T=float,N=3 */
-    pointer_type getTopDimPointer()
-    {
-        //return reinterpret_cast<pointer_type>((void*)getTopDimensionData_Nx(0));
-        return reinterpret_cast<pointer_type>(m_BasePointers);
-    }
+    virtual pointer_type getDataPointer_Nx() = 0;
 
 protected:
     std::array<int, N> m_dimensionExtents; // only required by the dims functions
-    
-private:
-    T** m_BasePointers; // duplicate... could we get rid of this? -- I could turn getTopDimPointer into a virtual function, overridden the
+
 };
 

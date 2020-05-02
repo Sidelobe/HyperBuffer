@@ -19,6 +19,7 @@ template<typename T, int N>
 class HyperBuffer : public HyperBufferBase<T, N>
 {
     using size_type = typename HyperBufferBase<T, N>::size_type;
+    using pointer_type = typename HyperBufferBase<T, N>::pointer_type;
     using subdim_pointer_type = typename HyperBufferBase<T, N>::subdim_pointer_type;
     using HyperBufferBase<T, N>::STL;
 
@@ -31,10 +32,8 @@ public:
         m_pointers(STL(HyperBufferBase<T, N>::getNumberOfPointers(i...)))
     {
         m_bufferGeometry.hookupPointerArrayToData(m_data.data(), m_pointers.data());
-        this->assignPointers(m_pointers.data());
     }
     
-    // TODO: std::array ctor
 private:
     T& getTopDimensionData_N1(size_type i) override
     {
@@ -54,6 +53,11 @@ private:
         return reinterpret_cast<subdim_pointer_type>(m_pointers[STL(offset)]);
     }
 
+    pointer_type getDataPointer_Nx() override
+    {
+        return reinterpret_cast<pointer_type>(m_pointers.data());
+    }
+    
 private:
     BufferGeometry<N> m_bufferGeometry;
     
@@ -69,6 +73,7 @@ template<typename T, int N>
 class HyperBufferPreAllocFlat : public HyperBufferBase<T, N>
 {
     using size_type = typename HyperBufferBase<T, N>::size_type;
+    using pointer_type = typename HyperBufferBase<T, N>::pointer_type;
     using subdim_pointer_type = typename HyperBufferBase<T, N>::subdim_pointer_type;
     using HyperBufferBase<T, N>::STL;
     
@@ -82,7 +87,6 @@ public:
         m_pointers(STL(HyperBufferBase<T, N>::getNumberOfPointers(i...)))
     {
         m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
-        this->assignPointers(m_pointers.data());
     }
    
 private:
@@ -100,7 +104,11 @@ private:
         int offset = m_bufferGeometry.template getOffsetInPointerArray<0>(i);
         return reinterpret_cast<subdim_pointer_type>(m_pointers[STL(offset)]);
     }
-
+    
+    pointer_type getDataPointer_Nx() override
+    {
+        return reinterpret_cast<pointer_type>(m_pointers.data());
+    }
     
 private:
     BufferGeometry<N> m_bufferGeometry;
@@ -134,7 +142,6 @@ public:
                 m_pointers.push_back(reinterpret_cast<T*>(preAllocatedData[j]));
             }
         }
-        this->assignPointers(m_pointers.data());
     }
     
 private:
@@ -150,7 +157,11 @@ private:
         ASSERT((i < this->m_dimensionExtents[0]) && "index out range");
         return reinterpret_cast<subdim_pointer_type>(m_externalData[i]);
     }
-
+    
+    pointer_type getDataPointer_Nx() override
+    {
+        return reinterpret_cast<pointer_type>(m_pointers.data());
+    }
     
 private:
     pointer_type m_externalData;
