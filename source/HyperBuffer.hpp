@@ -18,9 +18,7 @@
 template<typename T, int N>
 class HyperBuffer : public HyperBufferBase<T, N>
 {
-    using size_type = typename HyperBufferBase<T, N>::size_type;
     using pointer_type = typename HyperBufferBase<T, N>::pointer_type;
-    using subdim_pointer_type = typename HyperBufferBase<T, N>::subdim_pointer_type;
     using HyperBufferBase<T, N>::STL;
 
 public:
@@ -35,15 +33,14 @@ public:
     }
     
 private:
-    T& getTopDimensionData_N1(size_type i) override
-    {
-        ASSERT(N==1 && "this should only be called for N==1 !");
-        return m_data[STL(i)];
-    }
-    
     pointer_type getDataPointer_Nx() override
     {
         return reinterpret_cast<pointer_type>(m_pointers.data());
+    }
+    
+    T* getDataPointer_N1() override
+    {
+        return *(m_pointers.data());
     }
     
 private:
@@ -60,9 +57,7 @@ private:
 template<typename T, int N>
 class HyperBufferPreAllocFlat : public HyperBufferBase<T, N>
 {
-    using size_type = typename HyperBufferBase<T, N>::size_type;
     using pointer_type = typename HyperBufferBase<T, N>::pointer_type;
-    using subdim_pointer_type = typename HyperBufferBase<T, N>::subdim_pointer_type;
     using HyperBufferBase<T, N>::STL;
     
 public:
@@ -78,15 +73,14 @@ public:
     }
    
 private:
-    T& getTopDimensionData_N1(size_type i) override
-    {
-        ASSERT(N==1 && "this should only be called for N==1 !");
-        return m_externalData[i];
-    }
-    
     pointer_type getDataPointer_Nx() override
     {
         return reinterpret_cast<pointer_type>(m_pointers.data());
+    }
+    
+    T* getDataPointer_N1() override
+    {
+        return *(m_pointers.data());
     }
     
 private:
@@ -101,41 +95,26 @@ private:
 template<typename T, int N>
 class HyperBufferPreAlloc : public HyperBufferBase<T, N>
 {
-    using size_type = typename HyperBufferBase<T, N>::size_type;
     using pointer_type = typename HyperBufferBase<T, N>::pointer_type;
-    using subdim_pointer_type = typename HyperBufferBase<T, N>::subdim_pointer_type;
-    using HyperBufferBase<T, N>::STL;
     
 public:
     /** Constructor that takes the extents of the dimensions as a variable argument list */
     template<typename... I>
     explicit HyperBufferPreAlloc(pointer_type preAllocatedData, I... i) :
         HyperBufferBase<T, N>(i...),
-        m_externalData(preAllocatedData)
-    {
-        if (N == 1) {
-            m_pointers.push_back(reinterpret_cast<T*>(preAllocatedData));
-            
-        } else {
-            for (int j=0; j < this->m_dimensionExtents[0]; ++j) {
-                m_pointers.push_back(reinterpret_cast<T*>(preAllocatedData[j]));
-            }
-        }
-    }
+        m_externalData(preAllocatedData) {}
     
 private:
-    T& getTopDimensionData_N1(size_type i) override
-    {
-        ASSERT(N==1 && "this should only be called for N==1 !");
-        return m_pointers[0][i];
-    }
-    
     pointer_type getDataPointer_Nx() override
     {
         return m_externalData;
     }
     
+    T* getDataPointer_N1() override
+    {
+        return reinterpret_cast<T*>(m_externalData);
+    }
+    
 private:
     pointer_type m_externalData;
-    std::vector<T*> m_pointers;
 };

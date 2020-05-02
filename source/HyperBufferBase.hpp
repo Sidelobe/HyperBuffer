@@ -23,17 +23,8 @@ class HyperBufferBase
 {
 protected:
     using size_type = int;
-    
-    /**
-     * NOTE: should be simply:
-     *      using pointer_type = typename add_pointers_to_type<T, N>::type;
-     *      using subdim_pointer_type = typename remove_pointers_from_type<pointer_type, 1>::type;
-     * But without the std::conditional, getDataPointer_Nx and getTopDimensionData_Nx (which are never called
-     * for N=1 anyway) won't compile for N=1. We cannot use enable_if on this function because they're virtual!
-     * C++17 would allow us to place an `if constexpr`, but in C++14, we have to resort to this hack.
-     */
-    using pointer_type = std::conditional_t<(N==1), T*, typename add_pointers_to_type<T, N>::type>;
-    using subdim_pointer_type = std::conditional_t<(N==1), T*, typename remove_pointers_from_type<pointer_type, 1>::type>;
+    using pointer_type = typename add_pointers_to_type<T, N>::type;
+    using subdim_pointer_type = typename remove_pointers_from_type<pointer_type, 1>::type;
 
     // Helper to make interfacing with STL a bit more readable
     using stl_size_type = typename std::vector<T*>::size_type;
@@ -48,8 +39,8 @@ public:
     // MARK: - operator[]
     FOR_Nx subdim_pointer_type operator[] (size_type i) { return getDataPointer_Nx()[i]; }
     FOR_Nx const subdim_pointer_type operator[] (size_type i) const { return getDataPointer_Nx()[i]; }
-    FOR_N1 T& operator[] (size_type i) { return getTopDimensionData_N1(i); }
-    FOR_N1 const T& operator[] (size_type i) const { return getTopDimensionData_N1(i); }
+    FOR_N1 T& operator[] (size_type i) { return getDataPointer_N1()[i]; }
+    FOR_N1 const T& operator[] (size_type i) const { return getDataPointer_N1()[i]; }
 
     // TODO: operator(varArg) -- returns a sub-buffer or value, depending on number of arguments
     //    template<int... I>
@@ -60,8 +51,8 @@ public:
     // decltype(auto) is not allowed for virtual functions, so I chose an enable_if construct for selective compilation
     FOR_Nx pointer_type data() { return getDataPointer_Nx(); }
     FOR_Nx const pointer_type data() const { return getDataPointer_Nx(); }
-    FOR_N1 T* data() { return &getTopDimensionData_N1(0); }
-    FOR_N1 const T* data() const { return &getTopDimensionData_N1(0); }
+    FOR_N1 T* data() { return getDataPointer_N1(); }
+    FOR_N1 const T* data() const { return getDataPointer_N1(); }
 
 protected:
     /** Constructor that takes the extents of the dimensions as a variable argument list */
@@ -89,8 +80,8 @@ protected:
     // Helper to make interfacing with STL a bit more readable
     constexpr stl_size_type STL(int i) const { return static_cast<stl_size_type>(i); }
 
-    virtual T& getTopDimensionData_N1(size_type i) = 0;
     virtual pointer_type getDataPointer_Nx() = 0;
+    virtual T* getDataPointer_N1() = 0;
 
 protected:
     std::array<int, N> m_dimensionExtents; // only required by the dims functions
