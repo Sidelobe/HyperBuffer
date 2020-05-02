@@ -66,22 +66,21 @@ protected:
     /** Constructor that takes the extents of the dimensions as a std::array */
     explicit HyperBufferBase(const std::array<int, N>& dimensionExtents) : m_dimensionExtents{dimensionExtents} {}
 
+    // MARK: Virtual functions to be defined by derived classes
+    virtual pointer_type getDataPointer_Nx() = 0;
+    virtual T* getDataPointer_N1() = 0;
+    
+     // MARK: Helpers
     static constexpr int getNumberOfPointers(const std::array<int, N>& dimensionExtents)
     {
         return std::max(StdArrayOperations::sumOfCumulativeProductCapped(N-1, dimensionExtents), 1); // at least size 1
     }
-    
+
     template<typename... I>
-    static constexpr int getNumberOfPointers(I... i)
-    {
-        return getNumberOfPointers({static_cast<int>(i)...});
-    }
+    static constexpr int getNumberOfPointers(I... i) { return getNumberOfPointers({static_cast<int>(i)...}); }
     
     // Helper to make interfacing with STL a bit more readable
     constexpr stl_size_type STL(int i) const { return static_cast<stl_size_type>(i); }
-
-    virtual pointer_type getDataPointer_Nx() = 0;
-    virtual T* getDataPointer_N1() = 0;
 
 protected:
     std::array<int, N> m_dimensionExtents; // only required by the dims functions
