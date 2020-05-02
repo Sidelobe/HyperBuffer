@@ -46,8 +46,8 @@ public:
     const int* dims() const { return m_dimensionExtents.data(); }
 
     // MARK: - operator[]
-    FOR_Nx subdim_pointer_type operator[] (size_type i) { return getTopDimensionData_Nx(i); }
-    FOR_Nx const subdim_pointer_type operator[] (size_type i) const { return getTopDimensionData_Nx(i); }
+    FOR_Nx subdim_pointer_type operator[] (size_type i) { return getDataPointer_Nx()[i]; }
+    FOR_Nx const subdim_pointer_type operator[] (size_type i) const { return getDataPointer_Nx()[i]; }
     FOR_N1 T& operator[] (size_type i) { return getTopDimensionData_N1(i); }
     FOR_N1 const T& operator[] (size_type i) const { return getTopDimensionData_N1(i); }
 
@@ -90,7 +90,6 @@ protected:
     constexpr stl_size_type STL(int i) const { return static_cast<stl_size_type>(i); }
 
     virtual T& getTopDimensionData_N1(size_type i) = 0;
-    virtual subdim_pointer_type getTopDimensionData_Nx(size_type i) = 0;
     virtual pointer_type getDataPointer_Nx() = 0;
 
 protected:

@@ -41,18 +41,6 @@ private:
         return m_data[STL(i)];
     }
     
-    subdim_pointer_type getTopDimensionData_Nx(size_type i) override
-    {
-        ASSERT(N>1 && "this should only be called for N>1 !");
-        ASSERT((i < this->m_dimensionExtents[0]) && "index out range");
-        // TODO: should we return a reference here --??
-        // TODO: return sub-buffer? something like: HyperBuffer<T, N-1>(*this, i)
-        
-        // syntax weirdness: https://stackoverflow.com/questions/4942703/
-        int offset = m_bufferGeometry.template getOffsetInPointerArray<0>(i);
-        return reinterpret_cast<subdim_pointer_type>(m_pointers[STL(offset)]);
-    }
-
     pointer_type getDataPointer_Nx() override
     {
         return reinterpret_cast<pointer_type>(m_pointers.data());
@@ -94,15 +82,6 @@ private:
     {
         ASSERT(N==1 && "this should only be called for N==1 !");
         return m_externalData[i];
-    }
-    
-    subdim_pointer_type getTopDimensionData_Nx(size_type i) override
-    {
-        ASSERT(N>1 && "this should only be called for N>1 !");
-        ASSERT((i < this->m_dimensionExtents[0]) && "index out range");
-        // syntax weirdness: https://stackoverflow.com/questions/4942703/
-        int offset = m_bufferGeometry.template getOffsetInPointerArray<0>(i);
-        return reinterpret_cast<subdim_pointer_type>(m_pointers[STL(offset)]);
     }
     
     pointer_type getDataPointer_Nx() override
@@ -151,16 +130,9 @@ private:
         return m_pointers[0][i];
     }
     
-    subdim_pointer_type getTopDimensionData_Nx(size_type i) override
-    {
-        ASSERT(N>1 && "this should only be called for N>1 !");
-        ASSERT((i < this->m_dimensionExtents[0]) && "index out range");
-        return reinterpret_cast<subdim_pointer_type>(m_externalData[i]);
-    }
-    
     pointer_type getDataPointer_Nx() override
     {
-        return reinterpret_cast<pointer_type>(m_pointers.data());
+        return m_externalData;
     }
     
 private:
