@@ -53,21 +53,21 @@ Memory management details:
 
 * no dynamic allocation after construction
 * dynamic allocation-free move() semantics
-* (*planned*) alignment of the data (lowest-order dimension) can be specified ('owning' mode only)
+* (*planned*) alignment of the data (lowest-order/innermost dimension) can be specified ('owning' mode only)
  
 ### Data Access Modes
 There are 3 variants of `HyperBuffer`:
 
 1. `HyperBuffer`: internally allocates the memory for the dimensions it was configured for.
 1. `HyperBufferPreAlloc`: wraps around already-allocated multi-dimensional data and pointers. No dynamic memory allocation.
-1. `HyperBufferPreAllocFlat`: uses an already-allocated memory area for its data, but manages it using its internal memory model. Only allocates memory for the pointers.
+1. `HyperBufferPreAllocFlat`: uses an already-allocated memory area for the data, but manages it using its internal memory model. Only allocates memory for the pointers.
 
 ## Memory Model for 'Owning' Mode
 In C++/C, there are two common ways of allocating a multi-dimensional data structure:
 
 1. **contiguous / linear**: e.g. C-Style `int[2][3][5]`, which is just 'view' for a 1D `2*3*5` int array. All dimensions have to be uniform, alignment is achieved through padding. Other than this, there is zero memory overhead, unless you need to produce an `int***` to the data.
 
-1. **linked / pointer**: arrays of pointers that point to other pointers and eventually the data. Dimensions can be non-uniform, data alignment can be achieved when allocating the lowest-order dimension.
+1. **linked / pointer**: arrays of pointers that point to other pointers and eventually the data. Dimensions can be non-uniform, data alignment can be achieved when allocating the innermost dimension.
 
 Essentially, with method \#2 we differentiate between the memory required for pointers and the memory used for the actual data, which is located at the lowest dimension. Allocating the memory for the pointers usually involves individual allocation on every dimension recursively.
 
@@ -85,9 +85,9 @@ Here's an example for a 5-Dimensional buffer with the extents `{2, 3, 2, 3, 6}`.
 ### Memory Overhead & Buffer Geometry
 The memory overhead of an N-Dimensional `HyperBuffer` of `base_type` has 2 components:
 
-1. The amount of memory required for the **data** is given by the *product of all its dimension extents*. This corresponds to the amount of elements in the lowest-order dimension.
+1. The amount of memory required for the **data** is given by the *product of all its dimension extents*. This corresponds to the amount of elements in the innermost dimension.
 
-1. The **amount of pointers** need for a given multi-dimensional buffer is given by the *sum of the cumulative product of its dimension extents*, where with 'dimensions' we mean the 'pointer dimensions', i.e. we ignore the lowest-order dimension.
+1. The **amount of pointers** need for a given multi-dimensional buffer is given by the *sum of the cumulative product of its dimension extents*, where with 'dimensions' we mean the 'pointer dimensions', i.e. we ignore the innermost dimension.
 
 For a `HyperBuffer<float, 3>(2, 4, 5)` this would mean:
 
