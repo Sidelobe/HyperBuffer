@@ -15,9 +15,9 @@
 #include "MemorySentinel.hpp"
 
 // functions to test the integrity of the different variants throught the same API
-template<typename T, int N> void testHyperBuffer1D_size4(HyperBufferBase<T, N>& buffer);
-template<typename T, int N> void testHyperBuffer2D_sizes2_4(HyperBufferBase<T, N>& buffer);
-template<typename T, int N> void testHyperBuffer3D_sizes3_3_8(HyperBufferBase<T, N>& buffer);
+template<typename T> void testHyperBuffer1D_size4(HyperBufferBase<T, 1>& buffer);
+template<typename T> void testHyperBuffer2D_sizes2_4(HyperBufferBase<T, 2>& buffer);
+template<typename T> void testHyperBuffer3D_sizes3_3_8(HyperBufferBase<T, 3>& buffer);
 
 
 TEST_CASE("HyperBuffer Tests - Internal Memory Allocation")
@@ -143,8 +143,8 @@ TEST_CASE("HyperBuffer Tests - External Memory Allocation (MultiDim)")
 //}
 
 
-template<typename T, int N>
-void testHyperBuffer1D_size4(HyperBufferBase<T, N>& buffer)
+template<typename T>
+void testHyperBuffer1D_size4(HyperBufferBase<T, 1>& buffer)
 {
     REQUIRE(buffer.dim(0) == 4);
     REQUIRE(buffer.dims()[0] == 4);
@@ -163,8 +163,8 @@ void testHyperBuffer1D_size4(HyperBufferBase<T, N>& buffer)
     REQUIRE(rawData[1] == -99);
 }
 
-template<typename T, int N>
-void testHyperBuffer2D_sizes2_4(HyperBufferBase<T, N>& buffer)
+template<typename T>
+void testHyperBuffer2D_sizes2_4(HyperBufferBase<T, 2>& buffer)
 {
     REQUIRE(buffer.dims()[0] == 2);
     REQUIRE(buffer.dims()[1] == 4);
@@ -189,8 +189,8 @@ void testHyperBuffer2D_sizes2_4(HyperBufferBase<T, N>& buffer)
     REQUIRE(rawData[1][3] == -33);
 }
 
-template<typename T, int N> void
-testHyperBuffer3D_sizes3_3_8(HyperBufferBase<T, N>& buffer)
+template<typename T>
+void testHyperBuffer3D_sizes3_3_8(HyperBufferBase<T, 3>& buffer)
 {
     std::vector<int> dims(buffer.dims(), buffer.dims() + 3);
     REQUIRE(dims == std::vector<int>{3, 3, 8});    
