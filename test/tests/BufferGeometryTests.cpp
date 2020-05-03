@@ -325,4 +325,21 @@ TEST_CASE("BufferGeometry Tests")
             BufferGeometry<3> bufferGeo(dims);
         }
     }
+    
+    SECTION("Verify move assignment operation does not allocate") {
+        BufferGeometry<4> bufferGeo4(2, 3, 2, 3);
+        {
+            ScopedMemorySentinel sentinel;
+            BufferGeometry<4> bufferGeo4MovedTo = std::move(bufferGeo4);
+            UNUSED(bufferGeo4MovedTo);
+        }
+    }
+    SECTION("Verify move assignment ctor does not allocate") {
+        BufferGeometry<4> bufferGeo4(2, 3, 2, 3);
+        {
+            ScopedMemorySentinel sentinel;
+            BufferGeometry<4> bufferGeo4MovedTo(bufferGeo4);
+            UNUSED(bufferGeo4MovedTo);
+        }
+    }
 }
