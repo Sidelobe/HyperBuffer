@@ -12,6 +12,7 @@
 #include <numeric>
 
 #include "HyperBuffer.hpp"
+#include "MemorySentinel.hpp"
 
 // functions to test the integrity of the different variants throught the same API
 template<typename T> void testHyperBuffer1D_size4(HyperBufferBase<T, 1>& buffer);
@@ -160,6 +161,17 @@ void testHyperBuffer1D_size4(HyperBufferBase<T, 1>& buffer)
     
     rawData[1] = -99;
     REQUIRE(rawData[1] == -99);
+    
+    { // Verify all access operations do not allocate memory
+        ScopedMemorySentinel sentinel;
+        buffer[2] = -2;
+        int d0 = buffer.dim(0);
+        const int* dims = buffer.dims();
+        int* raw = buffer.data();
+        UNUSED(d0);
+        UNUSED(dims);
+        UNUSED(raw);
+    }
 }
 
 template<typename T>
@@ -186,6 +198,17 @@ void testHyperBuffer2D_sizes2_4(HyperBufferBase<T, 2>& buffer)
     REQUIRE(rawData[1][1] == -11);
     REQUIRE(rawData[1][2] == -22);
     REQUIRE(rawData[1][3] == -33);
+    
+    { // Verify all access operations do not allocate memory
+        ScopedMemorySentinel sentinel;
+        buffer[0][2] = -2;
+        int d0 = buffer.dim(0);
+        const int* dims = buffer.dims();
+        int** raw = buffer.data();
+        UNUSED(d0);
+        UNUSED(dims);
+        UNUSED(raw);
+    }
 }
 
 template<typename T>
@@ -207,4 +230,15 @@ void testHyperBuffer3D_sizes3_3_8(HyperBufferBase<T, 3>& buffer)
     REQUIRE(rawData[1][1][6] == -11);
     REQUIRE(rawData[1][2][6] == -22);
     REQUIRE(rawData[2][2][6] == -33);
+    
+    { // Verify all access operations do not allocate memory
+        ScopedMemorySentinel sentinel;
+        buffer[0][2][0] = -2;
+        int d0 = buffer.dim(0);
+        const int* dims2 = buffer.dims();
+        int*** raw = buffer.data();
+        UNUSED(d0);
+        UNUSED(dims2);
+        UNUSED(raw);
+    }
 }
