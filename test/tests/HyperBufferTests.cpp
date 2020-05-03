@@ -12,7 +12,6 @@
 #include <numeric>
 
 #include "HyperBuffer.hpp"
-#include "MemorySentinel.hpp"
 
 // functions to test the integrity of the different variants throught the same API
 template<typename T> void testHyperBuffer1D_size4(HyperBufferBase<T, 1>& buffer);
@@ -47,20 +46,20 @@ TEST_CASE("HyperBuffer Tests - Internal Memory Allocation")
 TEST_CASE("HyperBuffer Tests - External Memory Allocation (Flat)")
 {
     SECTION("Build 1D prealloc flat") {
-        int preAllocData[4];
+        int preAllocData[4] {0};
         constexpr int N = 1;
         HyperBufferPreAllocFlat<int, N> buffer(preAllocData, 4);
         testHyperBuffer1D_size4(buffer);
     }
     SECTION("Build 2D prealloc flat") {
         constexpr int N = 2;
-        int preAllocData[2*4];
+        int preAllocData[2*4] {0};
         HyperBufferPreAllocFlat<int, N> buffer(preAllocData, 2, 4);
         testHyperBuffer2D_sizes2_4(buffer);
     }
     SECTION("Build 3D prealloc flat") {
         constexpr int N = 3;
-        std::vector<int> preAllocData(3*3*8);
+        std::vector<int> preAllocData(3*3*8, 0);
         std::iota(preAllocData.begin(), preAllocData.end(), 1);
         HyperBufferPreAllocFlat<int, N> buffer(preAllocData.data(), 3, 3, 8);
         
