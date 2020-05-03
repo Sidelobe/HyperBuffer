@@ -7,11 +7,8 @@
 
 ### A C++ structure to manage multi-dimensional data efficiently and safely
 
-![](https://img.shields.io/badge/dependencies-C++14,_STL-brightgreen)
+![](https://img.shields.io/badge/dependencies-C++14,_STL_only-brightgreen)
 ![](https://img.shields.io/badge/source-header--only-brightgreen)
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-[![Build Status (master)](https://travis-ci.com/Sidelobe/HyperBuffer.svg?branch=master)](https://travis-ci.com/Sidelobe/HyperBuffer)
-[![Build Status (develop)](https://travis-ci.com/Sidelobe/HyperBuffer.svg?branch=develop)](https://travis-ci.com/Sidelobe/HyperBuffer)
 
 The main use case for this container is to hold dynamically-allocated N-dimensional datasets in memory and provide convenient access to it, while minimizing performance/memory overhead and unnecessary dynamic allocation.
 
@@ -28,12 +25,31 @@ The main use case for this container is to hold dynamically-allocated N-dimensio
 ```
 
 #### Requirements / Compatibility
+
  - C++14, STL only
  - Compiled & Tested with:
  	- GCC/g++ 9.3.0 (Linux)
 	- Clang 11 (Xcode 11.3, macos)
 	- MSVC++ 14.1 (Visual Studio 2017, Windows) 
 
+### Build Status / Quality Metrics
+
+
+![](https://img.shields.io/badge/branch-master-blue)
+[![Build Status (master)](https://travis-ci.com/Sidelobe/HyperBuffer.svg?branch=master)](https://travis-ci.com/Sidelobe/HyperBuffer)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+![](https://img.shields.io/badge/branch-develop-blue)
+[![Build Status (develop)](https://travis-ci.com/Sidelobe/HyperBuffer.svg?branch=develop)](https://travis-ci.com/Sidelobe/HyperBuffer)
+
+[![Sonarcloud Status](https://sonarcloud.io/api/project_badges/measure?project=Sidelobe_HyperBuffer&metric=alert_status)](https://sonarcloud.io/dashboard?id=Sidelobe_HyperBuffer) 
+[![SonarCloud Coverage](https://sonarcloud.io/api/project_badges/measure?project=Sidelobe_HyperBuffer&metric=coverage)](https://sonarcloud.io/component_measures/metric/coverage/list?id=Sidelobe_HyperBuffer)
+[![SonarCloud Bugs](https://sonarcloud.io/api/project_badges/measure?project=Sidelobe_HyperBuffer&metric=bugs)](https://sonarcloud.io/component_measures/metric/reliability_rating/list?id=Sidelobe_HyperBuffer)
+[![SonarCloud Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=Sidelobe_HyperBuffer&metric=vulnerabilities)](https://sonarcloud.io/component_measures/metric/security_rating/list?id=Sidelobe_HyperBuffer)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=Sidelobe_HyperBuffer&metric=ncloc)](https://sonarcloud.io/dashboard?id=Sidelobe_HyperBuffer)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Sidelobe_HyperBuffer&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=Sidelobe_HyperBuffer)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=Sidelobe_HyperBuffer&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=Sidelobe_HyperBuffer)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Sidelobe_HyperBuffer&metric=security_rating)](https://sonarcloud.io/dashboard?id=Sidelobe_HyperBuffer)
+[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=Sidelobe_HyperBuffer&metric=sqale_index)](https://sonarcloud.io/dashboard?id=Sidelobe_HyperBuffer)
 
 ## Main design paradigms and parameters:
 
@@ -98,7 +114,11 @@ For a `HyperBuffer<float, 3>(2, 4, 5)` this would mean:
 
 ## Lessons Learned: Unwanted Dynamic Memory Allocation
 
-Since we could potentially use any data structure for both the pointers and data, `std::vector<>` is an obvious candidate. However, the default constructor `std::vector<>` will allocate in some STL implementations, and not in others)!
+Since we could potentially use any data structure for both the pointers and data, `std::vector<>` is an obvious candidate. However, there's no straightforward way
+
+
+
+To make matters worse, the default constructor `std::vector<>` will allocate in some STL implementations, and not in others)!
 
 The Microsoft Visual Studio Compiler (MSVC) allocates dynamic memory in the default constructors of some STL containers. This leads to unwanted allocation in move semantics, where the default constructor is implicitly called by the compiler at some point in the process. This has pushed us to avoid using STL containers in these scenarios.
 
