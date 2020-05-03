@@ -33,12 +33,12 @@ public:
     }
     
 private:
-    pointer_type getDataPointer_Nx() override
+    pointer_type getDataPointer_Nx() const override
     {
-        return reinterpret_cast<pointer_type>(m_pointers.data());
+        return reinterpret_cast<pointer_type>(const_cast<T**>(m_pointers.data()));
     }
     
-    T* getDataPointer_N1() override
+    T* getDataPointer_N1() const override
     {
         return *(m_pointers.data());
     }
@@ -73,12 +73,12 @@ public:
     }
    
 private:
-    pointer_type getDataPointer_Nx() override
+    pointer_type getDataPointer_Nx() const override
     {
-        return reinterpret_cast<pointer_type>(m_pointers.data());
+        return reinterpret_cast<pointer_type>(const_cast<T**>(m_pointers.data()));
     }
     
-    T* getDataPointer_N1() override
+    T* getDataPointer_N1() const override
     {
         return *(m_pointers.data());
     }
@@ -105,12 +105,12 @@ public:
         m_externalData(preAllocatedData) {}
     
 private:
-    pointer_type getDataPointer_Nx() override
+    pointer_type getDataPointer_Nx() const override
     {
         return m_externalData;
     }
     
-    T* getDataPointer_N1() override
+    T* getDataPointer_N1() const override
     {
         return reinterpret_cast<T*>(m_externalData);
     }

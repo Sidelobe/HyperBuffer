@@ -62,7 +62,7 @@ There are 3 variants of `HyperBuffer`:
 1. `HyperBufferPreAlloc`: wraps around already-allocated multi-dimensional data and pointers. No dynamic memory allocation.
 1. `HyperBufferPreAllocFlat`: uses an already-allocated memory area for the data, but manages it using its internal memory model. Only allocates memory for the pointers.
 
-## Memory Model for 'Owning' Mode
+## Internal Memory Model
 In C++/C, there are two common ways of allocating a multi-dimensional data structure:
 
 1. **contiguous / linear**: e.g. C-Style `int[2][3][5]`, which is just 'view' for a 1D `2*3*5` int array. All dimensions have to be uniform, alignment is achieved through padding. Other than this, there is zero memory overhead, unless you need to produce an `int***` to the data.

@@ -129,6 +129,6 @@ private:
     }
                                                      
 private:
-    const std::array<int, N> m_dimensionExtents;
+    std::array<int, N> m_dimensionExtents;
     
 };
