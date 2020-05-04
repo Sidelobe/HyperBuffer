@@ -110,8 +110,7 @@ target_compile_options(${TEST_NAME} PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:
     /W4
     /D_USE_MATH_DEFINES
-    /D_ITERATOR_DEBUG_LEVEL=0
-    /experimental:external /external:anglebrackets # treat all #include <...> as "external" headers, don't issue warnings
+    /experimental:external /external:anglebrackets /external:W0 # treat all #include <...> as "external" headers, don't issue warnings
     >
 )
 

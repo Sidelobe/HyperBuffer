@@ -32,6 +32,21 @@ public:
         m_bufferGeometry.hookupPointerArrayToData(m_data.data(), m_pointers.data());
     }
     
+    HyperBuffer(const HyperBuffer&) = default;
+    HyperBuffer(HyperBuffer&&) = default;
+    HyperBuffer<T, N>& operator= (const HyperBuffer&) = default;
+    HyperBuffer<T, N>& operator= (HyperBuffer&&) = default;
+
+    // https://stackoverflow.com/questions/5695548/public-friend-swap-member-function
+    friend void swap(HyperBufferBase<T, N>& first, HyperBufferBase<T, N>& second) noexcept
+    {
+        using std::swap; // allow use of std::swap
+        swap(first.m_bufferGeometry, second.m_bufferGeometry); // but select overloads, first
+        swap(first.m_data, second.m_data);
+        swap(first.m_pointers, second.m_pointers);
+        // if swap(x, y) finds a better match, via ADL, it will use that instead; otherwise it falls back to std::swap
+    }
+    
 private:
     pointer_type getDataPointer_Nx() const override
     {
