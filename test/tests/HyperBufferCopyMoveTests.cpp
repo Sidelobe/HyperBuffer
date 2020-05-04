@@ -10,7 +10,7 @@
 #include "HyperBuffer.hpp"
 #include "MemorySentinel.hpp"
 
-#if defined(__MSC_VER) && defined(_DEBUG) &&_ITERATOR_DEBUG_LEVEL > 1
+#if defined(_MSC_VER) && defined(_DEBUG) &&_ITERATOR_DEBUG_LEVEL > 1
 #define MSVC_DEBUG 1
 #else
 #define MSVC_DEBUG 0
