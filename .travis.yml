@@ -96,6 +96,6 @@ script:
           sonar-scanner
       else
           make -j 4
-          ctest -V -j 4
-          #- ./HyperBufferTest
+          #ctest -V -j 4
+          ./HyperBufferTest
       fi
