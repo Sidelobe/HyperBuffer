@@ -26,82 +26,32 @@ public:
     template<typename... I>
     explicit HyperBuffer(I... i) :
         HyperBufferBase<T, N>(i...),
-        m_bufferGeometry(i...)
+        m_bufferGeometry(i...),
+        m_data(m_bufferGeometry.getRequiredDataArraySize()),
+        m_pointers(m_bufferGeometry.getRequiredPointerArraySize())
     {
-        m_data = new T[m_bufferGeometry.getRequiredDataArraySize()];
-        m_pointers = new T*[m_bufferGeometry.getRequiredPointerArraySize()];
-        m_bufferGeometry.hookupPointerArrayToData(m_data, m_pointers);
-    }
-    
-    ~HyperBuffer()
-    {
-        if (m_pointers != nullptr) {
-            delete[] m_pointers;
-        }
-        if (m_data != nullptr) {
-            delete[] m_data;
-        }
-    }
-    
-    HyperBuffer(const HyperBuffer& other) : HyperBuffer(other.m_bufferGeometry.getDimensionExtents())
-    {
-        std::memcpy(m_data, other.m_data, m_bufferGeometry.getRequiredDataArraySize() * sizeof(T));
-        std::memcpy(m_pointers, other.m_pointers, m_bufferGeometry.getRequiredPointerArraySize() * sizeof(T*));
-    }
-    
-    HyperBuffer(HyperBuffer&& other) noexcept :
-        HyperBufferBase<T, N>(other.m_bufferGeometry.getDimensionExtents()),
-        m_bufferGeometry(other.m_bufferGeometry)
-    {
-        swap(*this, other);
-    }
-    
-    HyperBuffer<T, N>& operator= (const HyperBuffer& rhs)
-    {
-        if (this != &rhs) {
-            // copy/swap idiom: (de-)allocates memory
-            HyperBuffer<T, N> tmp(rhs);
-            swap(*this, tmp);
-        }
-        return *this;
-    }
-    
-    HyperBuffer<T, N> const & operator= (HyperBuffer&& rhs) noexcept
-    {
-        if (this != &rhs) {
-            swap(*this, rhs); // non-copying
-        }
-        return *this;
+        m_bufferGeometry.hookupPointerArrayToData(m_data.data(), m_pointers.data());
     }
 
-    friend void swap(HyperBuffer<T, N>& first, HyperBuffer<T, N>& second) noexcept
-    {
-        using std::swap;
-        swap(static_cast<HyperBufferBase<T, N>&>(first), static_cast<HyperBufferBase<T, N>&>(second));
-        swap(first.m_bufferGeometry, second.m_bufferGeometry);
-        swap(first.m_data, second.m_data);
-        swap(first.m_pointers, second.m_pointers);
-    }
-    
 private:
     pointer_type getDataPointer_Nx() const override
     {
-        return reinterpret_cast<pointer_type>(m_pointers);
+        return reinterpret_cast<pointer_type>(const_cast<T**>(m_pointers.data()));
     }
     
     T* getDataPointer_N1() const override
     {
-        return *m_pointers;
+        return *m_pointers.data();
     }
     
 private:
     BufferGeometry<N> m_bufferGeometry;
     
     /** All the data (innermost dimension) is stored in a 1D structure and access with offsets to simulate multi-dimensionality */
-    T* m_data = nullptr;
+    std::vector<T> m_data;
     
     /** All but the innermost dimensions consist of pointers only, which are stored in a 1D structure as well */
-    T** m_pointers = nullptr;
+    std::vector<T*> m_pointers;
 };
 
 
@@ -132,7 +82,7 @@ private:
     
     T* getDataPointer_N1() const override
     {
-        return *(m_pointers.data());
+        return *m_pointers.data();
     }
     
 private:

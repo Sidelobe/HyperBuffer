@@ -40,7 +40,7 @@ public:
     /** @return the number of required pointer entries given the configured geometry */
     int getRequiredPointerArraySize() const
     {
-        return StdArrayOperations::sumOfCumulativeProductCapped(N-1, m_dimensionExtents);
+        return std::max(StdArrayOperations::sumOfCumulativeProductCapped(N-1, m_dimensionExtents), 1); // at least size 1
     }
 
     /** The data is saved in row-major ordering */
