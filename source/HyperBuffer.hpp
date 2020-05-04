@@ -9,6 +9,7 @@
 
 #include <array>
 #include <vector>
+#include <cstring> // for memcpy
 
 #include "HyperBufferBase.hpp"
 #include "TemplateUtils.hpp"
