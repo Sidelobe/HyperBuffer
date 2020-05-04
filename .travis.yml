@@ -7,7 +7,7 @@ matrix:
         - os: osx
           osx_image: xcode10.1
           compiler: clang
-          env: COMPILER='clang++' COV="yes"
+          env: COMPILER='clang++' COV="yes" CONFIG="Debug"
           addons:
             sonarcloud:
                 organization: "idelobe" # the key of the org you chose at step #3
@@ -18,7 +18,7 @@ matrix:
         - os: linux
           dist: bionic
           compiler: gcc
-          env: COMPILER='g++-9' COV="no"
+          env: COMPILER='g++-9' COV="no" CONFIG="Debug"
           addons:
               apt:
                   sources: ['ubuntu-toolchain-r-test']
@@ -30,7 +30,7 @@ matrix:
 
          
         - os: windows
-          env: COV="no" MSBUILD_PATH="c:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
+          env: COV="no" CONFIG="Release" MSBUILD_PATH="c:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
 
 install:
   - |
@@ -61,7 +61,7 @@ before_script:
     - cd deploy
     - mkdir -p build
     - cd build
-    - if [ "$TRAVIS_OS_NAME" != "windows" ]; then cmake -H. -j 4 ../.. -DCMAKE_BUILD_TYPE=Debug -DCODE_COVERAGE="$COV"; fi
+    - if [ "$TRAVIS_OS_NAME" != "windows" ]; then cmake -H. -j 4 ../.. -DCMAKE_BUILD_TYPE=$CONFIG -DCODE_COVERAGE="$COV"; fi
     - if [ "$TRAVIS_OS_NAME" == "windows" ]; then export PATH=$MSBUILD_PATH:$PATH; cmake -G "Visual Studio 15 2017" -DCMAKE_GENERATOR_PLATFORM=x64 ../..; fi
       
 script:
@@ -69,8 +69,8 @@ script:
     - |
       if [ "${TRAVIS_OS_NAME}" == "windows" ]; then
           cmd.exe //C 'C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat' amd64
-          cmd.exe //C "MSBuild.exe HyperBuffer.sln" //m:2 //nologo //verbosity:quiet //p:Configuration=Debug //p:Platform=x64
-          ./Debug/HyperBufferTest.exe
+          cmd.exe //C "MSBuild.exe HyperBuffer.sln" //m:2 //nologo //verbosity:quiet //p:Configuration=$CONFIG //p:Platform=x64
+          ./$CONFIG/HyperBufferTest.exe
       elif [ "${TRAVIS_OS_NAME}" == "osx" ] && [ "$COV" == "yes" ]; then
           build-wrapper-macosx-x86 --out-dir bw-output make -j 4  # Wraps the compilation with the Build Wrapper to generate configuration (used later by the SonarScanner) into the "bw-output" folder
           #ctest -V -j 4 # run the tests
