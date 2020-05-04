@@ -78,15 +78,6 @@ protected:
     virtual pointer_type getDataPointer_Nx() const = 0;
     virtual T* getDataPointer_N1() const = 0;
     
-     // MARK: static Helpers
-    static constexpr int getNumberOfPointers(const std::array<int, N>& dimensionExtents)
-    {
-        return std::max(StdArrayOperations::sumOfCumulativeProductCapped(N-1, dimensionExtents), 1); // at least size 1
-    }
-
-    template<typename... I>
-    static constexpr int getNumberOfPointers(I... i) { return getNumberOfPointers({static_cast<int>(i)...}); }
-    
     // Helper to make interfacing with STL a bit more readable
     static constexpr stl_size_type STL(int i) { return static_cast<stl_size_type>(i); }
 

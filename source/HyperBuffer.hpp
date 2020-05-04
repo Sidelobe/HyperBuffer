@@ -69,7 +69,7 @@ public:
         HyperBufferBase<T, N>(i...),
         m_bufferGeometry(i...),
         m_externalData(preAllocatedDataFlat),
-        m_pointers(STL(HyperBufferBase<T, N>::getNumberOfPointers(i...)))
+        m_pointers(m_bufferGeometry.getRequiredPointerArraySize())
     {
         m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
     }
