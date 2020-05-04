@@ -112,13 +112,9 @@ For a `HyperBuffer<float, 3>(2, 4, 5)` this would mean:
 
 
 
-## Lessons Learned: Unwanted Dynamic Memory Allocation
+## Lessons Learned: Unwanted Dynamic Memory (De-)Allocation
 
-Since we could potentially use any data structure for both the pointers and data, `std::vector<>` is an obvious candidate. However, there's no straightforward way
-
-
-
-To make matters worse, the default constructor `std::vector<>` will allocate in some STL implementations, and not in others)!
+Since we could potentially use any data structure for both the pointers and data, `std::vector` is an obvious candidate. Defining a custom allocator would give us control over the allocation per se, but not over whether or when the allocator's `allocate()` function is called. As it turns out, the default constructor `std::vector` will allocate in some STL implementations, and not in others)!
 
 The Microsoft Visual Studio Compiler (MSVC) allocates dynamic memory in the default constructors of some STL containers. This leads to unwanted allocation in move semantics, where the default constructor is implicitly called by the compiler at some point in the process. This has pushed us to avoid using STL containers in these scenarios.
 
