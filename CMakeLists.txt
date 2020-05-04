@@ -116,10 +116,10 @@ target_compile_options(${TEST_NAME} PRIVATE
 
 # Relax certain warnings for Test Files
 file(GLOB_RECURSE files "test/tests/*")
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    set_source_files_properties(${files} PROPERTIES COMPILE_FLAGS "-Wno-old-style-cast -Wno-cast-align")
-elseif (MSVC)
+if (MSVC)
     set_source_files_properties(${files} PROPERTIES COMPILE_FLAGS "/W0")
+else()
+    set_source_files_properties(${files} PROPERTIES COMPILE_FLAGS "-Wno-old-style-cast -Wno-cast-align")
 endif()
 
 
