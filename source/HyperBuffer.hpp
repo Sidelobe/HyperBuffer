@@ -46,9 +46,10 @@ private:
 private:
     BufferGeometry<N> m_bufferGeometry;
     
-    /** we store the data in a 1D structure and access with offsets to simulate multi-dimensionality */
+    /** All the data (innermost dimension) is stored in a 1D structure and access with offsets to simulate multi-dimensionality */
     std::vector<T> m_data;
     
+    /** All but the innermost dimensions consist of pointers only, which are stored in a 1D structure as well */
     std::vector<T*> m_pointers;
 };
 
