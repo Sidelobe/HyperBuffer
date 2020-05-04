@@ -10,6 +10,12 @@
 #include "HyperBuffer.hpp"
 #include "MemorySentinel.hpp"
 
+#if defined(__MSC_VER) && defined(_DEBUG) &&_ITERATOR_DEBUG_LEVEL > 1
+#define MSVC_DEBUG 1
+#else
+#define MSVC_DEBUG 0
+#endif
+
 void verifyBuffer(const HyperBufferBase<int, 3>& b)
 {
     REQUIRE (b.dim(0) == 3);
@@ -37,6 +43,13 @@ TEST_CASE("Copy/Move a HyperBuffer with internal allocation")
     verifyBuffer(bufferCopy);
     verifyBuffer(buffer); // original remains untouched
     
+    // verify no memory is allocated during copy to buffer with same size
+    HyperBuffer<int, N> bufferCopySameSize(dims);
+    {
+        ScopedMemorySentinel sentinel;
+        bufferCopySameSize = buffer;
+    }
+    
     // this will work, but will allocate memoery
     std::array<int, 3> dimsSmaller {2, 2, 6};
     HyperBuffer<int, N> bufferCopySmallerSize(dimsSmaller);
@@ -53,6 +66,7 @@ TEST_CASE("Copy/Move a HyperBuffer with internal allocation")
         REQUIRE(bufferMovedTo.data() != nullptr);
     }
     
+#if !MSVC_DEBUG
     // verify no memory is allocated during move assignment
     {
         HyperBuffer<int, N> bufferMovedFrom = buffer; // working copy
@@ -70,6 +84,7 @@ TEST_CASE("Copy/Move a HyperBuffer with internal allocation")
         verifyBuffer(bufferMovedTo);
         REQUIRE(bufferMovedTo.data() != nullptr);
     }
+#endif
     
     // Move Ctor
     {
@@ -79,6 +94,7 @@ TEST_CASE("Copy/Move a HyperBuffer with internal allocation")
         REQUIRE(bufferMovedToCtor.data() != nullptr);
     }
     
+#if !MSVC_DEBUG
     // verify no memory is allocated during move construction
     {
         HyperBuffer<int, N> bufferMovedFrom = buffer; // working copy
@@ -95,6 +111,8 @@ TEST_CASE("Copy/Move a HyperBuffer with internal allocation")
         sentinel.setArmed(false);
         REQUIRE(bufferMovedCtor.data() != nullptr);
     }
+#endif
+    
 }
 
 TEST_CASE("Copy/Move a HyperBuffer with external, flat allocation")
@@ -138,6 +156,7 @@ TEST_CASE("Copy/Move a HyperBuffer with external, flat allocation")
         REQUIRE(bufferMovedTo[2][0] == buffer[2][0]);
     }
 
+#if !MSVC_DEBUG
     // verify no memory is allocated during move assignment
     {
         HyperBufferPreAllocFlat<int, N> bufferMovedFrom = buffer; // working copy
@@ -156,7 +175,8 @@ TEST_CASE("Copy/Move a HyperBuffer with external, flat allocation")
         REQUIRE(bufferMovedTo.data() != nullptr);
         REQUIRE(bufferMovedFrom.data() == nullptr);
     }
-
+#endif
+    
     // Move Ctor
     {
         HyperBufferPreAllocFlat<int, N> bufferMovedFrom = buffer;
@@ -167,7 +187,8 @@ TEST_CASE("Copy/Move a HyperBuffer with external, flat allocation")
         REQUIRE(bufferMovedToCtor[0][1] == buffer[0][1]);
         REQUIRE(bufferMovedToCtor[2][0] == buffer[2][0]);
     }
-
+    
+#if !MSVC_DEBUG
     // verify no memory is allocated during move construction
     {
         HyperBufferPreAllocFlat<int, N> bufferMovedFrom = buffer; // working copy
@@ -186,6 +207,8 @@ TEST_CASE("Copy/Move a HyperBuffer with external, flat allocation")
         REQUIRE(bufferMovedCtor.data() != nullptr);
         REQUIRE(bufferMovedFrom.data() == nullptr);
     }
+#endif
+    
 }
 
 TEST_CASE("Copy/Move a HyperBuffer with external, multi-dimensional allocation")
