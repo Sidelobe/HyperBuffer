@@ -23,10 +23,10 @@ matrix:
           dist: bionic
           compiler: gcc
           env: CONFIG="Debug" COMPILER='g++-9' COV="no" 
-          addons: &LinuxAddons
+          addons:
               apt:
                   sources: ['ubuntu-toolchain-r-test']
-                  packages:
+                  packages: &LinuxPackages 
                     - g++-9
                     - cmake
                     - python3-pip
@@ -35,7 +35,10 @@ matrix:
           dist: bionic
           compiler: gcc
           env: CONFIG="Release" COMPILER='g++-9' COV="no" 
-          addons:  &LinuxAddons
+          addons:
+              apt:
+                  sources: ['ubuntu-toolchain-r-test']
+                  packages: *LinuxPackages 
          
         - os: windows
           env: CONFIG="Debug" COV="no" MSBUILD_PATH="c:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"

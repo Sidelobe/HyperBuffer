@@ -27,8 +27,8 @@ public:
     explicit HyperBuffer(I... i) :
         HyperBufferBase<T, N>(i...),
         m_bufferGeometry(i...),
-        m_data(m_bufferGeometry.getRequiredDataArraySize()),
-        m_pointers(m_bufferGeometry.getRequiredPointerArraySize())
+        m_data(STL(m_bufferGeometry.getRequiredDataArraySize())),
+        m_pointers(STL(m_bufferGeometry.getRequiredPointerArraySize()))
     {
         m_bufferGeometry.hookupPointerArrayToData(m_data.data(), m_pointers.data());
     }
@@ -69,7 +69,7 @@ public:
         HyperBufferBase<T, N>(i...),
         m_bufferGeometry(i...),
         m_externalData(preAllocatedDataFlat),
-        m_pointers(m_bufferGeometry.getRequiredPointerArraySize())
+        m_pointers(STL(m_bufferGeometry.getRequiredPointerArraySize()))
     {
         m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
     }
