@@ -66,7 +66,7 @@ TEST_CASE("Copy/Move a HyperBuffer with internal allocation")
         REQUIRE(bufferMovedTo.data() != nullptr);
     }
     
-#if !MSVC_DEBUG
+#if MSVC_DEBUG == 0
     // verify no memory is allocated during move assignment
     {
         HyperBuffer<int, N> bufferMovedFrom = buffer; // working copy
@@ -94,7 +94,7 @@ TEST_CASE("Copy/Move a HyperBuffer with internal allocation")
         REQUIRE(bufferMovedToCtor.data() != nullptr);
     }
     
-#if !MSVC_DEBUG
+#if MSVC_DEBUG == 0
     // verify no memory is allocated during move construction
     {
         HyperBuffer<int, N> bufferMovedFrom = buffer; // working copy
@@ -156,7 +156,7 @@ TEST_CASE("Copy/Move a HyperBuffer with external, flat allocation")
         REQUIRE(bufferMovedTo[2][0] == buffer[2][0]);
     }
 
-#if !MSVC_DEBUG
+#if MSVC_DEBUG == 0
     // verify no memory is allocated during move assignment
     {
         HyperBufferPreAllocFlat<int, N> bufferMovedFrom = buffer; // working copy
@@ -188,7 +188,7 @@ TEST_CASE("Copy/Move a HyperBuffer with external, flat allocation")
         REQUIRE(bufferMovedToCtor[2][0] == buffer[2][0]);
     }
     
-#if !MSVC_DEBUG
+#if MSVC_DEBUG == 0
     // verify no memory is allocated during move construction
     {
         HyperBufferPreAllocFlat<int, N> bufferMovedFrom = buffer; // working copy
