@@ -32,10 +32,16 @@ public:
         m_bufferGeometry.hookupPointerArrayToData(m_data.data(), m_pointers.data());
     }
     
+    ~HyperBuffer() = default;
     HyperBuffer(const HyperBuffer&) = default;
-    HyperBuffer(HyperBuffer&&) noexcept = default;
+    HyperBuffer(HyperBuffer&& other) noexcept :
+        HyperBufferBase<T, N>(other.m_bufferGeometry.getDimensionExtents()),
+        m_bufferGeometry(other.m_bufferGeometry)
+    {
+        swap(*this, other);
+    }
     HyperBuffer<T, N>& operator= (const HyperBuffer&) = default;
-    HyperBuffer<T, N>& operator= (HyperBuffer&& rhs) noexcept
+    HyperBuffer<T, N> const & operator= (HyperBuffer&& rhs) noexcept
     {
         if (this != &rhs) {
             swap(*this, rhs); // non-copying
