@@ -66,7 +66,7 @@ TEST_CASE("Copy/Move a HyperBuffer with internal allocation")
         
         // Can't use Scoped Sentinel, since we need to do declaration and move on same line.
         auto& sentinel = MemorySentinel::getInstance();
-        sentinel.setTransgressionBehaviour(MemorySentinel::TransgressionBehaviour::SILENT);
+        MemorySentinel::setTransgressionBehaviour(MemorySentinel::TransgressionBehaviour::SILENT);
         sentinel.clearTransgressions();
         sentinel.setArmed(true);
         
@@ -92,7 +92,7 @@ TEST_CASE("Copy/Move a HyperBuffer with internal allocation")
         
         // Can't use Scoped Sentinel, since we need to do declaration and move on same line.
         auto& sentinel = MemorySentinel::getInstance();
-        sentinel.setTransgressionBehaviour(MemorySentinel::TransgressionBehaviour::SILENT);
+        MemorySentinel::setTransgressionBehaviour(MemorySentinel::TransgressionBehaviour::SILENT);
         sentinel.clearTransgressions();
         sentinel.setArmed(true);
         
@@ -151,7 +151,7 @@ TEST_CASE("Copy/Move a HyperBuffer with external, flat allocation")
 
         // Can't use Scoped Sentinel, since we need to do declaration and move on same line.
         auto& sentinel = MemorySentinel::getInstance();
-        sentinel.setTransgressionBehaviour(MemorySentinel::TransgressionBehaviour::SILENT);
+        MemorySentinel::setTransgressionBehaviour(MemorySentinel::TransgressionBehaviour::SILENT);
         sentinel.clearTransgressions();
         sentinel.setArmed(true);
         
@@ -181,7 +181,7 @@ TEST_CASE("Copy/Move a HyperBuffer with external, flat allocation")
         
         // Can't use Scoped Sentinel, since we need to do declaration and move on same line.
         auto& sentinel = MemorySentinel::getInstance();
-        sentinel.setTransgressionBehaviour(MemorySentinel::TransgressionBehaviour::SILENT);
+        MemorySentinel::setTransgressionBehaviour(MemorySentinel::TransgressionBehaviour::SILENT);
         sentinel.clearTransgressions();
         sentinel.setArmed(true);
         

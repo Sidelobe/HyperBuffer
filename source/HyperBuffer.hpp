@@ -33,9 +33,9 @@ public:
     }
     
     HyperBuffer(const HyperBuffer&) = default;
-    HyperBuffer(HyperBuffer&&) = default;
+    HyperBuffer(HyperBuffer&&) noexcept = default;
     HyperBuffer<T, N>& operator= (const HyperBuffer&) = default;
-    HyperBuffer<T, N>& operator= (HyperBuffer&& rhs)
+    HyperBuffer<T, N>& operator= (HyperBuffer&& rhs) noexcept
     {
         if (this != &rhs) {
             swap(*this, rhs); // non-copying
