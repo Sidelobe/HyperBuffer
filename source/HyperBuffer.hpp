@@ -25,22 +25,46 @@ public:
     template<typename... I>
     explicit HyperBuffer(I... i) :
         HyperBufferBase<T, N>(i...),
-        m_bufferGeometry(i...),
-        m_data(STL(m_bufferGeometry.getRequiredDataArraySize())),
-        m_pointers(STL(HyperBufferBase<T, N>::getNumberOfPointers(i...)))
+        m_bufferGeometry(i...)
     {
-        m_bufferGeometry.hookupPointerArrayToData(m_data.data(), m_pointers.data());
+        m_data = new T[m_bufferGeometry.getRequiredDataArraySize()];
+        m_pointers = new T*[m_bufferGeometry.getRequiredPointerArraySize()];
+        m_bufferGeometry.hookupPointerArrayToData(m_data, m_pointers);
     }
     
-    ~HyperBuffer() = default;
-    HyperBuffer(const HyperBuffer&) = default;
+    ~HyperBuffer()
+    {
+        if (m_pointers != nullptr) {
+            delete[] m_pointers;
+        }
+        if (m_data != nullptr) {
+            delete[] m_data;
+        }
+    }
+    
+    HyperBuffer(const HyperBuffer& other) : HyperBuffer(other.m_bufferGeometry.getDimensionExtents())
+    {
+        std::memcpy(m_data, other.m_data, m_bufferGeometry.getRequiredDataArraySize() * sizeof(T));
+        std::memcpy(m_pointers, other.m_pointers, m_bufferGeometry.getRequiredPointerArraySize() * sizeof(T*));
+    }
+    
     HyperBuffer(HyperBuffer&& other) noexcept :
         HyperBufferBase<T, N>(other.m_bufferGeometry.getDimensionExtents()),
         m_bufferGeometry(other.m_bufferGeometry)
     {
         swap(*this, other);
     }
-    HyperBuffer<T, N>& operator= (const HyperBuffer&) = default;
+    
+    HyperBuffer<T, N>& operator= (const HyperBuffer& rhs)
+    {
+        if (this != &rhs) {
+            // copy/swap idiom: (de-)allocates memory
+            HyperBuffer<T, N> tmp(rhs);
+            swap(*this, tmp);
+        }
+        return *this;
+    }
+    
     HyperBuffer<T, N> const & operator= (HyperBuffer&& rhs) noexcept
     {
         if (this != &rhs) {
@@ -61,22 +85,22 @@ public:
 private:
     pointer_type getDataPointer_Nx() const override
     {
-        return reinterpret_cast<pointer_type>(const_cast<T**>(m_pointers.data()));
+        return reinterpret_cast<pointer_type>(m_pointers);
     }
     
     T* getDataPointer_N1() const override
     {
-        return *(m_pointers.data());
+        return *m_pointers;
     }
     
 private:
     BufferGeometry<N> m_bufferGeometry;
     
     /** All the data (innermost dimension) is stored in a 1D structure and access with offsets to simulate multi-dimensionality */
-    std::vector<T> m_data;
+    T* m_data = nullptr;
     
     /** All but the innermost dimensions consist of pointers only, which are stored in a 1D structure as well */
-    std::vector<T*> m_pointers;
+    T** m_pointers = nullptr;
 };
 
 

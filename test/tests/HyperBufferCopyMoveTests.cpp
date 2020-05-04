@@ -37,13 +37,6 @@ TEST_CASE("Copy/Move a HyperBuffer with internal allocation")
     verifyBuffer(bufferCopy);
     verifyBuffer(buffer); // original remains untouched
     
-    // verify no memory is allocated during copy to buffer with same size
-    HyperBuffer<int, N> bufferCopySameSize(dims);
-    {
-        ScopedMemorySentinel sentinel;
-        bufferCopySameSize = buffer;
-    }
-    
     // this will work, but will allocate memoery
     std::array<int, 3> dimsSmaller {2, 2, 6};
     HyperBuffer<int, N> bufferCopySmallerSize(dimsSmaller);
