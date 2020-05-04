@@ -7,7 +7,7 @@ matrix:
         - os: osx
           osx_image: xcode10.1
           compiler: clang
-          env: COMPILER='clang++' COV="yes" CONFIG="Debug"
+          env: CONFIG="Debug" COMPILER='clang++' COV="yes"
           addons:
             sonarcloud:
                 organization: "idelobe" # the key of the org you chose at step #3
@@ -17,16 +17,16 @@ matrix:
         - os: osx
           osx_image: xcode10.1
           compiler: clang
-          env: COMPILER='clang++' COV="no" CONFIG="Release"
+          env: CONFIG="Release" COMPILER='clang++'  COV="no" 
           
         - os: linux
           dist: bionic
           compiler: gcc
-          env: COMPILER='g++-9' COV="no" CONFIG="Debug"
-          addons:
+          env: CONFIG="Debug" COMPILER='g++-9' COV="no" 
+          addons: &LinuxAddons
               apt:
                   sources: ['ubuntu-toolchain-r-test']
-                  packages: &LinuxPackages 
+                  packages:
                     - g++-9
                     - cmake
                     - python3-pip
@@ -34,17 +34,14 @@ matrix:
         - os: linux
           dist: bionic
           compiler: gcc
-          env: COMPILER='g++-9' COV="no" CONFIG="Release"
-          addons:
-              apt:
-                  sources: ['ubuntu-toolchain-r-test']
-                  packages: *LinuxPackages 
+          env: CONFIG="Release" COMPILER='g++-9' COV="no" 
+          addons:  &LinuxAddons
          
         - os: windows
-          env: COV="no" CONFIG="Debug" MSBUILD_PATH="c:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
+          env: CONFIG="Debug" COV="no" MSBUILD_PATH="c:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
         
         - os: windows
-          env: COV="no" CONFIG="Release" MSBUILD_PATH="c:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
+          env: CONFIG="Release" COV="no" MSBUILD_PATH="c:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
 
 install:
   - |
