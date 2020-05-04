@@ -35,16 +35,21 @@ public:
     HyperBuffer(const HyperBuffer&) = default;
     HyperBuffer(HyperBuffer&&) = default;
     HyperBuffer<T, N>& operator= (const HyperBuffer&) = default;
-    HyperBuffer<T, N>& operator= (HyperBuffer&&) = default;
-
-    // https://stackoverflow.com/questions/5695548/public-friend-swap-member-function
-    friend void swap(HyperBufferBase<T, N>& first, HyperBufferBase<T, N>& second) noexcept
+    HyperBuffer<T, N>& operator= (HyperBuffer&& rhs)
     {
-        using std::swap; // allow use of std::swap
-        swap(first.m_bufferGeometry, second.m_bufferGeometry); // but select overloads, first
+        if (this != &rhs) {
+            swap(*this, rhs); // non-copying
+        }
+        return *this;
+    }
+
+    friend void swap(HyperBuffer<T, N>& first, HyperBuffer<T, N>& second) noexcept
+    {
+        using std::swap;
+        swap(static_cast<HyperBufferBase<T, N>&>(first), static_cast<HyperBufferBase<T, N>&>(second));
+        swap(first.m_bufferGeometry, second.m_bufferGeometry);
         swap(first.m_data, second.m_data);
         swap(first.m_pointers, second.m_pointers);
-        // if swap(x, y) finds a better match, via ADL, it will use that instead; otherwise it falls back to std::swap
     }
     
 private:

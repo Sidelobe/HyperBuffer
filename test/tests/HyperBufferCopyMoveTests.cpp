@@ -54,11 +54,10 @@ TEST_CASE("Copy/Move a HyperBuffer with internal allocation")
     // Move assignment operator
     {
         HyperBuffer<int, N> bufferMovedFrom = buffer; // working copy
-        HyperBuffer<int, N> bufferMovedTo = std::move(bufferMovedFrom);
+        HyperBuffer<int, N> bufferMovedTo(0, 0, 0);
+        bufferMovedTo = std::move(bufferMovedFrom);
         verifyBuffer(bufferMovedTo);
         REQUIRE(bufferMovedTo.data() != nullptr);
-        REQUIRE(bufferMovedFrom.data() == nullptr);
-        
     }
     
     // verify no memory is allocated during move assignment
@@ -77,7 +76,6 @@ TEST_CASE("Copy/Move a HyperBuffer with internal allocation")
         sentinel.setArmed(false);
         verifyBuffer(bufferMovedTo);
         REQUIRE(bufferMovedTo.data() != nullptr);
-        REQUIRE(bufferMovedFrom.data() == nullptr);
     }
     
     // Move Ctor
@@ -86,7 +84,6 @@ TEST_CASE("Copy/Move a HyperBuffer with internal allocation")
         HyperBuffer<int, N> bufferMovedToCtor(std::move(bufferMovedFrom));
         verifyBuffer(bufferMovedToCtor);
         REQUIRE(bufferMovedToCtor.data() != nullptr);
-        REQUIRE(bufferMovedFrom.data() == nullptr);
     }
     
     // verify no memory is allocated during move construction
@@ -104,7 +101,6 @@ TEST_CASE("Copy/Move a HyperBuffer with internal allocation")
         
         sentinel.setArmed(false);
         REQUIRE(bufferMovedCtor.data() != nullptr);
-        REQUIRE(bufferMovedFrom.data() == nullptr);
     }
 }
 
@@ -126,8 +122,7 @@ TEST_CASE("Copy/Move a HyperBuffer with external, flat allocation")
     REQUIRE(bufferCopy[2][0] == buffer[2][0]);
 
     // Copy Ctor - verify no memory is allocated
-    int preAllocDataSameSize[getRawArrayLength(preAllocData)] {0};
-    HyperBufferPreAllocFlat<int, N> bufferCopyCtor(preAllocDataSameSize, 3, 2, 8);
+    HyperBufferPreAllocFlat<int, N> bufferCopyCtor(nullptr, 3, 2, 8);
     {
         ScopedMemorySentinel sentinel;
         bufferCopyCtor = buffer;
@@ -141,7 +136,8 @@ TEST_CASE("Copy/Move a HyperBuffer with external, flat allocation")
     // Move assignment operator
     {
         HyperBufferPreAllocFlat<int, N> bufferMovedFrom = buffer; // working copy
-        HyperBufferPreAllocFlat<int, N> bufferMovedTo = std::move(bufferMovedFrom);
+        HyperBufferPreAllocFlat<int, N> bufferMovedTo(nullptr, 3, 2, 8);
+        bufferMovedTo = std::move(bufferMovedFrom);
         verifyBuffer(bufferMovedTo);
         REQUIRE(bufferMovedFrom.data() == nullptr);
         REQUIRE(bufferMovedTo[0] == buffer[0]); // moved points to the same data
@@ -233,14 +229,7 @@ TEST_CASE("Copy/Move a HyperBuffer with external, multi-dimensional allocation")
 
     // Copy Ctor - verify no memory is allocated
     {
-        int xpreAllocData1[8] {0};
-        int xpreAllocData2[8] {0};
-        int* xdim1_0[] { xpreAllocData1, xpreAllocData2 };
-        int* xdim1_1[] { xpreAllocData1, xpreAllocData2 };
-        int* xdim1_2[] { xpreAllocData1, xpreAllocData2 };
-        int** preAllocDataSameSize[] { xdim1_0, xdim1_1, xdim1_2 };
-
-        HyperBufferPreAlloc<int, N> bufferCopyCtor(preAllocDataSameSize, 3, 2, 8);
+        HyperBufferPreAlloc<int, N> bufferCopyCtor(nullptr, 3, 2, 8);
         {
             ScopedMemorySentinel sentinel;
             bufferCopyCtor = buffer;
@@ -266,13 +255,7 @@ TEST_CASE("Copy/Move a HyperBuffer with external, multi-dimensional allocation")
     // verify no memory is allocated during move assignment
     {
         HyperBufferPreAlloc<int, N> bufferMovedFrom = buffer; // working copy
-        int xpreAllocData1[8] {0};
-        int xpreAllocData2[8] {0};
-        int* xdim1_0[] { xpreAllocData1, xpreAllocData2 };
-        int* xdim1_1[] { xpreAllocData1, xpreAllocData2 };
-        int* xdim1_2[] { xpreAllocData1, xpreAllocData2 };
-        int** preAllocData3[] { xdim1_0, xdim1_1, xdim1_2 };
-        HyperBufferPreAlloc<int, N> bufferMovedToPreAlloc(preAllocData3, dims);
+        HyperBufferPreAlloc<int, N> bufferMovedToPreAlloc(nullptr, dims);
         {
             ScopedMemorySentinel sentinel;
             bufferMovedToPreAlloc = std::move(bufferMovedFrom);

@@ -53,6 +53,14 @@ public:
     FOR_Nx const pointer_type data() const { return getDataPointer_Nx(); }
     FOR_N1 T* data() { return getDataPointer_N1(); }
     FOR_N1 const T* data() const { return getDataPointer_N1(); }
+    
+    // https://stackoverflow.com/questions/5695548/public-friend-swap-member-function
+    friend void swap(HyperBufferBase<T, N>& first, HyperBufferBase<T, N>& second) noexcept
+    {
+        using std::swap; // allow use of std::swap
+        swap(first.m_dimensionExtents, second.m_dimensionExtents); // but select overloads, first
+        // if swap(x, y) finds a better match, via ADL, it will use that instead; otherwise it falls back to std::swap
+    }
 
 protected:
     /** Constructor that takes the extents of the dimensions as a variable argument list */
