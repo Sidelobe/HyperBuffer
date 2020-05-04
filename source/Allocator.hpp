@@ -8,9 +8,12 @@
 #pragma once
 
 #include <limits>
+#include <new>
 
 /**
- * A custom allocator class that allows de/allocation-free std::move for e.g. std::vector
+ * A custom allocator class that gives us control over the allocation specifics. In this case, we use new/delete,
+ * but we could use another function.
+ * Furthermore, this allocator allows de/allocation-free std::move for e.g. std::vector
  *
  * Adapted from http://www.josuttis.com/libbook/memory/Allocator.hpp.html
  */
