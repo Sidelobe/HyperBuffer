@@ -36,7 +36,7 @@ public:
 private:
     pointer_type getDataPointer_Nx() const override
     {
-        return reinterpret_cast<pointer_type>(const_cast<T**>(m_pointers.data()));
+        return reinterpret_cast<pointer_type>(m_pointers.data());
     }
     
     T* getDataPointer_N1() const override
@@ -51,7 +51,7 @@ private:
     std::vector<T> m_data;
     
     /** All but the innermost dimensions consist of pointers only, which are stored in a 1D structure as well */
-    std::vector<T*> m_pointers;
+    mutable std::vector<T*> m_pointers;
 };
 
 
@@ -77,7 +77,7 @@ public:
 private:
     pointer_type getDataPointer_Nx() const override
     {
-        return reinterpret_cast<pointer_type>(const_cast<T**>(m_pointers.data()));
+        return reinterpret_cast<pointer_type>(m_pointers.data());
     }
     
     T* getDataPointer_N1() const override
@@ -88,7 +88,7 @@ private:
 private:
     BufferGeometry<N> m_bufferGeometry;
     T* m_externalData;
-    std::vector<T*> m_pointers;
+    mutable std::vector<T*> m_pointers;
 };
 
 
