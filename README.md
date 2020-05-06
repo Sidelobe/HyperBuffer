@@ -7,8 +7,9 @@
 
 ### A C++ structure to manage multi-dimensional data efficiently and safely
 
-![](https://img.shields.io/badge/dependencies-C++14,_STL_only-brightgreen)
-![](https://img.shields.io/badge/source-header--only-brightgreen)
+![](https://img.shields.io/github/license/Sidelobe/Hyperbuffer)
+![](https://img.shields.io/badge/C++14-header--only-blue.svg?style=flat&logo=c%2B%2B)
+![](https://img.shields.io/badge/dependencies-STL_only-blue)
 
 The main use case for this container is to hold dynamically-allocated N-dimensional datasets in memory and provide convenient access to it, while minimizing performance/memory overhead and unnecessary dynamic allocation.
 
