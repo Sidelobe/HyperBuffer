@@ -79,6 +79,8 @@ There are 3 variants of `HyperBuffer`:
 1. `HyperBufferPreAlloc`: wraps around already-allocated multi-dimensional data and pointers. No dynamic memory allocation.
 1. `HyperBufferPreAllocFlat`: uses an already-allocated memory area for the data, but manages it using its internal memory model. Only allocates memory for the pointers.
 
+>**Note**: Behaviour on copy & move: `HyperBuffer` copies/moves the data like a normal object with data ownership. When copying `HyperBufferPreAlloc` and `HyperBufferPreAllocFlat`, however, the data is not duplicated - the copy references the original data as well.
+
 ## Internal Memory Model
 In C++/C, there are two common ways of allocating a multi-dimensional data structure:
 
@@ -112,13 +114,18 @@ For a `HyperBuffer<float, 3>(2, 4, 5)` this would mean:
 * `(2 + 2*4) * sizeof(float*) = 80 Bytes` for the pointers (on a 64-bit machine)
 
 
-
 ## Lessons Learned: Unwanted Dynamic Memory (De-)Allocation
 
 Since we could potentially use any data structure for both the pointers and data, `std::vector` is an obvious candidate. Defining a custom allocator would give us control over the allocation per se, but not over whether or when the allocator's `allocate()` function is called. As it turns out, the default constructor `std::vector` will allocate in some STL implementations, and not in others)!
 
+This means that we have to manually define copy and move constructors and assignment operators for our class and make sure the default constructor is NEVER called. This is not trivial
+
+
 The Microsoft Visual Studio Compiler (MSVC) allocates dynamic memory in the default constructors of some STL containers. This leads to unwanted allocation in move semantics, where the default constructor is implicitly called by the compiler at some point in the process. This has pushed us to avoid using STL containers in these scenarios.
 
  According to [https://stackoverflow.com/a/48744563/649700]() this happens when `_ITERATOR_DEBUG_LEVEL` is set to 1 or 2, which is the default setting for debug builds. Also cf. [https://docs.microsoft.com/en-us/cpp/standard-library/iterator-debug-level?view=vs-2019]()
+
+To my knowledge, if you change `_ITERATOR_DEBUG_LEVEL` however, you have to change it globally within your build -- you cannot link items compiled with different `_ITERATOR_DEBUG_LEVEL` settings.
+ 
 
 
