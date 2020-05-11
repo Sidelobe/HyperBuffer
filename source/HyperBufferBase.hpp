@@ -58,15 +58,8 @@ public:
     FOR_N1 T* data() { return getDataPointer_N1(); }
     FOR_N1 const T* data() const { return getDataPointer_N1(); }
     
-    // https://stackoverflow.com/questions/5695548/public-friend-swap-member-function
-    friend void swap(HyperBufferBase<T, N>& first, HyperBufferBase<T, N>& second) noexcept
-    {
-        using std::swap; // allow use of std::swap
-        swap(first.m_dimensionExtents, second.m_dimensionExtents); // but select overloads, first
-        // if swap(x, y) finds a better match, via ADL, it will use that instead; otherwise it falls back to std::swap
-    }
-
 protected:
+    // MARK: constructors
     /** Constructor that takes the extents of the dimensions as a variable argument list */
     template<typename... I>
     explicit HyperBufferBase(I... i) : m_dimensionExtents{static_cast<int>(i)...}
@@ -89,6 +82,14 @@ protected:
     
     // Helper to make interfacing with STL a bit more readable
     static constexpr stl_size_type STL(int i) { return static_cast<stl_size_type>(i); }
+    
+    // https://stackoverflow.com/questions/5695548/public-friend-swap-member-function
+    friend void swap(HyperBufferBase<T, N>& first, HyperBufferBase<T, N>& second) noexcept
+    {
+        using std::swap; // allow use of std::swap
+        swap(first.m_dimensionExtents, second.m_dimensionExtents); // but select overloads, first
+        // if swap(x, y) finds a better match, via ADL, it will use that instead; otherwise it falls back to std::swap
+    }
 
 protected:
     std::array<int, N> m_dimensionExtents; // only required by the dims functions

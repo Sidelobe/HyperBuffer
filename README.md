@@ -97,7 +97,7 @@ This way, only 2 one-dimensional arrays (or similar data structure) need be allo
 #### Self-Referencing Pointer Array
 This array contains the entire pointer data required for a multi-dimensional buffer. The pointers are stored contiguously within every dimension, which allows for proper dereferencing / arithmetics when accessing the data through them. The pointers for each dimension point to the respective pointers in the next dimension, except for the 2nd-to-lowest dimension pointers, which point at the data.
 
-Here's an example for a 5-Dimensional buffer with the extents `{2, 3, 2, 3, 6}`. The indices(0-55) represent the position of these pointers in pointer array.
+Here's an example for a 5-Dimensional buffer with the extents `{2, 3, 2, 3, 6}`. The indices (0-55) represent the position of these pointers in pointer array.
 
 ![](docu/PointerArrayGeometry.png)
 
