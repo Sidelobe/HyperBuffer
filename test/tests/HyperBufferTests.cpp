@@ -183,6 +183,34 @@ TEST_CASE("HyperBuffer ctor: different dimension variants")
     }
 }
 
+TEST_CASE("HyperBuffer: sub-buffer access")
+{
+    constexpr int N = 3;
+    HyperBuffer<int, N> buffer(2, 3, 8);
+    int i = 0;
+    for (int k=0; k < buffer.dim(0); ++k) {
+        for (int l=0; l < buffer.dim(1); ++l) {
+            for (int m=0; m < buffer.dim(2); ++m) {
+                buffer[k][l][m] = i++;
+            }
+        }
+    }
+
+    int subBufferIndex = GENERATE(0, 1);
+    HyperBuffer<int, N-1> subBuffer(buffer, subBufferIndex);
+    
+    REQUIRE(subBuffer.dims() == std::array<int, N-1>{3, 8});
+    
+    int start = 3*8 * subBufferIndex;
+    int j = 0;
+    for (int l=0; l < subBuffer.dim(0); ++l) {
+        for (int m=0; m < subBuffer.dim(1); ++m) {
+            REQUIRE(subBuffer[l][m] == start + j++);
+        }
+    }
+    
+
+}
 
 // MARK: - Data Verification
 

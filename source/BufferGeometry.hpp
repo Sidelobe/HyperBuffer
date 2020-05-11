@@ -57,6 +57,18 @@ public:
         return getOffset<N>(1, 0, dn, dk...);  // we start with dimIndex=1 - don't care about highest dimension's value
     }
     
+    /**
+     * Calculates the offset of where data for the highest-order dimension (at the given index) starts.
+     * e.g. if the highest-order dimension's extent is 2, all data for index=0 is in the first half of the data array
+     * and the all data for index=1 in the second half.
+     */
+    int getDimensionStartOffsetInDataArray(int index) const
+    {
+        int totalNumDataEntries = getRequiredDataArraySize();
+        assert(totalNumDataEntries % m_dimensionExtents[0] == 0 && "Internal error in buffer geometry!");
+        return index * totalNumDataEntries / m_dimensionExtents[0];
+    }
+    
     /** DimIdx corresponds to index in dimensions array, i.e. DimIdx=0 is the highest-order dimension */
     template<int DimIdx, typename... I>
     int getOffsetInPointerArray(int dn, I... dk) const

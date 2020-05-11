@@ -20,6 +20,7 @@ template<typename T, int N>
 class HyperBuffer : public HyperBufferBase<T, N>
 {
     using pointer_type = typename HyperBufferBase<T, N>::pointer_type;
+    using size_type = typename HyperBufferBase<T, N>::size_type;
     using HyperBufferBase<T, N>::STL;
 
 public:
@@ -33,6 +34,26 @@ public:
         m_bufferGeometry.hookupPointerArrayToData(m_data.data(), m_pointers.data());
     }
     
+    /** Build a HyperBuffer from an existing N+1 Hyperbuffer */
+    HyperBuffer(const HyperBuffer<T, N+1>& parent, size_type index) :
+        HyperBufferBase<T, N>(StdArrayOperations::subArray(parent.dims())),
+        m_bufferGeometry(StdArrayOperations::subArray(parent.dims())),
+        m_data(STL(m_bufferGeometry.getRequiredDataArraySize())),
+        m_pointers(STL(m_bufferGeometry.getRequiredPointerArraySize()))
+    {
+        m_bufferGeometry.hookupPointerArrayToData(m_data.data(), m_pointers.data());
+        
+        // copy data of selected sub-tree
+        int subTreeOffset = parent.getBufferGeometry().getDimensionStartOffsetInDataArray(index);
+        std::copy(parent.rawData().data() + subTreeOffset, parent.rawData().data() + subTreeOffset + m_bufferGeometry.getRequiredDataArraySize(), m_data.begin());
+    }
+    
+    /** Access the raw data - in this case an internally-managed 1D vector */
+    const std::vector<T>& rawData() const { return m_data; }
+    std::vector<T>& rawData() { return m_data; }
+
+    BufferGeometry<N> getBufferGeometry() const { return m_bufferGeometry; }
+
 private:
     pointer_type getDataPointer_Nx() const override
     {
@@ -73,6 +94,9 @@ public:
     {
         m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
     }
+
+    /** Access the raw data - in this case an externally-managed 1D data block */
+    T* rawData() { return m_externalData; }
    
 private:
     pointer_type getDataPointer_Nx() const override
@@ -105,6 +129,9 @@ public:
     explicit HyperBufferPreAlloc(pointer_type preAllocatedData, I... i) :
         HyperBufferBase<T, N>(i...),
         m_externalData(preAllocatedData) {}
+    
+    /** Access the raw data - in this case an externally-managed multi-dimensional data block */
+    pointer_type rawData() { return m_externalData; }
     
 private:
     pointer_type getDataPointer_Nx() const override

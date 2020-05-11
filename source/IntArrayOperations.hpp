@@ -11,6 +11,7 @@
 
 #include "TemplateUtils.hpp"
 
+// MARK: - C-Style Arrays
 namespace IntArrayOperations
 {
 
@@ -96,6 +97,7 @@ constexpr int sumOfCumulativeProductCapped(int cap, const int (&array)[N])
 
 } // namespace IntArrayOperations
 
+// MARK: - std::array
 namespace StdArrayOperations
 {
 
@@ -176,6 +178,17 @@ constexpr int sumOfCumulativeProductCapped(int cap, const std::array<int, N>& ar
     {
         return VarArgOperations::sumOfCumulativeProductCapped(cap, std::forward<decltype(args)>(args)...);
     }, array);
+}
+
+/** @returns the N-1 sub-array : "shaves off" the the first element */
+template<std::size_t N>
+static constexpr std::array<int, N-1> subArray(const std::array<int, N>& array)
+{
+    std::array<int, N-1> subarray;
+    for (int i=0; i < N-1; ++i) {
+        subarray[i] = array[i+1];
+    }
+    return  subarray;
 }
 
 } // namespace StdArrayOperations
