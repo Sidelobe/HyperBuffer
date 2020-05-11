@@ -28,7 +28,7 @@ void verifyBuffer(const HyperBufferBase<int, 3>& b)
 TEST_CASE("Copy/Move a HyperBuffer with internal allocation")
 {
     constexpr int N = 3;
-    std::array<int, 3> dims {3, 2, 8};
+    std::array<int, N> dims {3, 2, 8};
     HyperBuffer<int, N> buffer(dims);
     buffer[1][0][5] = 333;
     buffer[2][1][3] = -666;

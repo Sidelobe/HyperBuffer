@@ -143,6 +143,10 @@ TEST_CASE("HyperBuffer Tests - External Memory Allocation (MultiDim)")
 //}
 
 
+
+
+// MARK: - Data Verification
+
 template<typename T>
 void testHyperBuffer1D_size4(HyperBufferBase<T, 1>& buffer)
 {
@@ -166,10 +170,12 @@ void testHyperBuffer1D_size4(HyperBufferBase<T, 1>& buffer)
         ScopedMemorySentinel sentinel;
         buffer[2] = -2;
         int d0 = buffer.dim(0);
-        const int* dims = buffer.dims();
+        const int* dims = buffer.dims().data();
+        auto dimsArray = buffer.dims();
         int* raw = buffer.data();
         UNUSED(d0);
         UNUSED(dims);
+        UNUSED(dimsArray);
         UNUSED(raw);
     }
 }
@@ -203,10 +209,12 @@ void testHyperBuffer2D_sizes2_4(HyperBufferBase<T, 2>& buffer)
         ScopedMemorySentinel sentinel;
         buffer[0][2] = -2;
         int d0 = buffer.dim(0);
-        const int* dims = buffer.dims();
+        const int* dims = buffer.dims().data();
+        auto dimsArray = buffer.dims();
         int** raw = buffer.data();
         UNUSED(d0);
         UNUSED(dims);
+        UNUSED(dimsArray);
         UNUSED(raw);
     }
 }
@@ -214,7 +222,7 @@ void testHyperBuffer2D_sizes2_4(HyperBufferBase<T, 2>& buffer)
 template<typename T>
 void testHyperBuffer3D_sizes3_3_8(HyperBufferBase<T, 3>& buffer)
 {
-    std::vector<int> dims(buffer.dims(), buffer.dims() + 3);
+    std::vector<int> dims(buffer.dims().begin(), buffer.dims().end());
     REQUIRE(dims == std::vector<int>{3, 3, 8});    
     buffer[0][1][0] = -1;
     buffer[0][2][0] = -2;
@@ -235,10 +243,12 @@ void testHyperBuffer3D_sizes3_3_8(HyperBufferBase<T, 3>& buffer)
         ScopedMemorySentinel sentinel;
         buffer[0][2][0] = -2;
         int d0 = buffer.dim(0);
-        const int* dims2 = buffer.dims();
+        const int* dimsPtr = buffer.dims().data();
+        auto dimsArray = buffer.dims();
         int*** raw = buffer.data();
         UNUSED(d0);
-        UNUSED(dims2);
+        UNUSED(dimsPtr);
+        UNUSED(dimsArray);
         UNUSED(raw);
     }
 }

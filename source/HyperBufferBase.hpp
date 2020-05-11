@@ -18,6 +18,10 @@
 #define FOR_Nx template<int M=N, std::enable_if_t<(M>1), int> = 0>
 
 
+/**
+ * This has to be a base and interface class at once, because we cannot apply std::enable_if to virtual functions and
+ * we need the former for this to work in C++14.
+ */
 template<typename T, int N>
 class HyperBufferBase
 {
@@ -34,9 +38,9 @@ public:
     
     // MARK: dimension extents
     int dim(int i) const { return m_dimensionExtents[STL(i)]; }
-    const int* dims() const { return m_dimensionExtents.data(); }
+    const std::array<int, N>& dims() const { return m_dimensionExtents; }
 
-    // MARK: - operator[]
+    // MARK: operator[]
     FOR_Nx subdim_pointer_type operator[] (size_type i) { return getDataPointer_Nx()[i]; }
     FOR_Nx const subdim_pointer_type operator[] (size_type i) const { return getDataPointer_Nx()[i]; }
     FOR_N1 T& operator[] (size_type i) { return getDataPointer_N1()[i]; }
