@@ -142,7 +142,46 @@ TEST_CASE("HyperBuffer Tests - External Memory Allocation (MultiDim)")
 //    MultiDimArray<float, 1> buffer2sub1 = buffer2(0);
 //}
 
-
+TEST_CASE("HyperBuffer ctor: different dimension variants")
+{
+    int dim1 = 3;
+    int dim0 = 5;
+    
+    SECTION("owning") {
+        HyperBuffer<int, 2> hostClass(dim1, dim0); // calls int ctor
+        REQUIRE(hostClass.dims() == std::array<int, 2>({3, 5}));
+        std::array<int, 2> dimArray = {3, 5};
+        HyperBuffer<int, 2> hostClass2(dimArray); // calls array ctor
+        REQUIRE(hostClass2.dims() == std::array<int, 2>({3, 5}));
+        std::vector<int> dimVector = {3, 5};
+        HyperBuffer<int, 2> hostClass3(dimVector); // calls int* ctor
+        REQUIRE(hostClass3.dims() == std::array<int, 2>({3, 5}));
+    }
+    
+    SECTION("prealloc flat") {
+        int data [32];
+        HyperBufferPreAllocFlat<int, 2> hostClass(data, dim1, dim0); // calls int ctor
+        REQUIRE(hostClass.dims() == std::array<int, 2>({3, 5}));
+        std::array<int, 2> dimArray = {3, 5};
+        HyperBufferPreAllocFlat<int, 2> hostClass2(data, dimArray); // calls array ctor
+        REQUIRE(hostClass2.dims() == std::array<int, 2>({3, 5}));
+        std::vector<int> dimVector = {3, 5};
+        HyperBufferPreAllocFlat<int, 2> hostClass3(data, dimVector); // calls int* ctor
+        REQUIRE(hostClass3.dims() == std::array<int, 2>({3, 5}));
+    }
+    
+    SECTION("prealloc") {
+        int* data [32];
+        HyperBufferPreAlloc<int, 2> hostClass(data, dim1, dim0); // calls int ctor
+        REQUIRE(hostClass.dims() == std::array<int, 2>({3, 5}));
+        std::array<int, 2> dimArray = {3, 5};
+        HyperBufferPreAlloc<int, 2> hostClass2(data, dimArray); // calls array ctor
+        REQUIRE(hostClass2.dims() == std::array<int, 2>({3, 5}));
+        std::vector<int> dimVector = {3, 5};
+        HyperBufferPreAlloc<int, 2> hostClass3(data, dimVector); // calls int* ctor
+        REQUIRE(hostClass3.dims() == std::array<int, 2>({3, 5}));
+    }
+}
 
 
 // MARK: - Data Verification

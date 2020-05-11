@@ -27,6 +27,12 @@ public:
     
     /** Constructor that takes the extents of the dimensions as a std::array */
     explicit BufferGeometry(const std::array<int, N>& dimensionExtents) : m_dimensionExtents(dimensionExtents) {}
+    
+    /** Constructor that takes the extents of the dimensions as a std::vector */
+    explicit BufferGeometry(const std::vector<int>& dimensionExtents)
+    {
+        std::copy(dimensionExtents.begin(), dimensionExtents.end(), m_dimensionExtents.begin());
+    }
 
     const std::array<int, N>& getDimensionExtents() const { return m_dimensionExtents; }
     const int* getDimensionExtentsPointer() const { return m_dimensionExtents.data(); }

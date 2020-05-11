@@ -32,7 +32,7 @@ public:
     {
         m_bufferGeometry.hookupPointerArrayToData(m_data.data(), m_pointers.data());
     }
-
+    
 private:
     pointer_type getDataPointer_Nx() const override
     {

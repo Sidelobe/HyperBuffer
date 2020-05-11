@@ -69,14 +69,19 @@ public:
 protected:
     /** Constructor that takes the extents of the dimensions as a variable argument list */
     template<typename... I>
-    explicit HyperBufferBase(I... i) :
-        m_dimensionExtents{static_cast<int>(i)...}
+    explicit HyperBufferBase(I... i) : m_dimensionExtents{static_cast<int>(i)...}
     {
         static_assert(sizeof...(I) == N, "Incorrect number of arguments");
     }
     
     /** Constructor that takes the extents of the dimensions as a std::array */
     explicit HyperBufferBase(const std::array<int, N>& dimensionExtents) : m_dimensionExtents{dimensionExtents} {}
+    
+    /** Constructor that takes the extents of the dimensions as a std::vector */
+    explicit HyperBufferBase(const std::vector<int>& dimensionExtents)
+    {
+        std::copy(dimensionExtents.begin(), dimensionExtents.end(), m_dimensionExtents.begin());
+    }
 
     // MARK: Virtual functions to be defined by derived classes
     virtual pointer_type getDataPointer_Nx() const = 0;
