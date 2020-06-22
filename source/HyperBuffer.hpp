@@ -150,6 +150,9 @@ template<typename T, int N>
 class HyperBufferPreAlloc : public HyperBufferBase<T, N>
 {
     using pointer_type = typename HyperBufferBase<T, N>::pointer_type;
+    using size_type = typename HyperBufferBase<T, N>::size_type;
+    
+    friend class HyperBufferPreAlloc<T, N-1>;
     
 public:
     /** Constructor that takes the extents of the dimensions as a variable argument list */
@@ -158,7 +161,13 @@ public:
         HyperBufferBase<T, N>(i...),
         m_externalData(preAllocatedData) {}
     
+    /** Build a HyperBuffer from an existing N+1 Hyperbuffer */
+    HyperBufferPreAlloc(const HyperBufferPreAlloc<T, N+1>& parent, size_type index) :
+        HyperBufferBase<T, N>(StdArrayOperations::subArray(parent.dims())),
+        m_externalData(parent.rawData()[index]) {}
+    
     /** Access the raw data - in this case an externally-managed multi-dimensional data block */
+    pointer_type rawData() const { return m_externalData; }
     pointer_type rawData() { return m_externalData; }
     
 private:
