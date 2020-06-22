@@ -22,7 +22,9 @@ class HyperBuffer : public HyperBufferBase<T, N>
     using pointer_type = typename HyperBufferBase<T, N>::pointer_type;
     using size_type = typename HyperBufferBase<T, N>::size_type;
     using HyperBufferBase<T, N>::STL;
-
+    
+    friend class HyperBuffer<T, N-1>;
+    
 public:
     template<typename... I>
     explicit HyperBuffer(I... i) :
@@ -44,15 +46,13 @@ public:
         m_bufferGeometry.hookupPointerArrayToData(m_data.data(), m_pointers.data());
         
         // copy data of selected sub-tree
-        int subTreeOffset = parent.getBufferGeometry().getDimensionStartOffsetInDataArray(index);
+        int subTreeOffset = parent.m_bufferGeometry.getDimensionStartOffsetInDataArray(index);
         std::copy(parent.rawData().data() + subTreeOffset, parent.rawData().data() + subTreeOffset + m_bufferGeometry.getRequiredDataArraySize(), m_data.begin());
     }
     
     /** Access the raw data - in this case an internally-managed 1D vector */
     const std::vector<T>& rawData() const { return m_data; }
     std::vector<T>& rawData() { return m_data; }
-
-    BufferGeometry<N> getBufferGeometry() const { return m_bufferGeometry; }
 
 private:
     pointer_type getDataPointer_Nx() const override
@@ -81,8 +81,11 @@ template<typename T, int N>
 class HyperBufferPreAllocFlat : public HyperBufferBase<T, N>
 {
     using pointer_type = typename HyperBufferBase<T, N>::pointer_type;
+    using size_type = typename HyperBufferBase<T, N>::size_type;
     using HyperBufferBase<T, N>::STL;
     
+    friend class HyperBufferPreAllocFlat<T, N-1>;
+
 public:
     /** Constructor that takes the extents of the dimensions as a variable argument list */
     template<typename... I>
@@ -94,10 +97,35 @@ public:
     {
         m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
     }
+    
+    /** Build a HyperBuffer from an existing N+1 Hyperbuffer */
+    HyperBufferPreAllocFlat(const HyperBufferPreAllocFlat<T, N+1>& parent, size_type index) :
+        HyperBufferBase<T, N>(StdArrayOperations::subArray(parent.dims())),
+        m_bufferGeometry(StdArrayOperations::subArray(parent.dims())),
+        m_pointers(STL(m_bufferGeometry.getRequiredPointerArraySize()))
+    {
+        int offset = parent.m_bufferGeometry.getDimensionStartOffsetInDataArray(index);
+        m_externalData = &parent.m_externalData[offset];
+        m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
+    }
+    
+    template<typename... I>
+    decltype(auto) operator() (int dn, I... i)
+    {
+        // TODO: get rid of this constexpr if to reach C++14 compatibility
+        if constexpr(N == 1) {
+            return getDataPointer_N1()[dn];
+        } else if constexpr(sizeof...(i) == 0) {
+            return HyperBufferPreAllocFlat<T, N-1>(*this, dn);
+        } else {
+            return HyperBufferPreAllocFlat<T, N-1>(*this, dn).operator()(i...);
+        }
+    }
 
     /** Access the raw data - in this case an externally-managed 1D data block */
+    T* rawData() const { return m_externalData; }
     T* rawData() { return m_externalData; }
-   
+    
 private:
     pointer_type getDataPointer_Nx() const override
     {

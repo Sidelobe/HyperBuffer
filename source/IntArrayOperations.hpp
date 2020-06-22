@@ -180,7 +180,7 @@ constexpr int sumOfCumulativeProductCapped(int cap, const std::array<int, N>& ar
     }, array);
 }
 
-/** @returns the N-1 sub-array : "shaves off" the the first element */
+/** @returns the N-1 sub-array : "shaves off" the first element */
 template<std::size_t N>
 static constexpr std::array<int, N-1> subArray(const std::array<int, N>& array)
 {

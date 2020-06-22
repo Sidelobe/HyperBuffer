@@ -46,10 +46,6 @@ public:
     FOR_N1 T& operator[] (size_type i) { return getDataPointer_N1()[i]; }
     FOR_N1 const T& operator[] (size_type i) const { return getDataPointer_N1()[i]; }
 
-    // TODO: operator(varArg) -- returns a sub-buffer or value, depending on number of arguments
-    //    template<int... I>
-    //    decltype(auto) operator() (size_type i...) = 0;
-
     // MARK: data()
     // NOTE: We cannot make these virtual functions because of the differente return types required.
     // decltype(auto) is not allowed for virtual functions, so I chose an enable_if construct for selective compilation
