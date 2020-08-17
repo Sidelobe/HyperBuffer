@@ -16,6 +16,7 @@
 // Macros to restrict a function declaration to 1-dimensional and higher-dimensional case only
 #define FOR_N1 template<int M=N, std::enable_if_t<(M==1), int> = 0>
 #define FOR_Nx template<int M=N, std::enable_if_t<(M>1), int> = 0>
+#define FOR_Nx_V template<int M=N, typename... I, std::enable_if_t<(M>1), int> = 0>
 
 
 /**
@@ -73,9 +74,11 @@ protected:
     }
 
     // MARK: Virtual functions to be defined by derived classes
-    virtual pointer_type getDataPointer_Nx() const = 0;
-    virtual T* getDataPointer_N1() const = 0;
-    
+    virtual const pointer_type getDataPointer_Nx() const = 0;
+    virtual pointer_type getDataPointer_Nx() = 0;
+    virtual const T* getDataPointer_N1() const = 0;
+    virtual T* getDataPointer_N1() = 0;
+
     // Helper to make interfacing with STL a bit more readable
     static constexpr stl_size_type STL(int i) { return static_cast<stl_size_type>(i); }
     

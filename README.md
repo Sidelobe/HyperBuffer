@@ -62,8 +62,7 @@ The main use case for this container is to hold dynamically-allocated N-dimensio
 
 API features:
 
-* can provide a multi-dimensional raw pointer (e.g. `float***`) to the data
-* (*planned*) support initializer lists
+* can provide a multi-dimensional raw pointer (e.g. `float***`) to the data or sub-dimension
 * (*planned*) support initializer lists
 
 Memory management details:

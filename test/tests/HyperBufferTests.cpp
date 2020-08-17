@@ -46,11 +46,23 @@ TEST_CASE("HyperBuffer Tests - Internal Memory Allocation")
         constexpr int N = 1;
         HyperBuffer<int, N> buffer(4);
         testHyperBuffer1D_size4(buffer);
+        
+        // test operator() read & write
+        buffer[2] = 666;
+        REQUIRE(buffer(2) == 666);
+        buffer(2) = -2; 
+        REQUIRE(buffer[2] == -2);
     }
     SECTION("Build 2D owning") {
         constexpr int N = 2;
         HyperBuffer<int, N> buffer(2, 4);
         testHyperBuffer2D_sizes2_4(buffer);
+        
+        // test operator() read & write
+        buffer[1][2] = 666;
+        REQUIRE(buffer(1, 2) == 666);
+//        buffer(1, 2) = -2;
+//        REQUIRE(buffer[1][2] == -2);
     }
     SECTION("Build 3D owning") {
         constexpr int N = 3;
@@ -61,6 +73,12 @@ TEST_CASE("HyperBuffer Tests - Internal Memory Allocation")
         std::array<int, N> dims  {3, 3, 8};
         HyperBuffer<int, N> bufferFromStdArray(dims);
         testHyperBuffer3D_sizes3_3_8(bufferFromStdArray);
+        
+        // test operator() read & write
+        buffer[1][2][6] = 666;
+        REQUIRE(buffer(1, 2, 6) == 666);
+//        buffer(1, 2, 6) = -22;
+//        REQUIRE(buffer[1][2][6] == -22);
     }
 }
 
@@ -71,12 +89,24 @@ TEST_CASE("HyperBuffer Tests - External Memory Allocation (Flat)")
         constexpr int N = 1;
         HyperBufferPreAllocFlat<int, N> buffer(preAllocData, 4);
         testHyperBuffer1D_size4(buffer);
+        
+        // test operator() read & write
+        buffer[2] = 666;
+        REQUIRE(buffer(2) == 666);
+        buffer(2) = -2;
+        REQUIRE(buffer[2] == -2);
     }
     SECTION("Build 2D prealloc flat") {
         constexpr int N = 2;
         int preAllocData[2*4] {0};
         HyperBufferPreAllocFlat<int, N> buffer(preAllocData, 2, 4);
         testHyperBuffer2D_sizes2_4(buffer);
+        
+        // test operator() read & write
+        buffer[1][2] = 666;
+        REQUIRE(buffer(1, 2) == 666);
+        buffer(1, 2) = -2;
+        REQUIRE(buffer[1][2] == -2);
     }
     SECTION("Build 3D prealloc flat") {
         constexpr int N = 3;
@@ -96,6 +126,12 @@ TEST_CASE("HyperBuffer Tests - External Memory Allocation (Flat)")
         std::array<int, N> dims {3, 3, 8};
         HyperBufferPreAllocFlat<int, N> bufferFromStdArray(preAllocData.data(), dims);
         testHyperBuffer3D_sizes3_3_8(bufferFromStdArray);
+        
+        // test operator() read & write
+        buffer[1][2][6] = 666;
+        REQUIRE(buffer(1, 2, 6) == 666);
+        buffer(1, 2, 6) = -22;
+        REQUIRE(buffer[1][2][6] == -22);
     }
 }
 
@@ -110,6 +146,12 @@ TEST_CASE("HyperBuffer Tests - External Memory Allocation (MultiDim)")
         std::array<int, 1> dims {4};
         HyperBufferPreAlloc<int, N> bufferFromStdArray(oneD.data(), dims); // dims as array
         testHyperBuffer1D_size4(bufferFromStdArray);
+        
+        // test operator() read & write
+        buffer[2] = 666;
+        REQUIRE(buffer(2) == 666);
+        buffer(2) = -2;
+        REQUIRE(buffer[2] == -2);
     }
     SECTION("Build 2D prealloc multidim") {
         constexpr int N = 2;
@@ -118,6 +160,12 @@ TEST_CASE("HyperBuffer Tests - External Memory Allocation (MultiDim)")
         int* dataDim1_0[] = { dataDim0_0.data(), dataDim0_1.data() };
         HyperBufferPreAlloc<int, N> buffer(dataDim1_0, 2, 4);
         testHyperBuffer2D_sizes2_4(buffer);
+        
+        // test operator() read & write
+        buffer[1][2] = 666;
+        REQUIRE(buffer(1, 2) == 666);
+        buffer(1, 2) = -2;
+        REQUIRE(buffer[1][2] == -2);
     }
     SECTION("Build 3D prealloc multidim") {
         constexpr int N = 3;
@@ -129,6 +177,12 @@ TEST_CASE("HyperBuffer Tests - External Memory Allocation (MultiDim)")
         std::array<int, N> dims  {3, 3, 8};
         HyperBufferPreAlloc<int, N> bufferFromStdArray(multiDimData, dims);
         testHyperBuffer3D_sizes3_3_8(bufferFromStdArray);
+        
+        // test operator() read & write
+        buffer[1][2][6] = 666;
+        REQUIRE(buffer(1, 2, 6) == 666);
+        buffer(1, 2, 6) = -22;
+        REQUIRE(buffer[1][2][6] == -22);
     }
 
 }
@@ -211,8 +265,8 @@ TEST_CASE("HyperBuffer: sub-buffer access")
 //                }
 //            }
 //        }
-        
     }
+    
     SECTION("prealloc flat") {
         int dataRaw1 [2*3*8];
         HyperBufferPreAllocFlat<int, N> buffer(dataRaw1, 2, 3, 8);
@@ -277,6 +331,17 @@ TEST_CASE("HyperBuffer: sub-buffer access")
 
         SECTION("ctor") {
             HyperBufferPreAlloc<int, N-1> subBuffer(buffer, subBufferIndex);
+            REQUIRE(subBuffer.dims() == std::array<int, N-1>{3, 8});
+            const int start = 3*8 * subBufferIndex;
+            int j = 0;
+            for (int l=0; l < subBuffer.dim(0); ++l) {
+                for (int m=0; m < subBuffer.dim(1); ++m) {
+                    REQUIRE(subBuffer[l][m] == start + j++);
+                }
+            }
+        }
+        SECTION("operator()") {
+            HyperBufferPreAlloc<int, N-1> subBuffer = buffer(subBufferIndex);
             REQUIRE(subBuffer.dims() == std::array<int, N-1>{3, 8});
             const int start = 3*8 * subBufferIndex;
             int j = 0;
