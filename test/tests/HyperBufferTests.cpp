@@ -243,17 +243,6 @@ TEST_CASE("HyperBuffer: sub-buffer access")
         }
         int subBufferIndex = GENERATE(0, 1);
         
-        SECTION("ctor") {
-            HyperBuffer<int, N-1> subBuffer(buffer, subBufferIndex);
-            REQUIRE(subBuffer.dims() == std::array<int, N-1>{3, 8});
-            const int start = 3*8 * subBufferIndex;
-            int j = 0;
-            for (int l=0; l < subBuffer.dim(0); ++l) {
-                for (int m=0; m < subBuffer.dim(1); ++m) {
-                    REQUIRE(subBuffer[l][m] == start + j++);
-                }
-            }
-        }
 //        SECTION("operator()") {
 //            HyperBuffer<int, N-1> subBuffer = buffer(subBufferIndex);
 //            REQUIRE(subBuffer.dims() == std::array<int, N-1>{3, 8});
@@ -280,17 +269,6 @@ TEST_CASE("HyperBuffer: sub-buffer access")
         }
         int subBufferIndex = GENERATE(0, 1);
         
-        SECTION("ctor") {
-            HyperBufferPreAllocFlat<int, N-1> subBuffer(buffer, subBufferIndex);
-            REQUIRE(subBuffer.dims() == std::array<int, N-1>{3, 8});
-            const int start = 3*8 * subBufferIndex;
-            int j = 0;
-            for (int l=0; l < subBuffer.dim(0); ++l) {
-                for (int m=0; m < subBuffer.dim(1); ++m) {
-                    REQUIRE(subBuffer[l][m] == start + j++);
-                }
-            }
-        }
         SECTION("operator()") {
             HyperBufferPreAllocFlat<int, N-1> subBuffer = buffer(subBufferIndex);
             REQUIRE(subBuffer.dims() == std::array<int, N-1>{3, 8});
@@ -329,17 +307,6 @@ TEST_CASE("HyperBuffer: sub-buffer access")
         }
         int subBufferIndex = GENERATE(0, 1);
 
-        SECTION("ctor") {
-            HyperBufferPreAlloc<int, N-1> subBuffer(buffer, subBufferIndex);
-            REQUIRE(subBuffer.dims() == std::array<int, N-1>{3, 8});
-            const int start = 3*8 * subBufferIndex;
-            int j = 0;
-            for (int l=0; l < subBuffer.dim(0); ++l) {
-                for (int m=0; m < subBuffer.dim(1); ++m) {
-                    REQUIRE(subBuffer[l][m] == start + j++);
-                }
-            }
-        }
         SECTION("operator()") {
             HyperBufferPreAlloc<int, N-1> subBuffer = buffer(subBufferIndex);
             REQUIRE(subBuffer.dims() == std::array<int, N-1>{3, 8});
