@@ -61,8 +61,8 @@ TEST_CASE("HyperBuffer Tests - Internal Memory Allocation")
         // test operator() read & write
         buffer[1][2] = 666;
         REQUIRE(buffer(1, 2) == 666);
-//        buffer(1, 2) = -2;
-//        REQUIRE(buffer[1][2] == -2);
+        buffer(1, 2) = -2;
+        REQUIRE(buffer[1][2] == -2);
     }
     SECTION("Build 3D owning") {
         constexpr int N = 3;
@@ -77,8 +77,8 @@ TEST_CASE("HyperBuffer Tests - Internal Memory Allocation")
         // test operator() read & write
         buffer[1][2][6] = 666;
         REQUIRE(buffer(1, 2, 6) == 666);
-//        buffer(1, 2, 6) = -22;
-//        REQUIRE(buffer[1][2][6] == -22);
+        buffer(1, 2, 6) = -22;
+        REQUIRE(buffer[1][2][6] == -22);
     }
 }
 
@@ -243,8 +243,9 @@ TEST_CASE("HyperBuffer: sub-buffer access")
         }
         int subBufferIndex = GENERATE(0, 1);
         
-//        SECTION("operator()") {
-//            HyperBuffer<int, N-1> subBuffer = buffer(subBufferIndex);
+        SECTION("operator()") {
+            // returns PreAllocFlat!
+//            HyperBufferPreAllocFlat<int, N-1> subBuffer = buffer(subBufferIndex);
 //            REQUIRE(subBuffer.dims() == std::array<int, N-1>{3, 8});
 //            const int start = 3*8 * subBufferIndex;
 //            int j = 0;
@@ -253,7 +254,7 @@ TEST_CASE("HyperBuffer: sub-buffer access")
 //                    REQUIRE(subBuffer[l][m] == start + j++);
 //                }
 //            }
-//        }
+        }
     }
     
     SECTION("prealloc flat") {

@@ -15,6 +15,91 @@
 #include "TemplateUtils.hpp"
 #include "BufferGeometry.hpp"
        
+// MARK: - HyperBufferPreAllocFlat - manages existing 1D data
+template<typename T, int N>
+class HyperBufferPreAllocFlat : public HyperBufferBase<T, N>
+{
+    using pointer_type = typename HyperBufferBase<T, N>::pointer_type;
+    using size_type = typename HyperBufferBase<T, N>::size_type;
+    using subdim_pointer_type = typename HyperBufferBase<T, N>::subdim_pointer_type;
+    using HyperBufferBase<T, N>::STL;
+
+public:
+    /** Constructor that takes the extents of the dimensions as a variable argument list */
+    template<typename... I>
+    HyperBufferPreAllocFlat(T* preAllocatedDataFlat, I... i) :
+        HyperBufferBase<T, N>(i...),
+        m_bufferGeometry(i...),
+        m_externalData(preAllocatedDataFlat),
+        m_pointers(STL(m_bufferGeometry.getRequiredPointerArraySize()))
+    {
+        m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
+    }
+    
+    /** Constructor that takes the extents of the dimensions as a std::array */
+    HyperBufferPreAllocFlat(T* preAllocatedDataFlat, std::array<int, N>& dimensionExtents) :
+        HyperBufferBase<T, N>(dimensionExtents),
+        m_bufferGeometry(dimensionExtents),
+        m_externalData(preAllocatedDataFlat),
+        m_pointers(STL(m_bufferGeometry.getRequiredPointerArraySize()))
+    {
+        m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
+    }
+    
+    // MARK: - common functions not in base class (they differ in return type)
+    
+    /** Access the raw data - in this case an externally-managed 1D data block */
+    T* rawData() const { return m_externalData; }
+    T* rawData() { return m_externalData; }
+    
+    // MARK: operator()
+    FOR_N1 T& operator() (size_type i) { return getDataPointer_N1()[i]; }
+    FOR_N1 const T& operator() (size_type i) const { return getDataPointer_N1()[i]; }
+    FOR_Nx decltype(auto) operator() (size_type dn) { return HyperBufferPreAllocFlat<T, N-1>(*this, dn); }
+    FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) { return HyperBufferPreAllocFlat<T, N-1>(*this, dn).operator()(i...); }
+
+private:
+    /** Build a HyperBuffer from an existing N+1 Hyperbuffer */
+    HyperBufferPreAllocFlat(const HyperBufferPreAllocFlat<T, N+1>& parent, size_type index) :
+        HyperBufferBase<T, N>(StdArrayOperations::subArray(parent.dims())),
+        m_bufferGeometry(StdArrayOperations::subArray(parent.dims())),
+        m_pointers(STL(m_bufferGeometry.getRequiredPointerArraySize()))
+    {
+        int offset = parent.m_bufferGeometry.getDimensionStartOffsetInDataArray(index);
+        m_externalData = &parent.m_externalData[offset];
+        m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
+    }
+    
+    const pointer_type getDataPointer_Nx() const override
+    {
+        return reinterpret_cast<pointer_type>(m_pointers.data());
+    }
+    
+    pointer_type getDataPointer_Nx() override
+    {
+        return reinterpret_cast<pointer_type>(m_pointers.data());
+    }
+
+    const T* getDataPointer_N1() const override
+    {
+        return *m_pointers.data();
+    }
+
+    T* getDataPointer_N1() override
+    {
+        return *m_pointers.data();
+    }
+
+private:
+    friend class HyperBufferPreAllocFlat<T, N-1>;
+    friend class HyperBufferPreAllocFlat<T, N+1>;
+    
+    BufferGeometry<N> m_bufferGeometry;
+    T* m_externalData;
+    mutable std::vector<T*> m_pointers;
+};
+
+// ====================================================================================================================
 // MARK: - HyperBuffer - owns the data
 template<typename T, int N>
 class HyperBuffer : public HyperBufferBase<T, N>
@@ -44,11 +129,13 @@ public:
     // MARK:  operator()
     FOR_N1 T& operator() (size_type i) { return getDataPointer_N1()[i]; }
     FOR_N1 const T& operator() (size_type i) const { return getDataPointer_N1()[i]; }
-    FOR_Nx_V auto&& operator() (size_type dn, I... i)
+    FOR_Nx_V decltype(auto) operator() (size_type dn, I... i)
     {
-        //TODO return HyperBufferPreAlloc<T, N-1>(*this, dn).operator()(i...); -- this avoid copying!
-        return HyperBuffer<T, N-1>(*this, dn).operator()(i...);
-//        return subbuffer.operator()(i...);
+        int offset = m_bufferGeometry.getDimensionStartOffsetInDataArray(dn);
+        T* subDimData = &m_data[offset];
+        std::array<int, N-1> subDimExtents = StdArrayOperations::subArray(this->dims());
+        // return a view to the desired subbuffer of this HyperBuffer Object
+        return HyperBufferPreAllocFlat<T, N-1>(subDimData, subDimExtents).operator()(i...);
     }
     FOR_Nx decltype(auto) operator() (size_type dn)
     {
@@ -102,82 +189,7 @@ private:
 };
 
 
-// MARK: - HyperBufferPreAllocFlat - manages existing 1D data
-template<typename T, int N>
-class HyperBufferPreAllocFlat : public HyperBufferBase<T, N>
-{
-    using pointer_type = typename HyperBufferBase<T, N>::pointer_type;
-    using size_type = typename HyperBufferBase<T, N>::size_type;
-    using subdim_pointer_type = typename HyperBufferBase<T, N>::subdim_pointer_type;
-    using HyperBufferBase<T, N>::STL;
-
-public:
-    /** Constructor that takes the extents of the dimensions as a variable argument list */
-    template<typename... I>
-    explicit HyperBufferPreAllocFlat(T* preAllocatedDataFlat, I... i) :
-        HyperBufferBase<T, N>(i...),
-        m_bufferGeometry(i...),
-        m_externalData(preAllocatedDataFlat),
-        m_pointers(STL(m_bufferGeometry.getRequiredPointerArraySize()))
-    {
-        m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
-    }
-    
-    // MARK: - common functions not in base class (they differ in return type)
-    
-    /** Access the raw data - in this case an externally-managed 1D data block */
-    T* rawData() const { return m_externalData; }
-    T* rawData() { return m_externalData; }
-    
-    // MARK: operator()
-    FOR_N1 T& operator() (size_type i) { return getDataPointer_N1()[i]; }
-    FOR_N1 const T& operator() (size_type i) const { return getDataPointer_N1()[i]; }
-    FOR_Nx decltype(auto) operator() (size_type dn) { return HyperBufferPreAllocFlat<T, N-1>(*this, dn); }
-    FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) { return HyperBufferPreAllocFlat<T, N-1>(*this, dn).operator()(i...); }
-
-private:
-    /** Build a HyperBuffer from an existing N+1 Hyperbuffer */
-    HyperBufferPreAllocFlat(const HyperBufferPreAllocFlat<T, N+1>& parent, size_type index) :
-        HyperBufferBase<T, N>(StdArrayOperations::subArray(parent.dims())),
-        m_bufferGeometry(StdArrayOperations::subArray(parent.dims())),
-        m_pointers(STL(m_bufferGeometry.getRequiredPointerArraySize()))
-    {
-        int offset = parent.m_bufferGeometry.getDimensionStartOffsetInDataArray(index);
-        m_externalData = &parent.m_externalData[offset];
-        m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
-    }
-
-    const pointer_type getDataPointer_Nx() const override
-    {
-        return reinterpret_cast<pointer_type>(m_pointers.data());
-    }
-    
-    pointer_type getDataPointer_Nx() override
-    {
-        return reinterpret_cast<pointer_type>(m_pointers.data());
-    }
-
-    const T* getDataPointer_N1() const override
-    {
-        return *m_pointers.data();
-    }
-
-    T* getDataPointer_N1() override
-    {
-        return *m_pointers.data();
-    }
-
-private:
-    friend class HyperBufferPreAllocFlat<T, N-1>;
-    friend class HyperBufferPreAllocFlat<T, N+1>;
-    
-    BufferGeometry<N> m_bufferGeometry;
-    T* m_externalData;
-    mutable std::vector<T*> m_pointers;
-};
-
-
-
+// ====================================================================================================================
 // MARK: - HyperBufferPreAlloc - manages existing multi-dimensional data (wrapper)
 template<typename T, int N>
 class HyperBufferPreAlloc : public HyperBufferBase<T, N>
@@ -188,7 +200,7 @@ class HyperBufferPreAlloc : public HyperBufferBase<T, N>
 public:
     /** Constructor that takes the extents of the dimensions as a variable argument list */
     template<typename... I>
-    explicit HyperBufferPreAlloc(pointer_type preAllocatedData, I... i) :
+    HyperBufferPreAlloc(pointer_type preAllocatedData, I... i) :
         HyperBufferBase<T, N>(i...),
         m_externalData(preAllocatedData) {}
     
