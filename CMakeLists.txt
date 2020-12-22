@@ -122,6 +122,11 @@ else()
     set_source_files_properties(${files} PROPERTIES COMPILE_FLAGS "-Wno-old-style-cast -Wno-cast-align")
 endif()
 
+# Explicitly set CMP0110 to "NEW" to allow whitespace in tests names
+if(POLICY CMP0110)
+  cmake_policy(SET CMP0110 NEW)
+endif()
+
 
 ## ENABLE THE USE OF CTEST 
 include("test/external-utils/catch2/ParseAndAddCatchTests.cmake")
