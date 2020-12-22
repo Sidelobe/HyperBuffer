@@ -38,7 +38,7 @@ public:
     virtual ~HyperBufferBase() = default;
     
     // MARK: dimension extents
-    int dim(int i) const { return m_dimensionExtents[STL(i)]; }
+    int dim(int i) const { assert(i < N); return m_dimensionExtents[STL(i)]; }
     const std::array<int, N>& dims() const { return m_dimensionExtents; }
 
     // MARK: operator[]

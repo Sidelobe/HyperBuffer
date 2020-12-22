@@ -131,15 +131,19 @@ public:
     FOR_N1 const T& operator() (size_type i) const { return getDataPointer_N1()[i]; }
     FOR_Nx_V decltype(auto) operator() (size_type dn, I... i)
     {
-        int offset = m_bufferGeometry.getDimensionStartOffsetInDataArray(dn);
+        const int offset = m_bufferGeometry.getDimensionStartOffsetInDataArray(dn);
         T* subDimData = &m_data[offset];
         std::array<int, N-1> subDimExtents = StdArrayOperations::subArray(this->dims());
-        // return a view to the desired subbuffer of this HyperBuffer Object
+        // return a view to the desired sub-buffer of this HyperBuffer Object
         return HyperBufferPreAllocFlat<T, N-1>(subDimData, subDimExtents).operator()(i...);
     }
     FOR_Nx decltype(auto) operator() (size_type dn)
     {
-        return HyperBuffer<T, N-1>(*this, dn).rawData().data();
+        const int offset = m_bufferGeometry.getDimensionStartOffsetInDataArray(dn);
+        T* subDimData = &m_data[offset];
+        std::array<int, N-1> subDimExtents = StdArrayOperations::subArray(this->dims());
+        // return a view to the N-1 sub-buffer of this HyperBuffer Object
+        return HyperBufferPreAllocFlat<T, N-1>(subDimData, subDimExtents);
     }
 
 private:
