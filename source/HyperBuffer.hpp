@@ -100,7 +100,7 @@ private:
 };
 
 // ====================================================================================================================
-// MARK: - HyperBuffer - owns the data
+// MARK: - HyperBuffer - owns its own data
 template<typename T, int N>
 class HyperBuffer : public HyperBufferBase<T, N>
 {

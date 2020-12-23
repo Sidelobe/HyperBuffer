@@ -1,11 +1,14 @@
 cmake_minimum_required(VERSION 3.13)
 
+###########################################################
 #  ╦ ╦┬ ┬┌─┐┌─┐┬─┐  ╔╗ ┬ ┬┌─┐┌─┐┌─┐┬─┐
 #  ╠═╣└┬┘├─┘├┤ ├┬┘  ╠╩╗│ │├┤ ├┤ ├┤ ├┬┘
 #  ╩ ╩ ┴ ┴  └─┘┴└─  ╚═╝└─┘└  └  └─┘┴└─
 ###########################################################
 
-# Utillity
+##############################
+# Utillity Functions
+
 # Recursively get all .h/.hpp header from the target's sources and assign their paths as include directories
 function(assign_include_dirs_from_sources _target)
     get_target_property(_sources ${_target} SOURCES)
@@ -27,9 +30,10 @@ function(generate_code_coverage_data _target)
         target_link_options(${_target} PRIVATE -fprofile-arcs -ftest-coverage)
 endfunction()
 
+##############################
 #### MAIN
 project(HyperBuffer
-        VERSION 1.0.1
+        VERSION 0.1.0
         DESCRIPTION "A header-only C++ data structure to manage multi-dimensional data"
         HOMEPAGE_URL "https://github.com/Sidelobe/Hypbuffer")
 
