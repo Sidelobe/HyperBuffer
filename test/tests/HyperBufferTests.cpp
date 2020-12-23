@@ -230,25 +230,32 @@ TEST_CASE("HyperBuffer ctor: different dimension variants")
     }
 }
 
-TEST_CASE("HyperBuffer: sub-buffer construction & access")
+static auto fillWithSequence = [](auto& buffer)
 {
-    auto fillWithSequence = [](auto& buffer)
-    {
-        int i = 0;
-        for (int k=0; k < buffer.dim(0); ++k) {
-            for (int l=0; l < buffer.dim(1); ++l) {
-                for (int m=0; m < buffer.dim(2); ++m) {
-                    buffer[k][l][m] = i++;
-                }
+    int i = 0;
+    for (int k=0; k < buffer.dim(0); ++k) {
+        for (int l=0; l < buffer.dim(1); ++l) {
+            for (int m=0; m < buffer.dim(2); ++m) {
+                buffer[k][l][m] = i++;
             }
         }
-    };
+    }
+};
     
+
+TEST_CASE("HyperBuffer: sub-buffer construction & operator() access")
+{
+    // assumes a {3, 3, 8} buffer
     auto verify = [](auto& buffer)
     {
-        // assume a {3, 3, 8} buffer
+        // RW Access to data via operator()
+        REQUIRE(buffer(0, 1, 5) == 13);
+        buffer(0, 1, 5) = -13;
+        REQUIRE(buffer(0, 1, 5) == -13);
+        buffer(0, 1, 5) = 13; // restore original value
+        
+        // N-1 Sub-buffer -> 2D
         int subBufferIndex = GENERATE(0, 1, 2);
-
         auto subBuffer = buffer(subBufferIndex);
         REQUIRE(subBuffer.dims() == std::array<int, 2>{buffer.dim(1), buffer.dim(2)});
         int j = 0;
@@ -258,9 +265,10 @@ TEST_CASE("HyperBuffer: sub-buffer construction & access")
             }
         }
         
+        // N-2 Sub-buffer -> 1D
         int subBufferIndex2 = 1; // just test one value
         auto subBuffer2 = buffer(subBufferIndex, subBufferIndex2);
-        REQUIRE(subBuffer2.dims() == std::array<int, 1>{8});
+        REQUIRE(subBuffer2.dims() == std::array<int, 1>{buffer.dim(2)});
         j = 0;
         for (int m=0; m < subBuffer2.dim(0); ++m) {
             REQUIRE(subBuffer2[m] == buffer.dim(1) * buffer.dim(2) * subBufferIndex + buffer.dim(2) * subBufferIndex2 + j++);
@@ -270,7 +278,9 @@ TEST_CASE("HyperBuffer: sub-buffer construction & access")
     SECTION("owning") {
         HyperBuffer<int, 3> buffer(3, 3, 8);
         fillWithSequence(buffer);
+        
         // NOTE: A sub-buffer of HyperBuffer is a PreAllocFlat!
+        
         verify(buffer);
     }
     
