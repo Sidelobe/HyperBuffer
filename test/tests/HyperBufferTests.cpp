@@ -230,11 +230,10 @@ TEST_CASE("HyperBuffer ctor: different dimension variants")
     }
 }
 
-TEST_CASE("HyperBuffer: sub-buffer access")
+TEST_CASE("HyperBuffer: sub-buffer construction & access")
 {
-    constexpr int N = 3;
-    SECTION("owning") {
-        HyperBuffer<int, N> buffer(2, 3, 8);
+    auto fillWithSequence = [](auto& buffer)
+    {
         int i = 0;
         for (int k=0; k < buffer.dim(0); ++k) {
             for (int l=0; l < buffer.dim(1); ++l) {
@@ -243,87 +242,50 @@ TEST_CASE("HyperBuffer: sub-buffer access")
                 }
             }
         }
-        int subBufferIndex = GENERATE(0, 1);
-        
-        // returns PreAllocFlat!
-        HyperBufferPreAllocFlat<int, N-1> subBuffer = buffer(subBufferIndex);
-        REQUIRE(subBuffer.dims() == std::array<int, N-1>{3, 8});
+    };
+    
+    auto verify = [](auto& buffer)
+    {
+        // assume a {3, 3, 8} buffer
+        int subBufferIndex = GENERATE(0, 1, 2);
+
+        auto subBuffer = buffer(subBufferIndex);
+        REQUIRE(subBuffer.dims() == std::array<int, 2>{buffer.dim(1), buffer.dim(2)});
         int j = 0;
         for (int l=0; l < subBuffer.dim(0); ++l) {
             for (int m=0; m < subBuffer.dim(1); ++m) {
-                REQUIRE(subBuffer[l][m] == 3*8 * subBufferIndex + j++);
+                REQUIRE(subBuffer[l][m] == buffer.dim(1) * buffer.dim(2) * subBufferIndex + j++);
             }
         }
         
-        int subBufferIndex2 = 1;
-        HyperBufferPreAllocFlat<int, N-2> subBuffer2 = buffer(subBufferIndex, subBufferIndex2);
-        REQUIRE(subBuffer2.dims() == std::array<int, N-2>{8});
+        int subBufferIndex2 = 1; // just test one value
+        auto subBuffer2 = buffer(subBufferIndex, subBufferIndex2);
+        REQUIRE(subBuffer2.dims() == std::array<int, 1>{8});
         j = 0;
         for (int m=0; m < subBuffer2.dim(0); ++m) {
-            REQUIRE(subBuffer2[m] == 3*8 * subBufferIndex + 8 * subBufferIndex2 + j++);
+            REQUIRE(subBuffer2[m] == buffer.dim(1) * buffer.dim(2) * subBufferIndex + buffer.dim(2) * subBufferIndex2 + j++);
         }
+    };
+    
+    SECTION("owning") {
+        HyperBuffer<int, 3> buffer(3, 3, 8);
+        fillWithSequence(buffer);
+        // NOTE: A sub-buffer of HyperBuffer is a PreAllocFlat!
+        verify(buffer);
     }
     
     SECTION("prealloc flat") {
-        int dataRaw1 [2*3*8];
-        HyperBufferPreAllocFlat<int, N> buffer(dataRaw1, 2, 3, 8);
-        int i = 0;
-        for (int k=0; k < buffer.dim(0); ++k) {
-            for (int l=0; l < buffer.dim(1); ++l) {
-                for (int m=0; m < buffer.dim(2); ++m) {
-                    buffer[k][l][m] = i++;
-                }
-            }
-        }
-        int subBufferIndex = GENERATE(0, 1);
-        
-        HyperBufferPreAllocFlat<int, N-1> subBuffer = buffer(subBufferIndex);
-        REQUIRE(subBuffer.dims() == std::array<int, N-1>{3, 8});
-        int j = 0;
-        for (int l=0; l < subBuffer.dim(0); ++l) {
-            for (int m=0; m < subBuffer.dim(1); ++m) {
-                REQUIRE(subBuffer[l][m] ==  3*8 * subBufferIndex + j++);
-            }
-        }
-        
-        int subBufferIndex2 = 1;
-        HyperBufferPreAllocFlat<int, N-2> subBuffer2 = buffer(subBufferIndex, subBufferIndex2);
-        REQUIRE(subBuffer2.dims() == std::array<int, N-2>{8});
-        j = 0;
-        for (int m=0; m < subBuffer2.dim(0); ++m) {
-            REQUIRE(subBuffer2[m] == 3*8 * subBufferIndex + 8 * subBufferIndex2 + j++);
-        }
+        int dataRaw1 [3*3*8];
+        HyperBufferPreAllocFlat<int, 3> buffer(dataRaw1, 3, 3, 8);
+        fillWithSequence(buffer);
+        verify(buffer);
+
     }
     SECTION("prealloc") {
         BUILD_MULTIDIM_ON_STACK_3_3_8(multiDimData);
-        HyperBufferPreAlloc<int, N> buffer(multiDimData, 3, 3, 8);
-        int i = 0;
-        for (int k=0; k < buffer.dim(0); ++k) {
-            for (int l=0; l < buffer.dim(1); ++l) {
-                for (int m=0; m < buffer.dim(2); ++m) {
-                    buffer[k][l][m] = i++;
-                }
-            }
-        }
-        int subBufferIndex = GENERATE(0, 1);
-        
-        HyperBufferPreAlloc<int, N-1> subBuffer = buffer(subBufferIndex);
-        REQUIRE(subBuffer.dims() == std::array<int, N-1>{3, 8});
-        const int start = 3*8 * subBufferIndex;
-        int j = 0;
-        for (int l=0; l < subBuffer.dim(0); ++l) {
-            for (int m=0; m < subBuffer.dim(1); ++m) {
-                REQUIRE(subBuffer[l][m] == start + j++);
-            }
-        }
-        
-        int subBufferIndex2 = 1;
-        HyperBufferPreAlloc<int, N-2> subBuffer2 = buffer(subBufferIndex, subBufferIndex2);
-        REQUIRE(subBuffer2.dims() == std::array<int, N-2>{8});
-        j = 0;
-        for (int m=0; m < subBuffer2.dim(0); ++m) {
-            REQUIRE(subBuffer2[m] == 3*8 * subBufferIndex + 8 * subBufferIndex2 + j++);
-        }
+        HyperBufferPreAlloc<int, 3> buffer(multiDimData, 3, 3, 8);
+        fillWithSequence(buffer);
+        verify(buffer);
     }
 }
 
