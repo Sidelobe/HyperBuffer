@@ -18,6 +18,8 @@
 #define FOR_Nx template<int M=N, std::enable_if_t<(M>1), int> = 0>
 #define FOR_Nx_V template<int M=N, typename... I, std::enable_if_t<(M>1), int> = 0>
 
+namespace slb
+{
 
 /**
  * This has to be a base and interface class at once, because we cannot apply std::enable_if to virtual functions and
@@ -38,7 +40,7 @@ public:
     virtual ~HyperBufferBase() = default;
     
     // MARK: dimension extents
-    int dim(int i) const { assert(i < N); return m_dimensionExtents[STL(i)]; }
+    int dim(int i) const { ASSERT(i < N); return m_dimensionExtents[STL(i)]; }
     const std::array<int, N>& dims() const { return m_dimensionExtents; }
 
     // MARK: operator[]
@@ -90,8 +92,9 @@ protected:
         // if swap(x, y) finds a better match, via ADL, it will use that instead; otherwise it falls back to std::swap
     }
 
-protected:
-    std::array<int, N> m_dimensionExtents; // only required by the dims functions
+private:
+    std::array<int, N> m_dimensionExtents; // only required as a member because of the dims functions
 
 };
 
+} // namespace slb

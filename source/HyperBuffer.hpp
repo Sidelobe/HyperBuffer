@@ -14,7 +14,10 @@
 #include "HyperBufferBase.hpp"
 #include "TemplateUtils.hpp"
 #include "BufferGeometry.hpp"
-       
+
+namespace slb
+{
+
 // MARK: - HyperBufferPreAllocFlat - manages existing 1D data
 template<typename T, int N>
 class HyperBufferPreAllocFlat : public HyperBufferBase<T, N>
@@ -256,3 +259,5 @@ private:
 
     pointer_type m_externalData;
 };
+
+} // namespace slb

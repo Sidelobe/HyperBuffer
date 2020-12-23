@@ -13,6 +13,9 @@
 #include "TemplateUtils.hpp"
 #include "IntArrayOperations.hpp"
 
+namespace slb
+{
+
 /** Performs the 'geometry' calculations for certain set of dimension extents */
 template<int N>
 class BufferGeometry
@@ -65,7 +68,7 @@ public:
     int getDimensionStartOffsetInDataArray(int index) const
     {
         int totalNumDataEntries = getRequiredDataArraySize();
-        assert(totalNumDataEntries % m_dimensionExtents[0] == 0 && "Internal error in buffer geometry!");
+        ASSERT(totalNumDataEntries % m_dimensionExtents[0] == 0, "Internal error in buffer geometry!");
         return index * totalNumDataEntries / m_dimensionExtents[0];
     }
     
@@ -149,3 +152,5 @@ private:
     std::array<int, N> m_dimensionExtents;
     
 };
+
+} // namespace slb

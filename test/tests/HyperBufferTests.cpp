@@ -14,11 +14,6 @@
 #include "HyperBuffer.hpp"
 #include "MemorySentinel.hpp"
 
-// functions to test the integrity of the different variants throught the same API
-template<typename T> void testHyperBuffer1D_size4(HyperBufferBase<T, 1>& buffer);
-template<typename T> void testHyperBuffer2D_sizes2_4(HyperBufferBase<T, 2>& buffer);
-template<typename T> void testHyperBuffer3D_sizes3_3_8(HyperBufferBase<T, 3>& buffer);
-
 // classic preprocessor hack to stringify -- double expansion is required
 // https://gcc.gnu.org/onlinedocs/gcc-4.8.5/cpp/Stringification.html
 #define STRINGIFY(x) #x
@@ -26,19 +21,26 @@ template<typename T> void testHyperBuffer3D_sizes3_3_8(HyperBufferBase<T, 3>& bu
 
 // Helper to allocate 3D data on stack
 #define BUILD_MULTIDIM_ON_STACK_3_3_8(VARNAME) \
-    std::vector<int> dataDim0_0 = TestCommon::createRandomVectorInt(8, 333); \
-    std::vector<int> dataDim0_1 = TestCommon::createRandomVectorInt(8, 666); \
-    std::vector<int> dataDim0_2 = TestCommon::createRandomVectorInt(8, 999); \
-    std::vector<int> dataDim1_0 = TestCommon::createRandomVectorInt(8, 1333); \
-    std::vector<int> dataDim1_1 = TestCommon::createRandomVectorInt(8, 1666); \
-    std::vector<int> dataDim1_2 = TestCommon::createRandomVectorInt(8, 1999); \
-    std::vector<int> dataDim2_0 = TestCommon::createRandomVectorInt(8, 2333); \
-    std::vector<int> dataDim2_1 = TestCommon::createRandomVectorInt(8, 2666); \
-    std::vector<int> dataDim2_2 = TestCommon::createRandomVectorInt(8, 2999); \
-    int* pointerDim1_0[] = { dataDim0_0.data(), dataDim0_1.data(), dataDim0_2.data() }; \
-    int* pointerDim1_1[] = { dataDim1_0.data(), dataDim1_1.data(), dataDim1_2.data() }; \
-    int* pointerDim1_2[] = { dataDim2_0.data(), dataDim2_1.data(), dataDim2_2.data() }; \
-    int** VARNAME[] = { pointerDim1_0, pointerDim1_1, pointerDim1_2 };
+std::vector<int> dataDim0_0 = TestCommon::createRandomVectorInt(8, 333); \
+std::vector<int> dataDim0_1 = TestCommon::createRandomVectorInt(8, 666); \
+std::vector<int> dataDim0_2 = TestCommon::createRandomVectorInt(8, 999); \
+std::vector<int> dataDim1_0 = TestCommon::createRandomVectorInt(8, 1333); \
+std::vector<int> dataDim1_1 = TestCommon::createRandomVectorInt(8, 1666); \
+std::vector<int> dataDim1_2 = TestCommon::createRandomVectorInt(8, 1999); \
+std::vector<int> dataDim2_0 = TestCommon::createRandomVectorInt(8, 2333); \
+std::vector<int> dataDim2_1 = TestCommon::createRandomVectorInt(8, 2666); \
+std::vector<int> dataDim2_2 = TestCommon::createRandomVectorInt(8, 2999); \
+int* pointerDim1_0[] = { dataDim0_0.data(), dataDim0_1.data(), dataDim0_2.data() }; \
+int* pointerDim1_1[] = { dataDim1_0.data(), dataDim1_1.data(), dataDim1_2.data() }; \
+int* pointerDim1_2[] = { dataDim2_0.data(), dataDim2_1.data(), dataDim2_2.data() }; \
+int** VARNAME[] = { pointerDim1_0, pointerDim1_1, pointerDim1_2 };
+
+using namespace slb;
+
+// functions to test the integrity of the different variants throught the same API
+template<typename T> void testHyperBuffer1D_size4(HyperBufferBase<T, 1>& buffer);
+template<typename T> void testHyperBuffer2D_sizes2_4(HyperBufferBase<T, 2>& buffer);
+template<typename T> void testHyperBuffer3D_sizes3_3_8(HyperBufferBase<T, 3>& buffer);
 
 TEST_CASE("HyperBuffer Tests - Internal Memory Allocation")
 {

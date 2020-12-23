@@ -16,6 +16,8 @@
 #define MSVC_DEBUG 0
 #endif
 
+using namespace slb;
+
 void verifyBuffer(const HyperBufferBase<int, 3>& b)
 {
     REQUIRE (b.dim(0) == 3);
