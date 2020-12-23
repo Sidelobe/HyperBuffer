@@ -65,7 +65,7 @@ public:
     int getDimensionStartOffsetInDataArray(int index) const
     {
         int totalNumDataEntries = getRequiredDataArraySize();
-        assert(totalNumDataEntries % m_dimensionExtents[0] == 0 && "Internal error in buffer geometry!");
+        ASSERT(totalNumDataEntries % m_dimensionExtents[0] == 0, "Internal error in buffer geometry!");
         return index * totalNumDataEntries / m_dimensionExtents[0];
     }
     

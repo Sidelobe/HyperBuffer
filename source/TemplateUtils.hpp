@@ -20,17 +20,16 @@ namespace Assertions
 #define ASSERT(condition, ...) Assertions::handleAssert(#condition, condition, __FILE__, __LINE__, ##__VA_ARGS__)
 #define ASSERT_ALWAYS(...) Assertions::handleAssert("", false, __FILE__, __LINE__, ##__VA_ARGS__)
 
+/**
+ * NOTE: this assertion handler is constexpr - to allow its use inside constexpr functions.
+ * The handler will still be evaluated at runtime, but t
+ */
 static constexpr void handleAssert(const char* conditionAsText, bool condition, const char* file, int line, const char* message = "")
 {
-    if (condition) { return; }
-    
-    UNUSED(conditionAsText);
-    UNUSED(file);
-    UNUSED(line);
-    // TODO: string concatenation in constexpr function?
-    //std::stringstream stream;
-    //stream <<"Assertion failed: " << conditionAsText << " (" << file << ":" << line << ") " << message;
-    throw std::runtime_error(message);
+    if (condition == false) {
+        throw std::runtime_error(std::string("Assertion failed: ") + conditionAsText + " (" +
+                                 file + ":" + std::to_string(line) + ") " + message);
+    }
 }
 } // namespace Assertions
 
@@ -109,7 +108,7 @@ constexpr T sumOverRange(int begin, int end, Args... args)
 {
     ASSERT(begin >= 0);
     ASSERT(static_cast<unsigned>(end) <= sizeof...(args));
-    ASSERT(end-begin > 0 && "Cannot cap a length-one argument list");
+    ASSERT(end-begin > 0, "Cannot cap a length-one argument list");
     T sum{0};
     T values[]{ args... };
     for (int i=begin; i < end; ++i) {
@@ -140,7 +139,7 @@ constexpr T productOverRange(int begin, int end, Args... args)
 {
     ASSERT(begin >= 0);
     ASSERT(static_cast<unsigned>(end) <= sizeof...(args));
-    ASSERT(end-begin > 0 && "Cannot cap a length-one argument list");
+    ASSERT(end-begin > 0, "Cannot cap a length-one argument list");
     T product{1};
     T values[]{ args... };
     for (int i=begin; i < end; ++i) {
@@ -261,3 +260,4 @@ decltype(auto) apply(F&& f, const std::array<int, N>& arr)
 }
 
 } // namespace VarArgOperations
+

@@ -11,6 +11,10 @@
 
 #include "TemplateUtils.hpp"
 
+// ---------------------------------------------------------------------------------------------------------------------
+// These are runtime function-wrappers designed to allow the use of the compile-time utility functions in VarArgOperations::
+// ---------------------------------------------------------------------------------------------------------------------
+
 // MARK: - C-Style Arrays
 namespace IntArrayOperations
 {
