@@ -42,151 +42,89 @@ template<typename T> void testHyperBuffer1D_size4(HyperBufferBase<T, 1>& buffer)
 template<typename T> void testHyperBuffer2D_sizes2_4(HyperBufferBase<T, 2>& buffer);
 template<typename T> void testHyperBuffer3D_sizes3_3_8(HyperBufferBase<T, 3>& buffer);
 
-TEST_CASE("HyperBuffer Tests - Internal Memory Allocation")
+TEST_CASE("HyperBuffer Tests - Construction and Data Access")
 {
-    SECTION("Build 1D owning") {
-        constexpr int N = 1;
-        HyperBuffer<int, N> buffer(4);
+    // test operator() read & write
+    auto verify1D = [](auto& buffer)
+    {
         testHyperBuffer1D_size4(buffer);
-        
-        // test operator() read & write
-        buffer[2] = 666;
-        REQUIRE(buffer(2) == 666);
-        buffer(2) = -2; 
-        REQUIRE(buffer[2] == -2);
-    }
-    SECTION("Build 2D owning") {
-        constexpr int N = 2;
-        HyperBuffer<int, N> buffer(2, 4);
-        testHyperBuffer2D_sizes2_4(buffer);
-        
-        // test operator() read & write
-        buffer[1][2] = 666;
-        REQUIRE(buffer(1, 2) == 666);
-        buffer(1, 2) = -2;
-        REQUIRE(buffer[1][2] == -2);
-    }
-    SECTION("Build 3D owning") {
-        constexpr int N = 3;
-        HyperBuffer<int, N> buffer(3, 3, 8);
-        testHyperBuffer3D_sizes3_3_8(buffer);
-        
-        // Constructor via std::array
-        std::array<int, N> dims  {3, 3, 8};
-        HyperBuffer<int, N> bufferFromStdArray(dims);
-        testHyperBuffer3D_sizes3_3_8(bufferFromStdArray);
-        
-        // test operator() read & write
-        buffer[1][2][6] = 666;
-        REQUIRE(buffer(1, 2, 6) == 666);
-        buffer(1, 2, 6) = -22;
-        REQUIRE(buffer[1][2][6] == -22);
-    }
-}
-
-TEST_CASE("HyperBuffer Tests - External Memory Allocation (Flat)")
-{
-    SECTION("Build 1D prealloc flat") {
-        int preAllocData[4] {0};
-        constexpr int N = 1;
-        HyperBufferPreAllocFlat<int, N> buffer(preAllocData, 4);
-        testHyperBuffer1D_size4(buffer);
-        
-        // test operator() read & write
         buffer[2] = 666;
         REQUIRE(buffer(2) == 666);
         buffer(2) = -2;
         REQUIRE(buffer[2] == -2);
-    }
-    SECTION("Build 2D prealloc flat") {
-        constexpr int N = 2;
-        int preAllocData[2*4] {0};
-        HyperBufferPreAllocFlat<int, N> buffer(preAllocData, 2, 4);
+    };
+    auto verify2D = [](auto& buffer)
+    {
         testHyperBuffer2D_sizes2_4(buffer);
-        
-        // test operator() read & write
         buffer[1][2] = 666;
         REQUIRE(buffer(1, 2) == 666);
         buffer(1, 2) = -2;
         REQUIRE(buffer[1][2] == -2);
-    }
-    SECTION("Build 3D prealloc flat") {
-        constexpr int N = 3;
-        std::vector<int> preAllocData(3*3*8, 0);
-        std::iota(preAllocData.begin(), preAllocData.end(), 1);
-        HyperBufferPreAllocFlat<int, N> buffer(preAllocData.data(), 3, 3, 8);
-        
-        REQUIRE(buffer[0][0][0] == 1);
-        REQUIRE(buffer[0][0][7] == 8);
-        REQUIRE(buffer[0][1][0] == 9);
-        REQUIRE(buffer[1][0][0] == 25);
-        REQUIRE(buffer[2][2][7] == 72);
-        
+    };
+    auto verify3D = [](auto& buffer)
+    {
         testHyperBuffer3D_sizes3_3_8(buffer);
-        
-        // Constructor via std::array
-        std::array<int, N> dims {3, 3, 8};
-        HyperBufferPreAllocFlat<int, N> bufferFromStdArray(preAllocData.data(), dims);
-        testHyperBuffer3D_sizes3_3_8(bufferFromStdArray);
-        
-        // test operator() read & write
         buffer[1][2][6] = 666;
         REQUIRE(buffer(1, 2, 6) == 666);
         buffer(1, 2, 6) = -22;
         REQUIRE(buffer[1][2][6] == -22);
+    };
+    
+    SECTION("Internal Memory Allocation") {
+        HyperBuffer<int, 1> buffer1D(4);
+        verify1D(buffer1D);
+        
+        HyperBuffer<int, 2> buffer2D(2, 4);
+        verify2D(buffer2D);
+        
+        HyperBuffer<int, 3> buffer3D(3, 3, 8);
+        verify3D(buffer3D);
+        
+        // Constructor via std::array
+        std::array<int, 3> dims {3, 3, 8};
+        HyperBuffer<int, 3> bufferFromStdArray(dims);
+        verify3D(bufferFromStdArray);
     }
-}
-
-TEST_CASE("HyperBuffer Tests - External Memory Allocation (MultiDim)")
-{
-    SECTION("Build 1D prealloc multidim") {
-        constexpr int N = 1;
+    
+    SECTION("External Memory Allocation (Flat)") {
+        int preAllocData1D[4] {0};
+        HyperBufferPreAllocFlat<int, 1> buffer1D(preAllocData1D, 4);
+        verify1D(buffer1D);
+        
+        int preAllocData2D[2*4] {0};
+        HyperBufferPreAllocFlat<int, 2> buffer2D(preAllocData2D, 2, 4);
+        verify2D(buffer2D);
+        
+        std::vector<int> preAllocData3D(3*3*8, 0);
+        HyperBufferPreAllocFlat<int, 3> buffer3D(preAllocData3D.data(), 3, 3, 8);
+        verify3D(buffer3D);
+        
+        // Constructor via std::array
+        std::array<int, 3> dims {3, 3, 8};
+        HyperBufferPreAllocFlat<int, 3> bufferFromStdArray(preAllocData3D.data(), dims);
+        verify3D(bufferFromStdArray);
+    }
+    
+    SECTION("External Memory Allocation (MultiDim)") {
         std::vector<int> oneD = TestCommon::createRandomVectorInt(4, 123);
-        HyperBufferPreAlloc<int, N> buffer(oneD.data(), oneD.size());
-        testHyperBuffer1D_size4(buffer);
-
-        std::array<int, 1> dims {4};
-        HyperBufferPreAlloc<int, N> bufferFromStdArray(oneD.data(), dims); // dims as array
-        testHyperBuffer1D_size4(bufferFromStdArray);
+        HyperBufferPreAlloc<int, 1> buffer1D(oneD.data(), oneD.size());
+        verify1D(buffer1D);
         
-        // test operator() read & write
-        buffer[2] = 666;
-        REQUIRE(buffer(2) == 666);
-        buffer(2) = -2;
-        REQUIRE(buffer[2] == -2);
-    }
-    SECTION("Build 2D prealloc multidim") {
-        constexpr int N = 2;
-        std::vector<int> dataDim0_0 = TestCommon::createRandomVectorInt(4, 333);
-        std::vector<int> dataDim0_1 = TestCommon::createRandomVectorInt(4, 666);
-        int* dataDim1_0[] = { dataDim0_0.data(), dataDim0_1.data() };
-        HyperBufferPreAlloc<int, N> buffer(dataDim1_0, 2, 4);
-        testHyperBuffer2D_sizes2_4(buffer);
+        std::vector<int> xdataDim0_0 = TestCommon::createRandomVectorInt(4, 333);
+        std::vector<int> xdataDim0_1 = TestCommon::createRandomVectorInt(4, 666);
+        int* xdataDim1_0[] = { xdataDim0_0.data(), xdataDim0_1.data() };
+        HyperBufferPreAlloc<int, 2> buffer2D(xdataDim1_0, 2, 4);
+        verify2D(buffer2D);
         
-        // test operator() read & write
-        buffer[1][2] = 666;
-        REQUIRE(buffer(1, 2) == 666);
-        buffer(1, 2) = -2;
-        REQUIRE(buffer[1][2] == -2);
-    }
-    SECTION("Build 3D prealloc multidim") {
-        constexpr int N = 3;
         BUILD_MULTIDIM_ON_STACK_3_3_8(multiDimData);
-        HyperBufferPreAlloc<int, N> buffer(multiDimData, 3, 3, 8);
-        testHyperBuffer3D_sizes3_3_8(buffer);
-
-        // Constructor via std::array
-        std::array<int, N> dims  {3, 3, 8};
-        HyperBufferPreAlloc<int, N> bufferFromStdArray(multiDimData, dims);
-        testHyperBuffer3D_sizes3_3_8(bufferFromStdArray);
+        HyperBufferPreAlloc<int, 3> buffer3D(multiDimData, 3, 3, 8);
+        verify3D(buffer3D);
         
-        // test operator() read & write
-        buffer[1][2][6] = 666;
-        REQUIRE(buffer(1, 2, 6) == 666);
-        buffer(1, 2, 6) = -22;
-        REQUIRE(buffer[1][2][6] == -22);
+        // Constructor via std::array
+        std::array<int, 3> dims  {3, 3, 8};
+        HyperBufferPreAlloc<int, 3> bufferFromStdArray(multiDimData, dims);
+        verify3D(bufferFromStdArray);
     }
-
 }
 
 TEST_CASE("HyperBuffer ctor: different dimension variants")
