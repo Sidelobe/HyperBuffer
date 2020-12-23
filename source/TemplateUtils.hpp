@@ -14,6 +14,9 @@
 
 #define UNUSED(x) (void)x
 
+namespace slb
+{
+
 // MARK: - Assertion handling
 namespace Assertions
 {
@@ -261,3 +264,5 @@ decltype(auto) apply(F&& f, const std::array<int, N>& arr)
 
 } // namespace VarArgOperations
 
+
+} // namespace slb

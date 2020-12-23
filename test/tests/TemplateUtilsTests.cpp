@@ -12,6 +12,8 @@
 
 #include "TemplateUtils.hpp"
 
+using namespace slb;
+
 TEST_CASE("TemplateUtils VarArgOperations Tests")
 {
     using namespace VarArgOperations;

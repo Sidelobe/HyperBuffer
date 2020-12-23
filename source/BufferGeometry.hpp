@@ -13,6 +13,9 @@
 #include "TemplateUtils.hpp"
 #include "IntArrayOperations.hpp"
 
+namespace slb
+{
+
 /** Performs the 'geometry' calculations for certain set of dimension extents */
 template<int N>
 class BufferGeometry
@@ -149,3 +152,5 @@ private:
     std::array<int, N> m_dimensionExtents;
     
 };
+
+} // namespace slb

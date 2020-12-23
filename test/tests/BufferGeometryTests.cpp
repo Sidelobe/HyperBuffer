@@ -12,6 +12,8 @@
 #include "BufferGeometry.hpp"
 #include "MemorySentinel.hpp"
 
+using namespace slb;
+
 TEST_CASE("BufferGeometry Tests")
 {
     SECTION("1D") {

@@ -12,6 +12,7 @@
 
 #include "IntArrayOperations.hpp"
 
+using namespace slb;
 
 TEST_CASE("IntArrayOperations Tests")
 {

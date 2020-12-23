@@ -18,6 +18,8 @@
 #define FOR_Nx template<int M=N, std::enable_if_t<(M>1), int> = 0>
 #define FOR_Nx_V template<int M=N, typename... I, std::enable_if_t<(M>1), int> = 0>
 
+namespace slb
+{
 
 /**
  * This has to be a base and interface class at once, because we cannot apply std::enable_if to virtual functions and
@@ -95,3 +97,4 @@ private:
 
 };
 
+} // namespace slb

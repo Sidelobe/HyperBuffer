@@ -14,6 +14,8 @@
 // ---------------------------------------------------------------------------------------------------------------------
 // These are runtime function-wrappers designed to allow the use of the compile-time utility functions in VarArgOperations::
 // ---------------------------------------------------------------------------------------------------------------------
+namespace slb
+{
 
 // MARK: - C-Style Arrays
 namespace IntArrayOperations
@@ -197,3 +199,4 @@ static constexpr std::array<int, N-1> subArray(const std::array<int, N>& array)
 
 } // namespace StdArrayOperations
 
+} // namespace slb
