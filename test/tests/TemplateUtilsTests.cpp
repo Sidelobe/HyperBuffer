@@ -14,6 +14,11 @@
 
 using namespace slb;
 
+TEST_CASE("TemplateUtils Assertion Tests")
+{
+    REQUIRE_THROWS(ASSERT(false));
+}
+
 TEST_CASE("TemplateUtils VarArgOperations Tests")
 {
     using namespace VarArgOperations;
@@ -33,6 +38,16 @@ TEST_CASE("TemplateUtils VarArgOperations Tests")
         static_assert(sum(1, -1) == 0, "");
         static_assert(sum(2.f, 1.f) == 3.f, "");
         static_assert((sum(2.f, .5f) - 2.5f) < 1e-9f, ""); // cannot assert sum(2.f, .5f) = 2.5f due to floating point
+    }
+    
+    SECTION("sumCapped and sumOverRange") {
+        static_assert(sumCapped(2, 2, 2, 3, 0) == 4, "");
+        static_assert(sumOverRange(1, 3, 2, 2, 3, -4) == 5, "");
+        
+        REQUIRE_THROWS(sumCapped(0, 2, 2, 2, 3)); // 0 cap index
+        REQUIRE_THROWS(sumOverRange(1, 1, 2, 2, 3)); // range 0
+        REQUIRE_THROWS(sumOverRange(2, 1, 2, 2, 3)); // negative range
+        REQUIRE_THROWS(sumOverRange(-1, 1, 2, 2, 3)); // negative range start
     }
     
     SECTION("product") {
@@ -59,6 +74,11 @@ TEST_CASE("TemplateUtils VarArgOperations Tests")
         static_assert(productCapped(2, 2, 2, 1) == 4, "");
         static_assert(productCapped(3, 2, 2, 3, 3) == 12, "");
         static_assert(productCapped(4, 2, 2, 3, 0) == 0, "");
+        
+        REQUIRE_THROWS(productCapped(0, 2, 2, 2, 3)); // 0 cap index
+        REQUIRE_THROWS(productOverRange(1, 1, 2, 2, 3)); // range 0
+        REQUIRE_THROWS(productOverRange(2, 1, 2, 2, 3)); // negative range
+        REQUIRE_THROWS(productOverRange(-1, 1, 2, 2, 3)); // negative range start
     }
     
     SECTION("sumOfCumulativeProduct") {

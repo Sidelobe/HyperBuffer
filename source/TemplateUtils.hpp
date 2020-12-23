@@ -124,6 +124,7 @@ constexpr T sumOverRange(int begin, int end, Args... args)
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
 constexpr T sumCapped(int cap, Args... args)
 {
+    ASSERT(cap > 0);
     return sumOverRange(0, cap, args...);
 }
 
