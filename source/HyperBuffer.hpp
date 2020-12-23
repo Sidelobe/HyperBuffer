@@ -85,25 +85,10 @@ private:
         m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
     }
     
-    const pointer_type getDataPointer_Nx() const override
-    {
-        return reinterpret_cast<pointer_type>(m_pointers.data());
-    }
-    
-    pointer_type getDataPointer_Nx() override
-    {
-        return reinterpret_cast<pointer_type>(m_pointers.data());
-    }
-
-    const T* getDataPointer_N1() const override
-    {
-        return *m_pointers.data();
-    }
-
-    T* getDataPointer_N1() override
-    {
-        return *m_pointers.data();
-    }
+    const pointer_type getDataPointer_Nx() const override { return reinterpret_cast<pointer_type>(m_pointers.data()); }
+    pointer_type getDataPointer_Nx()             override { return reinterpret_cast<pointer_type>(m_pointers.data()); }
+    const T* getDataPointer_N1() const           override { return *m_pointers.data(); }
+    T* getDataPointer_N1()                       override { return *m_pointers.data(); }
 
 private:
     friend class HyperBufferPreAllocFlat<T, N-1>;
@@ -186,28 +171,12 @@ public:
     }
     
 private:
-    const pointer_type getDataPointer_Nx() const override
-    {
-        return reinterpret_cast<pointer_type>(m_pointers.data());
-    }
-    pointer_type getDataPointer_Nx() override
-    {
-        return reinterpret_cast<pointer_type>(m_pointers.data());
-    }
-
-    const T* getDataPointer_N1() const override
-    {
-        return *m_pointers.data();
-    }
-    T* getDataPointer_N1() override
-    {
-        return *m_pointers.data();
-    }
+    const pointer_type getDataPointer_Nx() const override { return reinterpret_cast<pointer_type>(m_pointers.data()); }
+    pointer_type getDataPointer_Nx()             override { return reinterpret_cast<pointer_type>(m_pointers.data()); }
+    const T* getDataPointer_N1() const           override { return *m_pointers.data(); }
+    T* getDataPointer_N1()                       override { return *m_pointers.data(); }
 
 private:
-//    friend class HyperBuffer<T, N-1>;
-//    friend class HyperBuffer<T, N+1>;
-//
     BufferGeometry<N> m_bufferGeometry;
     
     /** All the data (innermost dimension) is stored in a 1D structure and access with offsets to simulate multi-dimensionality */
@@ -263,24 +232,11 @@ private:
         HyperBufferBase<T, N>(StdArrayOperations::subArray(parent.dims())),
         m_externalData(parent.m_externalData[index]) {}
     
-    const pointer_type getDataPointer_Nx() const override
-    {
-        return m_externalData;
-    }
-    pointer_type getDataPointer_Nx() override
-    {
-        return m_externalData;
-    }
-
-    const T* getDataPointer_N1() const override
-    {
-        return reinterpret_cast<T*>(m_externalData);
-    }
-    T* getDataPointer_N1() override
-    {
-        return reinterpret_cast<T*>(m_externalData);
-    }
-
+    const pointer_type getDataPointer_Nx() const override { return m_externalData; }
+    pointer_type getDataPointer_Nx()             override { return m_externalData; }
+    const T* getDataPointer_N1() const           override { return reinterpret_cast<T*>(m_externalData); }
+    T* getDataPointer_N1()                       override { return reinterpret_cast<T*>(m_externalData); }
+    
 private:
     friend class HyperBufferPreAlloc<T, N-1>;
     friend class HyperBufferPreAlloc<T, N+1>;
