@@ -5,7 +5,7 @@
 //
 //  © 2020 Lorenz Bucher - all rights reserved
 
-#include <catch2/catch.hpp>
+#include "TestCommon.hpp"
 
 #include <array>
 #include <functional>
@@ -66,4 +66,7 @@ TEST_CASE("StdArrayOperations Tests")
     
     REQUIRE(sumOfCumulativeProduct(std::array<int, 4>{2, 3, 2, 3}) == 56);
     REQUIRE(sumOfCumulativeProductCapped(3, std::array<int, 4>{2, 3, 2, 3}) == 20);
+
+    REQUIRE(subArray(std::array<int, 4>{6, 5, 2, 3}) == std::array<int, 3>{5, 2, 3});
+    REQUIRE(subArray(std::array<int, 2>{5, 3}) == std::array<int, 1>{3});
 }

@@ -5,7 +5,7 @@
 //
 //  © 2020 Lorenz Bucher - all rights reserved
 
-#include <catch2/catch.hpp>
+#include "TestCommon.hpp"
 
 #include <vector>
 
@@ -20,6 +20,13 @@ TEST_CASE("BufferGeometry Tests")
         CHECK(bufferGeo.getOffsetInDataArray(0) == 0);
         CHECK(bufferGeo.getOffsetInDataArray(1) == 1);
         CHECK(bufferGeo.getOffsetInDataArray(2) == 2);
+        
+        float data [3] {0};
+        float* pointers [1] {nullptr};
+        bufferGeo.hookupPointerArrayToData(data, pointers);
+        REQUIRE(pointers[0] == data);
+        
+        CHECK(bufferGeo.getOffsetInPointerArray<0>(2) == 2);
     }
     
     SECTION("2D") {
@@ -316,6 +323,23 @@ TEST_CASE("BufferGeometry Tests")
             int dim3 = 6;
             std::array<int, 3> dims { dim1, dim2, dim3 };
             BufferGeometry<3> bufferGeo(dims);
+        }
+    }
+    
+    SECTION("Verify move assignment operation does not allocate") {
+        BufferGeometry<4> bufferGeo4(2, 3, 2, 3);
+        {
+            ScopedMemorySentinel sentinel;
+            BufferGeometry<4> bufferGeo4MovedTo = std::move(bufferGeo4);
+            UNUSED(bufferGeo4MovedTo);
+        }
+    }
+    SECTION("Verify move assignment ctor does not allocate") {
+        BufferGeometry<4> bufferGeo4(2, 3, 2, 3);
+        {
+            ScopedMemorySentinel sentinel;
+            BufferGeometry<4> bufferGeo4MovedTo(bufferGeo4);
+            UNUSED(bufferGeo4MovedTo);
         }
     }
 }

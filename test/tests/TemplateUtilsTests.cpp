@@ -5,7 +5,7 @@
 //
 //  © 2020 Lorenz Bucher - all rights reserved
 
-#include <catch2/catch.hpp>
+#include "TestCommon.hpp"
 
 #include <array>
 #include <functional>
@@ -30,7 +30,7 @@ TEST_CASE("TemplateUtils VarArgOperations Tests")
         
         static_assert(sum(1, -1) == 0, "");
         static_assert(sum(2.f, 1.f) == 3.f, "");
-        static_assert((sum(2.f, .5f) - 2.5f) < 1e-9, ""); // cannot assert sum(2.f, .5f) = 2.5f due to floating point
+        static_assert((sum(2.f, .5f) - 2.5f) < 1e-9f, ""); // cannot assert sum(2.f, .5f) = 2.5f due to floating point
     }
     
     SECTION("product") {
@@ -45,22 +45,18 @@ TEST_CASE("TemplateUtils VarArgOperations Tests")
         
         static_assert(product(2, -1) == -2, "");
         static_assert(product(2.f, 1.f) == 2.f, "");
-        static_assert(product(2.f, .5f) == 1.f, "");
+        static_assert((product(2.f, .5f) - 1.0f) < 1e-12f, "");
     }
     
     SECTION("productCapped") {
         static_assert(productCapped(1, 1) == 1, "");
-        static_assert(product(0) == 0, "");
-        static_assert(product(1, 1) == 1, "");
-        static_assert(product(1, 0) == 0, "");
-        static_assert(product(2, 2) == 4, "");
-        static_assert(product(2, 2, 1) == 4, "");
-        static_assert(product(2, 2, 3, 3) == 36, "");
-        static_assert(product(2, 2, 3, 0) == 0, "");
-        
-        static_assert(product(2, -1) == -2, "");
-        static_assert(product(2.f, 1.f) == 2.f, "");
-        static_assert(product(2.f, .5f) == 1.f, "");
+        static_assert(productCapped(1, 0) == 0, "");
+        static_assert(productCapped(1, 1, 1) == 1, "");
+        static_assert(productCapped(2, 1, 0) == 0, "");
+        static_assert(productCapped(1, 2, 2) == 2, "");
+        static_assert(productCapped(2, 2, 2, 1) == 4, "");
+        static_assert(productCapped(3, 2, 2, 3, 3) == 12, "");
+        static_assert(productCapped(4, 2, 2, 3, 0) == 0, "");
     }
     
     SECTION("sumOfCumulativeProduct") {
@@ -115,3 +111,27 @@ TEST_CASE("TemplateUtils VarArgOperations apply() Tests")
         return VarArgOperations::sum(std::forward<decltype(args)>(args)...);
     }, array) == 9);
 }
+
+template<typename... I>
+static constexpr int constExprFunction(I... i)
+{
+    return VarArgOperations::sumOfCumulativeProduct(i...);
+}
+
+TEST_CASE("TemplateUtils VarArgOperations are constexpr")
+{
+    // this should be assignable to a constexpr
+    constexpr int a = VarArgOperations::sum(1, 2);
+    static_assert(a == 3, "");
+    constexpr int b = VarArgOperations::product(1, 2);
+    static_assert(b == 2, "");
+    constexpr int c = VarArgOperations::sumCapped(2, 1, 2, 3);
+    static_assert(c == 3, "");
+    constexpr int d = VarArgOperations::sumOfCumulativeProduct(1, 2, 3);
+    static_assert(d == 9, "");
+
+    constexpr int e = constExprFunction(1, 2, 3);
+    static_assert(e == 9, "");
+}
+
+

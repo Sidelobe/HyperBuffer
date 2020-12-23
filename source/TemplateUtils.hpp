@@ -9,20 +9,42 @@
 
 #include <algorithm>
 #include <cstdlib>
+#include <sstream>
 #include <type_traits>
 
 #define UNUSED(x) (void)x
 
+// MARK: - Assertion handling
+namespace Assertions
+{
+#define ASSERT(condition, ...) Assertions::handleAssert(#condition, condition, __FILE__, __LINE__, ##__VA_ARGS__)
+#define ASSERT_ALWAYS(...) Assertions::handleAssert("", false, __FILE__, __LINE__, ##__VA_ARGS__)
+
+static constexpr void handleAssert(const char* conditionAsText, bool condition, const char* file, int line, const char* message = "")
+{
+    if (condition) { return; }
+    
+    UNUSED(conditionAsText);
+    UNUSED(file);
+    UNUSED(line);
+    // TODO: string concatenation in constexpr function?
+    //std::stringstream stream;
+    //stream <<"Assertion failed: " << conditionAsText << " (" << file << ":" << line << ") " << message;
+    throw std::runtime_error(message);
+}
+} // namespace Assertions
+
+
 // MARK: - Add pointers to type
 // Recursive Template trick to add an arbitrary number of pointers to a type
-template<class T,int N>
+template<class T, int N>
 struct add_pointers_to_type
 {
-  using type = typename add_pointers_to_type<T*,N-1>::type;
+  using type = typename add_pointers_to_type<T*, N-1>::type;
 };
 
 template<class T>
-struct add_pointers_to_type<T,0>
+struct add_pointers_to_type<T, 0>
 {
   using type = T;
 };
@@ -32,6 +54,26 @@ static_assert(std::is_same<add_pointers_to_type<float,3>::type, float***>{}, "")
 static_assert(std::is_same<add_pointers_to_type<float,0>::type, float>{}, "");
 
 // MARK: - Remove pointers from type
+// Recursive Template trick to remove an arbitrary number of pointers from a type
+
+template<class T, int N>
+struct remove_pointers_from_type
+{
+  using type = typename remove_pointers_from_type<typename std::remove_pointer<T>::type, N-1>::type;
+};
+
+template<class T>
+struct remove_pointers_from_type<T, 0>
+{
+  using type = T;
+};
+
+static_assert(std::is_same<remove_pointers_from_type<int*,1>::type, int>{}, "");
+static_assert(std::is_same<remove_pointers_from_type<float***,2>::type, float*>{}, "");
+static_assert(std::is_same<remove_pointers_from_type<float**,2>::type, float>{}, "");
+static_assert(std::is_same<remove_pointers_from_type<float,0>::type, float>{}, "");
+
+// Recursive Template trick to remove all pointers from a type
 template<class T>
 struct remove_all_pointers_from_type
 {
@@ -65,7 +107,9 @@ namespace VarArgOperations
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
 constexpr T sumOverRange(int begin, int end, Args... args)
 {
-    assert(end-begin > 0 && "Cannot cap a length-one argument list");
+    ASSERT(begin >= 0);
+    ASSERT(static_cast<unsigned>(end) <= sizeof...(args));
+    ASSERT(end-begin > 0 && "Cannot cap a length-one argument list");
     T sum{0};
     T values[]{ args... };
     for (int i=begin; i < end; ++i) {
@@ -94,7 +138,9 @@ constexpr T sum(Args... args)
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
 constexpr T productOverRange(int begin, int end, Args... args)
 {
-    assert(end-begin > 0 && "Cannot cap a length-one argument list");
+    ASSERT(begin >= 0);
+    ASSERT(static_cast<unsigned>(end) <= sizeof...(args));
+    ASSERT(end-begin > 0 && "Cannot cap a length-one argument list");
     T product{1};
     T values[]{ args... };
     for (int i=begin; i < end; ++i) {
@@ -123,16 +169,19 @@ constexpr T product(Args... args)
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
 constexpr T sumOfCumulativeProductOverRange(int begin, int end, Args... args)
 {
+    ASSERT(begin >= 0);
+    ASSERT(static_cast<unsigned>(end) <= sizeof...(args));
+    if (end-begin == 0) {
+        return 0;
+    }
     T sum{0};
-    if (end-begin > 0) {
-        T values[]{ args... };
-        for (int i=begin; i < end; ++i) {
-            T cumulativeProduct{1};
-            for (int j=0; j <= i; ++j) {
-                cumulativeProduct *= values[j];
-            }
-            sum += cumulativeProduct;
+    T values[]{ args... };
+    for (int i=begin; i < end; ++i) {
+        T cumulativeProduct{1};
+        for (int j=0; j <= i; ++j) {
+            cumulativeProduct *= values[j];
         }
+        sum += cumulativeProduct;
     }
     return sum;
 }
@@ -212,4 +261,3 @@ decltype(auto) apply(F&& f, const std::array<int, N>& arr)
 }
 
 } // namespace VarArgOperations
-

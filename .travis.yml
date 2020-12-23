@@ -5,49 +5,97 @@ language:
 matrix:
     include:
         - os: osx
-          osx_image: xcode11.3
+          osx_image: xcode10.1
           compiler: clang
-          env: COMPILER='clang++'
+          env: CONFIG="Debug" COMPILER='clang++' COV="yes"
+          addons:
+            sonarcloud:
+                organization: "idelobe" # the key of the org you chose at step #3
+                token:
+                    secure: "A0Qtq8CLpu5aFLElfkhJYSvuvtwTUNsyUQJIVstKn/XUIehsaU8o1xbSG475O3P3BvJHgYWcj/dW+Hf3yTCfML+5jtA5fj9uijloN4GrJVmlCBX7r7GUbcrWWP9BTwnIM7HOEf5Pjw5USfMcqjYBL3ztVizGfUkdexROP92REqweeke2CEJiICm7/H1yxZ/kKDmxy1w74B58tLDiVhTmjcE7+aQkMGWFx80cFEE+RC00efFXCfeCtWcpVITh08kinsaT8mf9KkfV+e9DQx00JQGrDmiwAPXoecgwqF27cCNhiAtyKXGbhZawTX29qYYmhySCF88keBwxuWanNEAAujaoySIVkL1LYAkHYt9Dg2TXdGZhAJ7mt9ccukDJJpCpPcoXLU1vS6E4f2Ug9zMgwjppRhy9/BQXZZ2qUAlPSumNAFQP7waQ0Vm2xRYJ/Rc8XUXZ3ObnfMDhzP+/AKm1VbburWTtvacxf8QEg3hBZX5zWylZqo1/LzF0DLOLGM+DEKA0LnSbZhaIVY8Xcp3nVyPP3N+LzC4fVWonZxXXwi8bJVJdiaeKL4P9L4wtc4W99z7BEdqOL+/05KGNYi0yaHCLht2Uca1c3X7AzlVHuUnRnGeYCWVOmlTan+oXDMfg3KdZkmPvkOpAndL2ydIemmfrYOYQbYVL5KoISmGhi8A="
+
+        - os: osx
+          osx_image: xcode10.1
+          compiler: clang
+          env: CONFIG="Release" COMPILER='clang++'  COV="no" 
           
         - os: linux
           dist: bionic
           compiler: gcc
-          
+          env: CONFIG="Debug" COMPILER='g++-9' COV="no" 
           addons:
               apt:
                   sources: ['ubuntu-toolchain-r-test']
-                  packages: ['g++-7']
-          env: COMPILER='g++-7'
+                  packages: &LinuxPackages 
+                    - g++-9
+                    - cmake
+                    - python3-pip
+                    
+        - os: linux
+          dist: bionic
+          compiler: gcc
+          env: CONFIG="Release" COMPILER='g++-9' COV="no" 
+          addons:
+              apt:
+                  sources: ['ubuntu-toolchain-r-test']
+                  packages: *LinuxPackages 
          
         - os: windows
-          env: MSBUILD_PATH="c:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
-          
-before_script:
+          env: CONFIG="Debug" COV="no" MSBUILD_PATH="c:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
+        
+        - os: windows
+          env: CONFIG="Release" COV="no" MSBUILD_PATH="c:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
+
+install:
+  - |
+    if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
+      export CMAKE_URL="https://github.com/Kitware/CMake/releases/download/v3.17.0/cmake-3.17.0-Linux-x86_64.tar.gz"
+      export DEPS_DIR=$PWD
+      echo ${TRAVIS_OS_NAME}
+      mkdir cmake
+      travis_retry wget --quiet --no-check-certificate -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
+      export PATH=${DEPS_DIR}/cmake/bin:${PATH}
+      echo ${PATH}
+      echo "Cmake Updated!"
+    fi
+    if [ "$COV" == "yes" ]; then
+      pip3 install gcovr
+      echo "Gcovr Updated!"
+      gcovr --version
+    fi
+  
+before_script:    
     # Export CXX to tell cmake which compiler to use
     - export CXX=${COMPILER}
     - export CPP_STANDARD=14
     # Check versions
     - cmake --version
+    - pwd
     # Run your build commands next
     - cd deploy
     - mkdir -p build
     - cd build
-    - if [ "$TRAVIS_OS_NAME" != "windows" ]; then cmake -H. -j 2 ../.. -DCMAKE_BUILD_TYPE=Debug; fi
+    - if [ "$TRAVIS_OS_NAME" != "windows" ]; then cmake -H. -j 4 ../.. -DCMAKE_BUILD_TYPE=$CONFIG -DCODE_COVERAGE="$COV"; fi
     - if [ "$TRAVIS_OS_NAME" == "windows" ]; then export PATH=$MSBUILD_PATH:$PATH; cmake -G "Visual Studio 15 2017" -DCMAKE_GENERATOR_PLATFORM=x64 ../..; fi
-
+      
 script:
+    ## assumption: pwd=deploy/build
     - |
       if [ "${TRAVIS_OS_NAME}" == "windows" ]; then
           cmd.exe //C 'C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat' amd64
-          cmd.exe //C "MSBuild.exe HyperBuffer.sln" //m:2 //nologo //verbosity:quiet //p:Configuration=Debug //p:Platform=x64
-          ./Debug/HyperBufferTest.exe
+          cmd.exe //C "MSBuild.exe HyperBuffer.sln" //m:2 //nologo //verbosity:quiet //p:Configuration=$CONFIG //p:Platform=x64
+          ./$CONFIG/HyperBufferTest.exe
+      elif [ "${TRAVIS_OS_NAME}" == "osx" ] && [ "$COV" == "yes" ]; then
+          build-wrapper-macosx-x86 --out-dir bw-output make -j 4  # Wraps the compilation with the Build Wrapper to generate configuration (used later by the SonarScanner) into the "bw-output" folder
+          #ctest -V -j 4 # run the tests
+          ./HyperBufferTest
+          cd ..
+          mkdir -p report
+          gcovr -r .. -f ../source --sonarqube -o report/coverage.xml  # Generate coverage report
+          cd ..
+          sonar-scanner
       else
-          make -j 2
-          ctest -V -j 2
-          #- ./HyperBufferTest
+          make -j 4
+          #ctest -V -j 4
+          ./HyperBufferTest
       fi
-    
-
-
-
-    
