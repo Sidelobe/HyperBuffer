@@ -11,7 +11,7 @@
 ![](https://img.shields.io/badge/C++14-header--only-blue.svg?style=flat&logo=c%2B%2B)
 ![](https://img.shields.io/badge/dependencies-STL_only-blue)
 
-The main use case for this container is to hold dynamically-allocated N-dimensional datasets in memory and provide convenient access to it, while minimizing performance/memory overhead and unnecessary dynamic allocation.
+The main use case for this container is to hold dynamically-allocated N-dimensional datasets in memory and provide convenient access to it, while minimizing performance/memory overhead and avoid unnecessary dynamic allocation.
 
 ## Usage Example
 ```
@@ -33,8 +33,36 @@ The main use case for this container is to hold dynamically-allocated N-dimensio
 	- Clang 11 (Xcode 11.3, macos)
 	- MSVC++ 14.1 (Visual Studio 2017, Windows) 
 
-### Build Status / Quality Metrics
+## Design paradigms:
 
+* **data types**: defined at compile-time (template argument), identical for all dimensions
+* **number of dimensions**: defined at compile-time (template argument)
+* **extent of dimensions**: can be defined at **run-time**, but cannot be changed once the object is constructed: `HyperBuffer` is non-resizable.
+
+>**Note**: For the time being, I've constrained all dimensions to be uniform, i.e. each 'slice' in a given dimension has equal length.
+
+API features:
+
+* can provide a (multi-dimensional) raw pointer (e.g. `float***`) to highest-order or any sub-dimension
+* supports `operator[]` to access the top-most dimension - can be chained: `h[3][0][6]`
+* supports variadic `operator(...)` to allow access to any dimension: `h(3, 0, 6)` or `h(3, 0)`
+
+Memory management details:
+
+* no dynamic allocation after construction
+* dynamic allocation-free move() semantics
+* (*planned*) alignment of the data (lowest-order/innermost dimension) can be specified ('owning' mode only)
+ 
+### Data Storage / Ownership Variants
+There are 3 variants of `HyperBuffer`:
+
+1. `HyperBuffer`: internally allocates the memory for the dimensions it was configured for.
+1. `HyperBufferPreAlloc`: wraps around already-allocated multi-dimensional data and pointers. No dynamic memory allocation.
+1. `HyperBufferPreAllocFlat`: uses an already-allocated memory area for the data, but manages it using its internal memory model. Only allocates memory for the pointers.
+
+>**Note**: Behaviour on copy & move: `HyperBuffer` copies/moves the data like a normal object with data ownership. When copying `HyperBufferPreAlloc` and `HyperBufferPreAllocFlat`, however, the data is not duplicated - the copy references the original data as well.
+
+### Build Status / Quality Metrics
 
 ![](https://img.shields.io/badge/branch-master-blue)
 [![Build Status (master)](https://travis-ci.com/Sidelobe/HyperBuffer.svg?branch=master)](https://travis-ci.com/Sidelobe/HyperBuffer)
@@ -52,35 +80,7 @@ The main use case for this container is to hold dynamically-allocated N-dimensio
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Sidelobe_HyperBuffer&metric=security_rating)](https://sonarcloud.io/dashboard?id=Sidelobe_HyperBuffer)
 [![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=Sidelobe_HyperBuffer&metric=sqale_index)](https://sonarcloud.io/dashboard?id=Sidelobe_HyperBuffer)
 
-## Main design paradigms and parameters:
-
-* **data types**: defined at compile-time (template argument), identical for all dimensions
-* **number of dimensions**: defined at compile-time (template argument)
-* **extent of dimensions**: defined at run-time, but cannot be changed once the object is constructed: `HyperBuffer` is non-resizable.
-
->NOTE: For the time being, I've constrained all dimensions to be uniform, i.e. each 'slice' in a given dimension has equal length.
-
-API features:
-
-* can provide a multi-dimensional raw pointer (e.g. `float***`) to the data or sub-dimension
-* (*planned*) support initializer lists
-
-Memory management details:
-
-* no dynamic allocation after construction
-* dynamic allocation-free move() semantics
-* (*planned*) alignment of the data (lowest-order/innermost dimension) can be specified ('owning' mode only)
- 
-### Data Access Modes
-There are 3 variants of `HyperBuffer`:
-
-1. `HyperBuffer`: internally allocates the memory for the dimensions it was configured for.
-1. `HyperBufferPreAlloc`: wraps around already-allocated multi-dimensional data and pointers. No dynamic memory allocation.
-1. `HyperBufferPreAllocFlat`: uses an already-allocated memory area for the data, but manages it using its internal memory model. Only allocates memory for the pointers.
-
->**Note**: Behaviour on copy & move: `HyperBuffer` copies/moves the data like a normal object with data ownership. When copying `HyperBufferPreAlloc` and `HyperBufferPreAllocFlat`, however, the data is not duplicated - the copy references the original data as well.
-
-## Internal Memory Model
+## Details: Internal Memory Model
 In C++/C, there are two common ways of allocating a multi-dimensional data structure:
 
 1. **contiguous / linear**: e.g. C-Style `int[2][3][5]`, which is just 'view' for a 1D `2*3*5` int array. All dimensions have to be uniform, alignment is achieved through padding. Other than this, there is zero memory overhead, unless you need to produce an `int***` to the data.
