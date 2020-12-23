@@ -51,26 +51,22 @@ public:
     // MARK: - common functions not in base class (they differ in return type)
     
     // MARK: operator()
-    FOR_N1 const T& operator() (size_type i) const { return getDataPointer_N1()[i]; }
     FOR_N1 T& operator() (size_type i) { return getDataPointer_N1()[i]; }
+    FOR_N1 const T& operator() (size_type i) const { return getDataPointer_N1()[i]; }
     
+    /** Create sub-buffer by returning a N-1 view (no data ownership) (recursive) */
+    FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) { return HyperBufferPreAllocFlat<T, N-1>(*this, dn).operator()(i...); }
     FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) const
     {
-        const HyperBufferPreAllocFlat<T, N-1> subBuffer(*this, dn);
+        const HyperBufferPreAllocFlat<T, N-1> subBuffer(*this, dn); // force use of const version
         return subBuffer.operator()(i...);
     }
-    FOR_Nx_V decltype(auto) operator() (size_type dn, I... i)
-    {
-        return HyperBufferPreAllocFlat<T, N-1>(*this, dn).operator()(i...);
-    }
+    /** Create sub-buffer by returning a N-1 view (no data ownership) (lowest dimension) */
+    FOR_Nx decltype(auto) operator() (size_type dn) { return HyperBufferPreAllocFlat<T, N-1>(*this, dn); }
     FOR_Nx decltype(auto) operator() (size_type dn) const
     {
-        const HyperBufferPreAllocFlat<T, N-1> subBuffer(*this, dn);
+        const HyperBufferPreAllocFlat<T, N-1> subBuffer(*this, dn); // force use of const version
         return subBuffer;
-    }
-    FOR_Nx decltype(auto) operator() (size_type dn)
-    {
-        return HyperBufferPreAllocFlat<T, N-1>(*this, dn);
     }
 
 private:
@@ -124,57 +120,39 @@ public:
     // MARK: - common functions not in base class (they differ in return type)
 
     // MARK:  operator()
-    FOR_N1 const T& operator() (size_type i) const { return getDataPointer_N1()[i]; }
     FOR_N1 T& operator() (size_type i) { return getDataPointer_N1()[i]; }
-    
+    FOR_N1 const T& operator() (size_type i) const { return getDataPointer_N1()[i]; }
+   
     /** Create sub-buffer by returning a N-1 view (no data ownership) in the form of a HyperBufferPreAllocFlat (recursive) */
-    FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) const
-    {
-        // NOTE: explicitly cast away the const-ness - need to provide write access to the created HyperBufferPreAllocFlat object
-        const int offset = m_bufferGeometry.getDimensionStartOffsetInDataArray(dn);
-        T* subDimData = const_cast<T*>(&m_data[offset]);
-        std::array<int, N-1> subDimExtents = StdArrayOperations::subArray(this->dims());
-        const HyperBufferPreAllocFlat<T, N-1> subBuffer(subDimData, subDimExtents);
+    FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) {  return createSubBufferView(dn).operator()(i...); }
+    FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) const {
+        const auto subBuffer = createSubBufferView(dn); // force use of const version
         return subBuffer.operator()(i...);
     }
     
-    /** Create sub-buffer by returning a N-1 view (no data ownership) in the form of a HyperBufferPreAllocFlat (recursive) */
-    FOR_Nx_V decltype(auto) operator() (size_type dn, I... i)
+    /** Create sub-buffer by returning a N-1 view (no data ownership) in the form of a HyperBufferPreAllocFlat (lowest dimension) */
+    FOR_Nx HyperBufferPreAllocFlat<T, N-1> operator() (size_type dn) { return createSubBufferView(dn); }
+    FOR_Nx HyperBufferPreAllocFlat<T, N-1> operator() (size_type dn) const
     {
-        // NOTE: explicitly cast away the const-ness - need to provide write access to the created HyperBufferPreAllocFlat object
-        const int offset = m_bufferGeometry.getDimensionStartOffsetInDataArray(dn);
-        T* subDimData = &m_data[offset];
-        std::array<int, N-1> subDimExtents = StdArrayOperations::subArray(this->dims());
-        return HyperBufferPreAllocFlat<T, N-1>(subDimData, subDimExtents).operator()(i...);
-    }
-    
-    /** Create sub-buffer by returning a N-1 view (no data ownership) in the form of a HyperBufferPreAllocFlat (last dimension) */
-    FOR_Nx decltype(auto) operator() (size_type dn) const
-        // NOTE: explicitly cast away the const-ness - need to provide write access to the created HyperBufferPreAllocFlat object
-    {
-        const int offset = m_bufferGeometry.getDimensionStartOffsetInDataArray(dn);
-        T* subDimData = const_cast<T*>(&m_data[offset]);
-        std::array<int, N-1> subDimExtents = StdArrayOperations::subArray(this->dims());
-        const HyperBufferPreAllocFlat<T, N-1> subBuffer(subDimData, subDimExtents);
+        const auto subBuffer = createSubBufferView(dn); // force use of const version
         return subBuffer;
     }
-    
-    /** Create sub-buffer by returning a N-1 view (no data ownership) in the form of a HyperBufferPreAllocFlat (last dimension) */
-    FOR_Nx decltype(auto) operator() (size_type dn)
-    {
-        // NOTE: explicitly cast away the const-ness - need to provide write access to the created HyperBufferPreAllocFlat object
-        const int offset = m_bufferGeometry.getDimensionStartOffsetInDataArray(dn);
-        T* subDimData = &m_data[offset];
-        std::array<int, N-1> subDimExtents = StdArrayOperations::subArray(this->dims());
 
-        return HyperBufferPreAllocFlat<T, N-1>(subDimData, subDimExtents);
-    }
-    
 private:
     const pointer_type getDataPointer_Nx() const override { return reinterpret_cast<pointer_type>(m_pointers.data()); }
     pointer_type getDataPointer_Nx()             override { return reinterpret_cast<pointer_type>(m_pointers.data()); }
     const T* getDataPointer_N1() const           override { return *m_pointers.data(); }
     T* getDataPointer_N1()                       override { return *m_pointers.data(); }
+    
+    /** Helper function to avoid code duplication in const / non-const operator() */
+    HyperBufferPreAllocFlat<T, N-1> createSubBufferView(size_type dn) const
+    {
+        // NOTE: explicitly cast away the const-ness - need to provide write access to the created HyperBufferPreAllocFlat object
+        const int offset = m_bufferGeometry.getDimensionStartOffsetInDataArray(dn);
+        T* subDimData = const_cast<T*>(&m_data[offset]);
+        std::array<int, N-1> subDimExtents = StdArrayOperations::subArray(this->dims());
+        return HyperBufferPreAllocFlat<T, N-1>(subDimData, subDimExtents);
+    }
 
 private:
     BufferGeometry<N> m_bufferGeometry;
@@ -205,25 +183,22 @@ public:
     // MARK: - common functions not in base class (they differ in return type)
     
     // MARK: operator()
-    FOR_N1 const T& operator() (size_type i) const { return getDataPointer_N1()[i]; }
     FOR_N1 T& operator() (size_type i) { return getDataPointer_N1()[i]; }
+    FOR_N1 const T& operator() (size_type i) const { return getDataPointer_N1()[i]; }
+    
+    /** Create sub-buffer by returning a N-1 view (no data ownership) (recursive) */
+    FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) { return HyperBufferPreAlloc<T, N-1>(*this, dn).operator()(i...); }
     FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) const
     {
-        const HyperBufferPreAlloc<T, N-1> subBuffer(*this, dn);
+        const HyperBufferPreAlloc<T, N-1> subBuffer(*this, dn); // force use of const version
         return subBuffer.operator()(i...);
     }
-    FOR_Nx_V decltype(auto) operator() (size_type dn, I... i)
-    {
-        return HyperBufferPreAlloc<T, N-1>(*this, dn).operator()(i...);
-    }
+    /** Create sub-buffer by returning a N-1 view (no data ownership) (lowest dimension) */
+    FOR_Nx decltype(auto) operator() (size_type dn) { return HyperBufferPreAlloc<T, N-1>(*this, dn); }
     FOR_Nx decltype(auto) operator() (size_type dn) const
     {
-        const HyperBufferPreAlloc<T, N-1> subBuffer(*this, dn);
+        const HyperBufferPreAlloc<T, N-1> subBuffer(*this, dn); // force use of const version
         return subBuffer;
-    }
-    FOR_Nx decltype(auto) operator() (size_type dn)
-    {
-        return HyperBufferPreAlloc<T, N-1>(*this, dn);
     }
     
 private:
