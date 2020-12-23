@@ -51,10 +51,6 @@ public:
     
     // MARK: - common functions not in base class (they differ in return type)
     
-    /** Access the raw data - in this case an externally-managed 1D data block */
-    T* rawData() const { return m_externalData; }
-    T* rawData() { return m_externalData; }
-    
     // MARK: operator()
     FOR_N1 T& operator() (size_type i) { return getDataPointer_N1()[i]; }
     FOR_N1 const T& operator() (size_type i) const { return getDataPointer_N1()[i]; }
@@ -124,11 +120,7 @@ public:
     }
     
     // MARK: - common functions not in base class (they differ in return type)
-    
-    /** Access the raw data - in this case an internally-managed 1D vector */
-    const std::vector<T>& rawData() const { return m_data; }
-    std::vector<T>& rawData() { return m_data; }
-    
+
     // MARK:  operator()
     FOR_N1 T& operator() (size_type i) { return getDataPointer_N1()[i]; }
     FOR_N1 const T& operator() (size_type i) const { return getDataPointer_N1()[i]; }
@@ -161,7 +153,7 @@ private:
         
         // copy data of selected sub-tree
         int subTreeOffset = parent.m_bufferGeometry.getDimensionStartOffsetInDataArray(index);
-        std::copy(parent.rawData().data() + subTreeOffset, parent.rawData().data() + subTreeOffset + m_bufferGeometry.getRequiredDataArraySize(), m_data.begin());
+        std::copy(parent.m_data.data() + subTreeOffset, parent.m_data.data() + subTreeOffset + m_bufferGeometry.getRequiredDataArraySize(), m_data.begin());
     }
     
     const pointer_type getDataPointer_Nx() const override
@@ -213,10 +205,6 @@ public:
     
     // MARK: - common functions not in base class (they differ in return type)
     
-    /** Access the raw data - in this case an externally-managed multi-dimensional data block */
-    pointer_type rawData() const { return m_externalData; }
-    pointer_type rawData() { return m_externalData; }
-    
     // MARK: operator()
     FOR_N1 T& operator() (size_type i) { return getDataPointer_N1()[i]; }
     FOR_N1 const T& operator() (size_type i) const { return getDataPointer_N1()[i]; }
@@ -233,7 +221,7 @@ private:
     /** Build a HyperBuffer from an existing N+1 Hyperbuffer */
     HyperBufferPreAlloc(const HyperBufferPreAlloc<T, N+1>& parent, size_type index) :
         HyperBufferBase<T, N>(StdArrayOperations::subArray(parent.dims())),
-        m_externalData(parent.rawData()[index]) {}
+        m_externalData(parent.m_externalData[index]) {}
     
     const pointer_type getDataPointer_Nx() const override
     {
