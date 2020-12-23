@@ -241,7 +241,40 @@ static auto fillWithSequence = [](auto& buffer)
         }
     }
 };
+
+TEST_CASE("HyperBuffer const objects")
+{
+    //HyperBuffer<const int, 3> constBuffer(3, 3, 8);
+    // pointless, because I cannot fill it!
+    auto verify = [](auto& buffer)
+    {
+        // create a const accessor
+        const auto& constBuffer = buffer;
+        //constBuffer(0, 0, 7) = -2; // should not compile, no write access!
+        REQUIRE(buffer(0, 0, 7) == 7);
+        REQUIRE(constBuffer(0, 0, 7) == 7); // compiles, read access allowed
+    };
+
+    SECTION("owning") {
+        HyperBuffer<int, 3> buffer(2, 3, 8);
+        fillWithSequence(buffer);
+        verify(buffer);
+    }
     
+    SECTION("prealloc flat") {
+        int dataRaw1 [3*3*8];
+        HyperBufferPreAllocFlat<int, 3> buffer(dataRaw1, 3, 3, 8);
+        fillWithSequence(buffer);
+        verify(buffer);
+    }
+    
+    SECTION("prealloc") {
+        BUILD_MULTIDIM_ON_STACK_3_3_8(multiDimData);
+        HyperBufferPreAlloc<int, 3> buffer(multiDimData, 3, 3, 8);
+        fillWithSequence(buffer);
+        verify(buffer);
+    }
+}
 
 TEST_CASE("HyperBuffer: sub-buffer construction & operator() access")
 {
@@ -279,7 +312,7 @@ TEST_CASE("HyperBuffer: sub-buffer construction & operator() access")
         HyperBuffer<int, 3> buffer(3, 3, 8);
         fillWithSequence(buffer);
         
-        // NOTE: A sub-buffer of HyperBuffer is a PreAllocFlat!
+        // NOTE: A sub-buffer of HyperBuffer is a HyperBufferPreAllocFlat pointing to the HyperBuffer's data!
         
         verify(buffer);
     }
