@@ -44,7 +44,7 @@ template<typename T> void testHyperBuffer3D_sizes3_3_8(HyperBufferBase<T, 3>& bu
 
 TEST_CASE("HyperBuffer Tests - Construction and Data Access")
 {
-    // test operator() read & write
+    // test operator() read & write (cannot do this through base class API)
     auto verify1D = [](auto& buffer)
     {
         testHyperBuffer1D_size4(buffer);
@@ -270,29 +270,7 @@ TEST_CASE("HyperBuffer: sub-buffer construction & operator() access")
     }
 }
 
-
-
-// TODO: Partial Assignment
-//        int dataRaw2[8];
-//        HyperBufferPreAllocFlat<int, 1> lowestDimData(dataRaw2, 8);
-//        for (int k=0; k < lowestDimData.dim(0); ++k) {
-//            lowestDimData[k] = -k;
-//        }
-//
-//        buffer(0, 2) = lowestDimData;
-//
-//        for (int m=0; m < buffer.dim(2); ++m) {
-//            REQUIRE(buffer[0][2][m] == -m);
-//        }
-
-//TEST_CASE("Initializer List Construction")
-//{
-//    MultiDimArray<float, 1>  buffer1  {{3, 4, 5}};
-//    MultiDimArray<float, 2>  buffer2 {{3, 4, 5}, {3, 4, 5}};
-//
-//}
-//
-//TEST_CASE("Sub-Array Assignmemt")
+//TODO: TEST_CASE("Sub-Array Assignmemt")
 //{
 //    MultiDimArray<float, 1>  buffer1  {{3, 4, 5}};
 //    MultiDimArray<float, 2>  buffer2 {{3, 4, 5}, {3, 4, 5}};

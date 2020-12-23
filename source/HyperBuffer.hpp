@@ -38,16 +38,6 @@ public:
         m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
     }
     
-    /** Constructor that takes the extents of the dimensions as a std::array */
-    HyperBufferPreAllocFlat(T* preAllocatedDataFlat, std::array<int, N>& dimensionExtents) :
-        HyperBufferBase<T, N>(dimensionExtents),
-        m_bufferGeometry(dimensionExtents),
-        m_externalData(preAllocatedDataFlat),
-        m_pointers(STL(m_bufferGeometry.getRequiredPointerArraySize()))
-    {
-        m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
-    }
-    
     // MARK: - common functions not in base class (they differ in return type)
     
     // MARK: operator()
