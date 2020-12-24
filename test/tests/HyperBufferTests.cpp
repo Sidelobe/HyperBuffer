@@ -182,13 +182,13 @@ static auto fillWithSequence = [](auto& buffer)
 
 TEST_CASE("HyperBuffer const objects")
 {
-    //HyperBuffer<const int, 3> constBuffer(3, 3, 8);
-    // pointless, because I cannot fill it!
     auto verify = [](auto& buffer)
     {
         // create a const accessor
         const auto& constBuffer = buffer;
         //constBuffer(0, 0, 7) = -2; // should not compile, no write access!
+        //constBuffer[0][0][7] = -2; // should not compile, no write access!
+        //constBuffer.data()[0][0][7] = -2; // should not compile, no write access!
         REQUIRE(buffer(0, 0, 7) == 7);
         REQUIRE(constBuffer(0, 0, 7) == 7); // compiles, read access allowed
     };

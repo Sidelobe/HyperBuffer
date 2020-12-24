@@ -22,8 +22,8 @@ template<typename T, int N>
 class HyperBufferPreAllocFlat : public HyperBufferBase<T, N>
 {
     using pointer_type = typename HyperBufferBase<T, N>::pointer_type;
+    using const_pointer_type = typename HyperBufferBase<T, N>::const_pointer_type;
     using size_type = typename HyperBufferBase<T, N>::size_type;
-    using subdim_pointer_type = typename HyperBufferBase<T, N>::subdim_pointer_type;
     using HyperBufferBase<T, N>::STL;
 
 public:
@@ -71,7 +71,7 @@ private:
         m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
     }
     
-    const pointer_type getDataPointer_Nx() const override { return reinterpret_cast<pointer_type>(m_pointers.data()); }
+    const_pointer_type getDataPointer_Nx() const override { return const_cast<const_pointer_type>(reinterpret_cast<pointer_type>(m_pointers.data())); }
     pointer_type getDataPointer_Nx()             override { return reinterpret_cast<pointer_type>(m_pointers.data()); }
     const T* getDataPointer_N1() const           override { return *m_pointers.data(); }
     T* getDataPointer_N1()                       override { return *m_pointers.data(); }
@@ -91,8 +91,8 @@ template<typename T, int N>
 class HyperBuffer : public HyperBufferBase<T, N>
 {
     using pointer_type = typename HyperBufferBase<T, N>::pointer_type;
+    using const_pointer_type = typename HyperBufferBase<T, N>::const_pointer_type;
     using size_type = typename HyperBufferBase<T, N>::size_type;
-    using subdim_pointer_type = typename HyperBufferBase<T, N>::subdim_pointer_type;
     using HyperBufferBase<T, N>::STL;
 
 public:
@@ -129,7 +129,10 @@ public:
     }
 
 private:
-    const pointer_type getDataPointer_Nx() const override { return reinterpret_cast<pointer_type>(m_pointers.data()); }
+    template<class U>
+    struct forwarding { typedef U const type; };
+    
+    const_pointer_type getDataPointer_Nx() const override { return const_cast<const_pointer_type>(reinterpret_cast<pointer_type>(m_pointers.data())); }
     pointer_type getDataPointer_Nx()             override { return reinterpret_cast<pointer_type>(m_pointers.data()); }
     const T* getDataPointer_N1() const           override { return *m_pointers.data(); }
     T* getDataPointer_N1()                       override { return *m_pointers.data(); }
@@ -161,6 +164,7 @@ template<typename T, int N>
 class HyperBufferPreAlloc : public HyperBufferBase<T, N>
 {
     using pointer_type = typename HyperBufferBase<T, N>::pointer_type;
+    using const_pointer_type = typename HyperBufferBase<T, N>::const_pointer_type;
     using size_type = typename HyperBufferBase<T, N>::size_type;
 
 public:
@@ -197,9 +201,9 @@ private:
         HyperBufferBase<T, N>(StdArrayOperations::subArray(parent.dims())),
         m_externalData(parent.m_externalData[index]) {}
     
-    const pointer_type getDataPointer_Nx() const override { return m_externalData; }
+    const_pointer_type getDataPointer_Nx() const override { return const_cast<const_pointer_type>(m_externalData); }
     pointer_type getDataPointer_Nx()             override { return m_externalData; }
-    const T* getDataPointer_N1() const           override { return reinterpret_cast<T*>(m_externalData); }
+    const T* getDataPointer_N1() const           override { return reinterpret_cast<const T*>(m_externalData); }
     T* getDataPointer_N1()                       override { return reinterpret_cast<T*>(m_externalData); }
     
 private:
