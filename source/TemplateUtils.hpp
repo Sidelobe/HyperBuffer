@@ -19,7 +19,7 @@ namespace std
 {
 // MARK: - std::as_const
 template <class T>
-constexpr std::add_const_t<T>& as_const(T& t) noexcept
+static constexpr std::add_const_t<T>& as_const(T& t) noexcept
 {
     return t;
 }
