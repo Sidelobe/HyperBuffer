@@ -71,7 +71,7 @@ private:
         m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
     }
     
-    const_pointer_type getDataPointer_Nx() const override { return const_cast<const_pointer_type>(reinterpret_cast<pointer_type>(m_pointers.data())); }
+    const_pointer_type getDataPointer_Nx() const override { return reinterpret_cast<const_pointer_type>(m_pointers.data()); }
     pointer_type getDataPointer_Nx()             override { return reinterpret_cast<pointer_type>(m_pointers.data()); }
     const T* getDataPointer_N1() const           override { return *m_pointers.data(); }
     T* getDataPointer_N1()                       override { return *m_pointers.data(); }
@@ -82,7 +82,7 @@ private:
     
     BufferGeometry<N> m_bufferGeometry;
     T* m_externalData;
-    mutable std::vector<T*> m_pointers;
+    std::vector<T*> m_pointers;
 };
 
 // ====================================================================================================================
