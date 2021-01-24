@@ -14,14 +14,30 @@
 
 #define UNUSED(x) (void)x
 
+#if (__cplusplus < 201703) /* these functions are coming in C++17*/
+namespace std
+{
+// MARK: - std::as_const
+template <class T>
+constexpr std::add_const_t<T>& as_const(T& t) noexcept
+{
+    return t;
+}
+} // namespace std
+#endif
+
 namespace slb
 {
 
 // MARK: - Assertion handling
 namespace Assertions
 {
-#define ASSERT(condition, ...) Assertions::handleAssert(#condition, condition, __FILE__, __LINE__, ##__VA_ARGS__)
-#define ASSERT_ALWAYS(...) Assertions::handleAssert("", false, __FILE__, __LINE__, ##__VA_ARGS__)
+#ifndef ASSERT
+    #define ASSERT(condition, ...) Assertions::handleAssert(#condition, condition, __FILE__, __LINE__, ##__VA_ARGS__)
+#endif
+#ifndef ASSERT_ALWAYS
+    #define ASSERT_ALWAYS(...) Assertions::handleAssert("", false, __FILE__, __LINE__, ##__VA_ARGS__)
+#endif
 
 /**
  * NOTE: this assertion handler is constexpr - to allow its use inside constexpr functions.
@@ -35,7 +51,6 @@ static constexpr void handleAssert(const char* conditionAsText, bool condition, 
     }
 }
 } // namespace Assertions
-
 
 // MARK: - Add pointers to type
 // Recursive Template trick to add an arbitrary number of pointers to a type
