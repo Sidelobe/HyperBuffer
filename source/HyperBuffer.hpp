@@ -47,16 +47,15 @@ public:
     /** Create sub-buffer by returning a N-1 view (no data ownership) (recursive) */
     FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) { return HyperBufferPreAllocFlat<T, N-1>(*this, dn).operator()(i...); }
     FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) const
-    {
-        const HyperBufferPreAllocFlat<T, N-1> subBuffer(*this, dn); // force use of const version
-        return subBuffer.operator()(i...);
+    {   // force use of const version (don't have std::as_const in C++14)
+        return HyperBufferPreAllocFlat<T, N-1>(static_cast<const HyperBufferPreAllocFlat<T, N>&>(*this), dn).operator()(i...);
     }
+
     /** Create sub-buffer by returning a N-1 view (no data ownership) (lowest dimension) */
     FOR_Nx decltype(auto) operator() (size_type dn) { return HyperBufferPreAllocFlat<T, N-1>(*this, dn); }
     FOR_Nx decltype(auto) operator() (size_type dn) const
-    {
-        const HyperBufferPreAllocFlat<T, N-1> subBuffer(*this, dn); // force use of const version
-        return subBuffer;
+    {   // force use of const version (don't have std::as_const in C++14)
+        return HyperBufferPreAllocFlat<T, N-1>(static_cast<const HyperBufferPreAllocFlat<T, N>&>(*this), dn);
     }
 
 private:
@@ -115,17 +114,16 @@ public:
    
     /** Create sub-buffer by returning a N-1 view (no data ownership) in the form of a HyperBufferPreAllocFlat (recursive) */
     FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) {  return createSubBufferView(dn).operator()(i...); }
-    FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) const {
-        const auto subBuffer = createSubBufferView(dn); // force use of const version
-        return subBuffer.operator()(i...);
+    FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) const
+    {   // force use of const version (don't have std::as_const in C++14)
+        return static_cast<const HyperBuffer<T, N>&>(*this).createSubBufferView(dn).operator()(i...);
     }
     
     /** Create sub-buffer by returning a N-1 view (no data ownership) in the form of a HyperBufferPreAllocFlat (lowest dimension) */
     FOR_Nx HyperBufferPreAllocFlat<T, N-1> operator() (size_type dn) { return createSubBufferView(dn); }
     FOR_Nx HyperBufferPreAllocFlat<T, N-1> operator() (size_type dn) const
-    {
-        const auto subBuffer = createSubBufferView(dn); // force use of const version
-        return subBuffer;
+    {   // force use of const version (don't have std::as_const in C++14)
+        return static_cast<const HyperBuffer<T, N>&>(*this).createSubBufferView(dn);
     }
 
 private:
@@ -180,16 +178,15 @@ public:
     /** Create sub-buffer by returning a N-1 view (no data ownership) (recursive) */
     FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) { return HyperBufferPreAlloc<T, N-1>(*this, dn).operator()(i...); }
     FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) const
-    {
-        const HyperBufferPreAlloc<T, N-1> subBuffer(*this, dn); // force use of const version
-        return subBuffer.operator()(i...);
+    {   // force use of const version
+        return HyperBufferPreAlloc<T, N-1>(static_cast<const HyperBufferPreAlloc<T, N>&>(*this), dn).operator()(i...);
     }
+
     /** Create sub-buffer by returning a N-1 view (no data ownership) (lowest dimension) */
     FOR_Nx decltype(auto) operator() (size_type dn) { return HyperBufferPreAlloc<T, N-1>(*this, dn); }
     FOR_Nx decltype(auto) operator() (size_type dn) const
-    {
-        const HyperBufferPreAlloc<T, N-1> subBuffer(*this, dn); // force use of const version
-        return subBuffer;
+    {   // force use of const version
+        return HyperBufferPreAlloc<T, N-1>(static_cast<const HyperBufferPreAlloc<T, N>&>(*this), dn);
     }
     
 private:
