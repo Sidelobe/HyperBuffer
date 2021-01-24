@@ -129,10 +129,7 @@ public:
     }
 
 private:
-    template<class U>
-    struct forwarding { typedef U const type; };
-    
-    const_pointer_type getDataPointer_Nx() const override { return const_cast<const_pointer_type>(reinterpret_cast<pointer_type>(m_pointers.data())); }
+    const_pointer_type getDataPointer_Nx() const override { return reinterpret_cast<const_pointer_type>(m_pointers.data()); }
     pointer_type getDataPointer_Nx()             override { return reinterpret_cast<pointer_type>(m_pointers.data()); }
     const T* getDataPointer_N1() const           override { return *m_pointers.data(); }
     T* getDataPointer_N1()                       override { return *m_pointers.data(); }
@@ -154,7 +151,7 @@ private:
     std::vector<T> m_data;
     
     /** All but the innermost dimensions consist of pointers only, which are stored in a 1D structure as well */
-    mutable std::vector<T*> m_pointers;
+    std::vector<T*> m_pointers;
 };
 
 

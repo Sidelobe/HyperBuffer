@@ -186,11 +186,23 @@ TEST_CASE("HyperBuffer const objects")
     {
         // create a const accessor
         const auto& constBuffer = buffer;
-        //constBuffer(0, 0, 7) = -2; // should not compile, no write access!
-        //constBuffer[0][0][7] = -2; // should not compile, no write access!
-        //constBuffer.data()[0][0][7] = -2; // should not compile, no write access!
+ 
+        // compiles:
+        const int a0 = constBuffer(0, 0, 7); UNUSED(a0);
+        const int* a1 = constBuffer(0, 1).data(); UNUSED(a1);
+        const int* const* a2 = constBuffer(2).data(); UNUSED(a2);
+        const int* const* const* a3 = constBuffer.data(); UNUSED(a3);
+
+        // verify data read access
         REQUIRE(buffer(0, 0, 7) == 7);
-        REQUIRE(constBuffer(0, 0, 7) == 7); // compiles, read access allowed
+        REQUIRE(constBuffer(0, 0, 7) == 7);
+        
+        // should not even compile, no write access!
+        //constBuffer(0, 0, 7) = -2;
+        //constBuffer[0][0][7] = -2;
+        //constBuffer.data()[0][0][7] = -2;
+        //constBuffer(0, 1).data() = nullptr;
+        //constBuffer(1).data() = nullptr;
     };
 
     SECTION("owning") {

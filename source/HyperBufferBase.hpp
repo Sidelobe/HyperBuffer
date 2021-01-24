@@ -31,7 +31,7 @@ class HyperBufferBase
 protected:
     using size_type = int;
     using pointer_type = typename add_pointers_to_type<T, N>::type;
-    using const_pointer_type = typename add_pointers_to_type<const T, N>::type;
+    using const_pointer_type = typename add_const_pointers_to_type<T, N>::type;
     using subdim_pointer_type = typename remove_pointers_from_type<pointer_type, 1>::type;
     using subdim_const_pointer_type = typename remove_pointers_from_type<const_pointer_type, 1>::type;
 
