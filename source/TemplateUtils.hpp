@@ -14,15 +14,13 @@
 
 #define UNUSED(x) (void)x
 
-#if (__cplusplus < 201703) /* these functions are coming in C++17*/
+/* these functions are coming in C++17, MSVC already defines them */
+#if (__cplusplus < 201703) && !defined(_MSC_VER)
 namespace std
 {
 // MARK: - std::as_const
 template <class T>
-static constexpr std::add_const_t<T>& as_const(T& t) noexcept
-{
-    return t;
-}
+static constexpr std::add_const_t<T>& as_const(T& t) noexcept { return t; }
 } // namespace std
 #endif
 

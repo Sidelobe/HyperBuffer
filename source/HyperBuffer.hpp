@@ -65,7 +65,7 @@ private:
         m_bufferGeometry(StdArrayOperations::subArray(parent.dims())),
         m_pointers(STL(m_bufferGeometry.getRequiredPointerArraySize()))
     {
-        int offset = parent.m_bufferGeometry.getDimensionStartOffsetInDataArray(index);
+        int offset = parent.m_bufferGeometry.getDataOffsetForHighestOrderDimStart(index);
         m_externalData = &parent.m_externalData[offset];
         m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
     }
@@ -136,7 +136,7 @@ private:
     HyperBufferPreAllocFlat<T, N-1> createSubBufferView(size_type dn) const
     {
         // NOTE: explicitly cast away the const-ness - need to provide write access to the created HyperBufferPreAllocFlat object
-        const int offset = m_bufferGeometry.getDimensionStartOffsetInDataArray(dn);
+        const int offset = m_bufferGeometry.getDataOffsetForHighestOrderDimStart(dn);
         T* subDimData = const_cast<T*>(&m_data[offset]);
         std::array<int, N-1> subDimExtents = StdArrayOperations::subArray(this->dims());
         return HyperBufferPreAllocFlat<T, N-1>(subDimData, subDimExtents);
@@ -193,7 +193,10 @@ private:
     /** Build a HyperBuffer from an existing N+1 Hyperbuffer */
     HyperBufferPreAlloc(const HyperBufferPreAlloc<T, N+1>& parent, size_type index) :
         HyperBufferBase<T, N>(StdArrayOperations::subArray(parent.dims())),
-        m_externalData(parent.m_externalData[index]) {}
+        m_externalData(parent.m_externalData[index])
+    {
+        ASSERT(index < parent.dims()[0], "Index out of range");
+    }
     
     const_pointer_type getDataPointer_Nx() const override { return const_cast<const_pointer_type>(m_externalData); }
     pointer_type getDataPointer_Nx()             override { return m_externalData; }

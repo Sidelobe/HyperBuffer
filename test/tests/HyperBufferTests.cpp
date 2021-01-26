@@ -206,7 +206,7 @@ TEST_CASE("HyperBuffer const objects")
     };
 
     SECTION("owning") {
-        HyperBuffer<int, 3> buffer(2, 3, 8);
+        HyperBuffer<int, 3> buffer(3, 3, 8);
         fillWithSequence(buffer);
         verify(buffer);
     }

@@ -41,10 +41,10 @@ matrix:
                   packages: *LinuxPackages 
          
         - os: windows
-          env: CONFIG="Debug" COV="no" MSBUILD_PATH="c:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
-        
+          env: CONFIG="Debug" COV="no" MSBUILD_PATH="C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin"
+
         - os: windows
-          env: CONFIG="Release" COV="no" MSBUILD_PATH="c:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
+          env: CONFIG="Release" COV="no" MSBUILD_PATH="C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin"
 
 install:
   - |
@@ -57,6 +57,8 @@ install:
       export PATH=${DEPS_DIR}/cmake/bin:${PATH}
       echo ${PATH}
       echo "Cmake Updated!"
+    elif [ "${TRAVIS_OS_NAME}" == "windows" ]; then
+      choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
     fi
     if [ "$COV" == "yes" ]; then
       pip3 install gcovr
@@ -76,24 +78,24 @@ before_script:
     - mkdir -p build
     - cd build
     - if [ "$TRAVIS_OS_NAME" != "windows" ]; then cmake -H. -j 4 ../.. -DCMAKE_BUILD_TYPE=$CONFIG -DCODE_COVERAGE="$COV"; fi
-    - if [ "$TRAVIS_OS_NAME" == "windows" ]; then export PATH=$MSBUILD_PATH:$PATH; cmake -G "Visual Studio 15 2017" -DCMAKE_GENERATOR_PLATFORM=x64 ../..; fi
-      
+    - if [ "$TRAVIS_OS_NAME" == "windows" ]; then export PATH=$MSBUILD_PATH:$PATH; cmake -G "Visual Studio 16 2019" -DCMAKE_GENERATOR_PLATFORM=x64 ../..; fi
+    
 script:
     ## assumption: pwd=deploy/build
     - |
       if [ "${TRAVIS_OS_NAME}" == "windows" ]; then
-          cmd.exe //C 'C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat' amd64
+          cmd.exe //C 'C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvarsall.bat' amd64
           cmd.exe //C "MSBuild.exe HyperBuffer.sln" //m:2 //nologo //verbosity:quiet //p:Configuration=$CONFIG //p:Platform=x64
           ./$CONFIG/HyperBufferTest.exe
       elif [ "${TRAVIS_OS_NAME}" == "osx" ] && [ "$COV" == "yes" ]; then
-          build-wrapper-macosx-x86 --out-dir bw-output make -j 4  # Wraps the compilation with the Build Wrapper to generate configuration (used later by the SonarScanner) into the "bw-output" folder
+          build-wrapper-macosx-x86 --out-dir bw-output make -j 4 # Wraps the compilation with the Build Wrapper to generate configuration (used later by the SonarScanner) into the "bw-output" folder
           #ctest -V -j 4 # run the tests
           ./HyperBufferTest
           cd ..
           mkdir -p report
           gcovr -r .. -f ../source --sonarqube -o report/coverage.xml  # Generate coverage report
           cd ..
-          sonar-scanner
+          sonar-scanner  
       else
           make -j 4
           #ctest -V -j 4

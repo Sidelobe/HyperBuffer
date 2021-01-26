@@ -65,9 +65,10 @@ public:
      * e.g. if the highest-order dimension's extent is 2, all data for index=0 is in the first half of the data array
      * and the all data for index=1 in the second half.
      */
-    int getDimensionStartOffsetInDataArray(int index) const
+    int getDataOffsetForHighestOrderDimStart(int index) const
     {
         int totalNumDataEntries = getRequiredDataArraySize();
+        ASSERT(index < m_dimensionExtents[0], "Index out of range");
         ASSERT(totalNumDataEntries % m_dimensionExtents[0] == 0, "Internal error in buffer geometry!");
         return index * totalNumDataEntries / m_dimensionExtents[0];
     }
