@@ -75,9 +75,6 @@ private:
     T* getDataPointer_N1()                       override { return *m_pointers.data(); }
 
 private:
-    friend class HyperBufferPreAllocFlat<T, N-1>;
-    friend class HyperBufferPreAllocFlat<T, N+1>;
-    
     BufferGeometry<N> m_bufferGeometry;
     T* m_externalData;
     std::vector<T*> m_pointers;
@@ -204,9 +201,6 @@ private:
     T* getDataPointer_N1()                       override { return reinterpret_cast<T*>(m_externalData); }
     
 private:
-    friend class HyperBufferPreAlloc<T, N-1>;
-    friend class HyperBufferPreAlloc<T, N+1>;
-
     pointer_type m_externalData;
 };
 
