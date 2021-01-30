@@ -45,13 +45,13 @@ public:
     int dim(int i) const { ASSERT(i < N); return m_dimensionExtents[STL(i)]; }
     const std::array<int, N>& dims() const { return m_dimensionExtents; }
 
+    // NOTE: We cannot make these virtual functions because of the different return types required.
+    // Overloading by return type is not allowed, so we need an enable_if construct for selective compilation
     // MARK: data()
-    // NOTE: We cannot make these virtual functions because of the differente return types required.
-    // decltype(auto) is not allowed for virtual functions, so I chose an enable_if construct for selective compilation
     FOR_Nx pointer_type data() { return getDataPointer_Nx(); }
-    FOR_Nx const_pointer_type data() const { return getDataPointer_Nx(); }
+    FOR_Nx const_pointer_type data() const { return std::as_const(*this).getDataPointer_Nx(); }
     FOR_N1 T* data() { return getDataPointer_N1(); }
-    FOR_N1 const T* data() const { return getDataPointer_N1(); }
+    FOR_N1 const T* data() const { return std::as_const(*this).getDataPointer_N1(); }
     
     // MARK: operator[] -- returns pointer N>1, reference for N=1
     FOR_Nx subdim_pointer_type operator[] (size_type i) { return getDataPointer_Nx()[i]; }

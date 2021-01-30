@@ -42,6 +42,20 @@ template<typename T> void testHyperBuffer1D_size4(HyperBufferBase<T, 1>& buffer)
 template<typename T> void testHyperBuffer2D_sizes2_4(HyperBufferBase<T, 2>& buffer);
 template<typename T> void testHyperBuffer3D_sizes3_3_8(HyperBufferBase<T, 3>& buffer);
 
+// helper lambda
+static auto fillWith3DSequence = [](auto& buffer)
+{
+    int i = 0;
+    for (int k=0; k < buffer.dim(0); ++k) {
+        for (int l=0; l < buffer.dim(1); ++l) {
+            for (int m=0; m < buffer.dim(2); ++m) {
+                buffer[k][l][m] = i++;
+            }
+        }
+    }
+};
+
+
 TEST_CASE("HyperBuffer Tests - Construction and Data Access")
 {
     // test operator() read & write (cannot do this through base class API)
@@ -79,7 +93,7 @@ TEST_CASE("HyperBuffer Tests - Construction and Data Access")
         
         HyperBuffer<int, 3> buffer3D(3, 3, 8);
         verify3D(buffer3D);
-        
+
         // Constructor via std::array
         std::array<int, 3> dims {3, 3, 8};
         HyperBuffer<int, 3> bufferFromStdArray(dims);
@@ -90,36 +104,36 @@ TEST_CASE("HyperBuffer Tests - Construction and Data Access")
         int preAllocData1D[4] {0};
         HyperBufferPreAllocFlat<int, 1> buffer1D(preAllocData1D, 4);
         verify1D(buffer1D);
-        
+
         int preAllocData2D[2*4] {0};
         HyperBufferPreAllocFlat<int, 2> buffer2D(preAllocData2D, 2, 4);
         verify2D(buffer2D);
-        
+
         std::vector<int> preAllocData3D(3*3*8, 0);
         HyperBufferPreAllocFlat<int, 3> buffer3D(preAllocData3D.data(), 3, 3, 8);
         verify3D(buffer3D);
-        
+
         // Constructor via std::array
         std::array<int, 3> dims {3, 3, 8};
         HyperBufferPreAllocFlat<int, 3> bufferFromStdArray(preAllocData3D.data(), dims);
         verify3D(bufferFromStdArray);
     }
-    
+
     SECTION("External Memory Allocation (MultiDim)") {
         std::vector<int> oneD = TestCommon::createRandomVectorInt(4, 123);
         HyperBufferPreAlloc<int, 1> buffer1D(oneD.data(), oneD.size());
         verify1D(buffer1D);
-        
+
         std::vector<int> xdataDim0_0 = TestCommon::createRandomVectorInt(4, 333);
         std::vector<int> xdataDim0_1 = TestCommon::createRandomVectorInt(4, 666);
         int* xdataDim1_0[] = { xdataDim0_0.data(), xdataDim0_1.data() };
         HyperBufferPreAlloc<int, 2> buffer2D(xdataDim1_0, 2, 4);
         verify2D(buffer2D);
-        
+
         BUILD_MULTIDIM_ON_STACK_3_3_8(multiDimData);
         HyperBufferPreAlloc<int, 3> buffer3D(multiDimData, 3, 3, 8);
         verify3D(buffer3D);
-        
+
         // Constructor via std::array
         std::array<int, 3> dims  {3, 3, 8};
         HyperBufferPreAlloc<int, 3> bufferFromStdArray(multiDimData, dims);
@@ -168,60 +182,57 @@ TEST_CASE("HyperBuffer ctor: different dimension variants")
     }
 }
 
-static auto fillWithSequence = [](auto& buffer)
-{
-    int i = 0;
-    for (int k=0; k < buffer.dim(0); ++k) {
-        for (int l=0; l < buffer.dim(1); ++l) {
-            for (int m=0; m < buffer.dim(2); ++m) {
-                buffer[k][l][m] = i++;
-            }
-        }
-    }
-};
-
 TEST_CASE("HyperBuffer const objects")
 {
     auto verify = [](auto& buffer)
     {
         // create a const accessor
         const auto& constBuffer = buffer;
- 
-        // compiles:
-        const int a0 = constBuffer(0, 0, 7); UNUSED(a0);
-        const int* a1 = constBuffer(0, 1).data(); UNUSED(a1);
-        const int* const* a2 = constBuffer(2).data(); UNUSED(a2);
-        const int* const* const* a3 = constBuffer.data(); UNUSED(a3);
-
+        
         // verify data read access
         REQUIRE(buffer(0, 0, 7) == 7);
         REQUIRE(constBuffer(0, 0, 7) == 7);
         
-        // should not even compile, no write access!
-        //constBuffer(0, 0, 7) = -2;
-        //constBuffer[0][0][7] = -2;
-        //constBuffer.data()[0][0][7] = -2;
-        //constBuffer(0, 1).data() = nullptr;
-        //constBuffer(1).data() = nullptr;
+        // static checks: verify we can assign to a const, but not to a non-const
+        static_assert(std::is_assignable<const int*&, decltype(constBuffer(0, 1).data())>::value == true, "Can assign to a const");
+        static_assert(std::is_assignable<int*&,       decltype(constBuffer(0, 1).data())>::value == false, "Cannot assign to a non-const");
+        static_assert(std::is_assignable<const int* const*&, decltype(constBuffer(2).data())>::value == true, "Can assign to a const");
+        static_assert(std::is_assignable<int**&,             decltype(constBuffer(2).data())>::value == false, "Cannot assign to a non-const");
+        static_assert(std::is_assignable<const int*&,  decltype(constBuffer[0][0])>::value == true, "Can assign to a const");
+        static_assert(std::is_assignable<int*&,        decltype(constBuffer[0][0])>::value == false, "Cannot assign to a non-const");
+        static_assert(std::is_assignable<const int* const*&, decltype(constBuffer[0])>::value == true, "Can assign to a const");
+        static_assert(std::is_assignable<int**&,             decltype(constBuffer[0])>::value == false, "Cannot assign to a non-const");
+        static_assert(std::is_assignable<int* const*&,       decltype(constBuffer[0])>::value == false, "Cannot assign to a non-const");
+        static_assert(std::is_assignable<const int**&,       decltype(constBuffer[0])>::value == false, "Cannot assign to a non-const");
+
+        static_assert(std::is_assignable<const int* const* const*&, decltype(constBuffer.data())>::value == true, "Can assign to a const");
+        static_assert(std::is_assignable<const int* const**&, decltype(constBuffer.data())>::value == false, "Cannot assign to a non-const");
+        static_assert(std::is_assignable<const int** const*&, decltype(constBuffer.data())>::value == false, "Cannot assign to a non-const");
+        static_assert(std::is_assignable<int* const* const*&, decltype(constBuffer.data())>::value == false, "Cannot assign to a non-const");
+        static_assert(std::is_assignable<int***&,             decltype(constBuffer.data())>::value == false, "Cannot assign to a non-const");
+
+        static_assert(std::is_trivially_assignable<decltype(constBuffer(0, 0, 7)), int>::value == false, "");
+        static_assert(std::is_trivially_assignable<decltype(constBuffer[0][0][7]), int>::value == false, "");
+        static_assert(std::is_trivially_assignable<decltype(constBuffer.data()[0][0][7]), int>::value == false, "");
+        static_assert(std::is_trivially_assignable<decltype(constBuffer(0, 1).data()), int*>::value == false, "");
+        static_assert(std::is_trivially_assignable<decltype(constBuffer(1).data()), int*>::value == false, "");
     };
 
     SECTION("owning") {
         HyperBuffer<int, 3> buffer(3, 3, 8);
-        fillWithSequence(buffer);
+        fillWith3DSequence(buffer);
         verify(buffer);
     }
-    
     SECTION("prealloc flat") {
         int dataRaw1 [3*3*8];
         HyperBufferPreAllocFlat<int, 3> buffer(dataRaw1, 3, 3, 8);
-        fillWithSequence(buffer);
+        fillWith3DSequence(buffer);
         verify(buffer);
     }
-    
     SECTION("prealloc") {
         BUILD_MULTIDIM_ON_STACK_3_3_8(multiDimData);
         HyperBufferPreAlloc<int, 3> buffer(multiDimData, 3, 3, 8);
-        fillWithSequence(buffer);
+        fillWith3DSequence(buffer);
         verify(buffer);
     }
 }
@@ -260,7 +271,7 @@ TEST_CASE("HyperBuffer: sub-buffer construction & operator() access")
     
     SECTION("owning") {
         HyperBuffer<int, 3> buffer(3, 3, 8);
-        fillWithSequence(buffer);
+        fillWith3DSequence(buffer);
         
         // NOTE: A sub-buffer of HyperBuffer is a HyperBufferPreAllocFlat pointing to the HyperBuffer's data!
         
@@ -270,26 +281,32 @@ TEST_CASE("HyperBuffer: sub-buffer construction & operator() access")
     SECTION("prealloc flat") {
         int dataRaw1 [3*3*8];
         HyperBufferPreAllocFlat<int, 3> buffer(dataRaw1, 3, 3, 8);
-        fillWithSequence(buffer);
+        fillWith3DSequence(buffer);
         verify(buffer);
 
     }
     SECTION("prealloc") {
         BUILD_MULTIDIM_ON_STACK_3_3_8(multiDimData);
         HyperBufferPreAlloc<int, 3> buffer(multiDimData, 3, 3, 8);
-        fillWithSequence(buffer);
+        fillWith3DSequence(buffer);
         verify(buffer);
     }
 }
 
-//TODO: TEST_CASE("Sub-Array Assignmemt")
-//{
-//    MultiDimArray<float, 1>  buffer1  {{3, 4, 5}};
-//    MultiDimArray<float, 2>  buffer2 {{3, 4, 5}, {3, 4, 5}};
-//
-//
-//    MultiDimArray<float, 1> buffer2sub1 = buffer2(0);
-//}
+TEST_CASE("Sub-Buffer Assignmemt")
+{
+    HyperBuffer<int, 3> buffer(2, 2, 4);
+    fillWith3DSequence(buffer);
+           
+    HyperBuffer<int, 1> bufferData(4);
+    bufferData[0] = -1;
+    bufferData[1] = -2;
+    bufferData[2] = -3;
+    bufferData[3] = -4;
+    
+    //TODO: Sub-Buffer assigment
+    //buffer(0,0) = bufferData;
+}
 
 // MARK: - Data Verification
 
