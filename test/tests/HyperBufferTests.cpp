@@ -211,17 +211,23 @@ TEST_CASE("HyperBuffer const objects")
         static_assert(std::is_assignable<int* const* const*&, decltype(constBuffer.data())>::value == false, "Cannot assign to a non-const");
         static_assert(std::is_assignable<int***&,             decltype(constBuffer.data())>::value == false, "Cannot assign to a non-const");
 
-        static_assert(std::is_trivially_assignable<decltype(constBuffer(0, 0, 7)), int>::value == false, "");
-        static_assert(std::is_trivially_assignable<decltype(constBuffer[0][0][7]), int>::value == false, "");
-        static_assert(std::is_trivially_assignable<decltype(constBuffer.data()[0][0][7]), int>::value == false, "");
-        static_assert(std::is_trivially_assignable<decltype(constBuffer(0, 1).data()), int*>::value == false, "");
-        static_assert(std::is_trivially_assignable<decltype(constBuffer(1).data()), int*>::value == false, "");
+        static_assert(std::is_trivially_assignable<decltype(constBuffer(0, 0, 7)), int>::value == false, "Cannot write to a const");
+        static_assert(std::is_trivially_assignable<decltype(constBuffer[0][0][7]), int>::value == false, "Cannot write to a const");
+        static_assert(std::is_trivially_assignable<decltype(constBuffer.data()[0][0][7]), int>::value == false, "Cannot write to a const");
+        static_assert(std::is_trivially_assignable<decltype(constBuffer(0, 1).data()), int*>::value == false, "Cannot write to a const");
+        static_assert(std::is_trivially_assignable<decltype(constBuffer(1).data()), int*>::value == false, "Cannot write to a const");
     };
 
     SECTION("owning") {
         HyperBuffer<int, 3> buffer(3, 3, 8);
         fillWith3DSequence(buffer);
         verify(buffer);
+        
+        // Explicitly test a 1D owning, because above verify function only checks HyperBufferPreAllocFlat after being reduced to subBuffers
+        const HyperBuffer<int, 1> constBuffer1D(4);
+        int a = constBuffer1D(2); (UNUSED(a));
+        static_assert(std::is_trivially_assignable<int&, decltype(constBuffer1D(1))>::value == true, "Can assign to a const");
+        static_assert(std::is_trivially_assignable<decltype(constBuffer1D(1)), int*>::value == false, "Cannot write to a const");
     }
     SECTION("prealloc flat") {
         int dataRaw1 [3*3*8];

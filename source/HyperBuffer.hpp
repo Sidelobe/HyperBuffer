@@ -71,7 +71,7 @@ private:
     
     const_pointer_type getDataPointer_Nx() const override { return reinterpret_cast<const_pointer_type>(m_pointers.data()); }
     pointer_type getDataPointer_Nx()             override { return reinterpret_cast<pointer_type>(m_pointers.data()); }
-    const T* getDataPointer_N1() const           override { return reinterpret_cast<const T*>(*m_pointers.data()); }
+    const T* getDataPointer_N1() const           override { return *m_pointers.data(); }
     T* getDataPointer_N1()                       override { return *m_pointers.data(); }
 
 private:
@@ -111,7 +111,6 @@ public:
     /** Create sub-buffer by returning a N-1 view (no data ownership) in the form of a HyperBufferPreAllocFlat (recursive, multiple arguments) */
     FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) const { return createSubBufferView(dn).operator()(i...); }
     FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) { return createSubBufferView(dn).operator()(i...); }
-
     
     /** Create sub-buffer by returning a N-1 view (no data ownership) in the form of a HyperBufferPreAllocFlat (single argument) */
     FOR_Nx decltype(auto) operator() (size_type dn) const { return createSubBufferView(dn); }

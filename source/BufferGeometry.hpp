@@ -67,7 +67,7 @@ public:
      */
     int getDataOffsetForHighestOrderDimStart(int index) const
     {
-        int totalNumDataEntries = getRequiredDataArraySize();
+        const int totalNumDataEntries = getRequiredDataArraySize();
         ASSERT(index < m_dimensionExtents[0], "Index out of range");
         ASSERT(totalNumDataEntries % m_dimensionExtents[0] == 0, "Internal error in buffer geometry!");
         return index * totalNumDataEntries / m_dimensionExtents[0];
