@@ -41,7 +41,7 @@ public:
     // MARK: - common functions not in base class (they differ in return type)
     
     // MARK: operator()
-    FOR_N1 const T& operator() (size_type i) const { return std::as_const(*this).getDataPointer_N1()[i]; }
+    FOR_N1 const T& operator() (size_type i) const { return getDataPointer_N1()[i]; }
     FOR_N1 T& operator() (size_type i) { return getDataPointer_N1()[i]; }
     
     /** Create sub-buffer by returning a N-1 view (no data ownership) (recursive, multiple arguments) */
@@ -136,7 +136,7 @@ private:
 
     const_pointer_type getDataPointer_Nx() const override { return reinterpret_cast<const_pointer_type>(m_pointers.data()); }
     pointer_type getDataPointer_Nx()             override { return reinterpret_cast<pointer_type>(m_pointers.data()); }
-    const T* getDataPointer_N1() const           override { return const_cast<const T*>(*m_pointers.data()); }
+    const T* getDataPointer_N1() const           override { return *m_pointers.data(); }
     T* getDataPointer_N1()                       override { return *m_pointers.data(); }
 
 private:
@@ -195,7 +195,7 @@ private:
         return HyperBufferPreAlloc<T, N-1>(parent.m_externalData[index], StdArrayOperations::subArray(parent.dims()));
     }
 
-    const_pointer_type getDataPointer_Nx() const override { return const_cast<const_pointer_type>(m_externalData); }
+    const_pointer_type getDataPointer_Nx() const override { return m_externalData; }
     pointer_type getDataPointer_Nx()             override { return m_externalData; }
     const T* getDataPointer_N1() const           override { return reinterpret_cast<const T*>(m_externalData); }
     T* getDataPointer_N1()                       override { return reinterpret_cast<T*>(m_externalData); }

@@ -48,9 +48,9 @@ public:
     // NOTE: We cannot make these virtual functions because of the different return types required.
     // Overloading by return type is not allowed, so we need an enable_if construct for selective compilation
     // MARK: data()
-    FOR_Nx const_pointer_type data() const { return std::as_const(*this).getDataPointer_Nx(); }
+    FOR_Nx const_pointer_type data() const { return getDataPointer_Nx(); }
     FOR_Nx pointer_type data() { return getDataPointer_Nx(); }
-    FOR_N1 const T* data() const { return std::as_const(*this).getDataPointer_N1(); }
+    FOR_N1 const T* data() const { return getDataPointer_N1(); }
     FOR_N1 T* data() { return getDataPointer_N1(); }
     
     // MARK: operator[] -- returns pointer N>1, reference for N=1
