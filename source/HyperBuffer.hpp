@@ -45,28 +45,28 @@ public:
     FOR_N1 T& operator() (size_type i) { return getDataPointer_N1()[i]; }
     
     /** Create sub-buffer by returning a N-1 view (no data ownership) (recursive, multiple arguments) */
-    FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) const { return createSubBuffer(*this, dn).operator()(i...); }
-    FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) { return createSubBuffer(*this, dn).operator()(i...); }
+    FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) const { return createSubBufferView(dn).operator()(i...); }
+    FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) { return createSubBufferView(dn).operator()(i...); }
 
     /** Create sub-buffer by returning a N-1 view (no data ownership) (single argument) */
-    FOR_Nx decltype(auto) operator() (size_type dn) const { return createSubBuffer(*this, dn); }
-    FOR_Nx decltype(auto) operator() (size_type dn) { return createSubBuffer(*this, dn); }
+    FOR_Nx decltype(auto) operator() (size_type dn) const { return createSubBufferView(dn); }
+    FOR_Nx decltype(auto) operator() (size_type dn) { return createSubBufferView(dn); }
 
 private:
-    /** Build a const N-1 HyperBuffer from an existing Hyperbuffer */
-    const HyperBufferPreAllocFlat<T, N-1> createSubBuffer(const HyperBufferPreAllocFlat<T, N>& parent, size_type index) const
+    /** Build a const N-1 HyperBuffer view to this Hyperbuffer's data */
+    const HyperBufferPreAllocFlat<T, N-1> createSubBufferView(size_type index) const
     {
-        ASSERT(index < parent.dims()[0], "Index out of range");
-        int offset = parent.m_bufferGeometry.getDataOffsetForHighestOrderDimStart(index);
-        return HyperBufferPreAllocFlat<T, N-1>(&parent.m_externalData[offset], StdArrayOperations::subArray(parent.dims()));
+        ASSERT(index < this->dim(0), "Index out of range");
+        int offset = m_bufferGeometry.getDataOffsetForHighestOrderDimStart(index);
+        return HyperBufferPreAllocFlat<T, N-1>(&m_externalData[offset], StdArrayOperations::subArray(this->dims()));
     }
     
-    /** Build a N-1 HyperBuffer from an existing Hyperbuffer */
-    HyperBufferPreAllocFlat<T, N-1> createSubBuffer(const HyperBufferPreAllocFlat<T, N>& parent, size_type index)
+    /** Build a N-1 HyperBuffer view to this Hyperbuffer's data */
+    HyperBufferPreAllocFlat<T, N-1> createSubBufferView(size_type index)
     {
-        ASSERT(index < parent.dims()[0], "Index out of range");
-        int offset = parent.m_bufferGeometry.getDataOffsetForHighestOrderDimStart(index);
-        return HyperBufferPreAllocFlat<T, N-1>(&parent.m_externalData[offset], StdArrayOperations::subArray(parent.dims()));
+        ASSERT(index < this->dim(0), "Index out of range");
+        int offset = m_bufferGeometry.getDataOffsetForHighestOrderDimStart(index);
+        return HyperBufferPreAllocFlat<T, N-1>(&m_externalData[offset], StdArrayOperations::subArray(this->dims()));
     }
     
     const_pointer_type getDataPointer_Nx() const override { return reinterpret_cast<const_pointer_type>(m_pointers.data()); }
@@ -117,19 +117,21 @@ public:
     FOR_Nx decltype(auto) operator() (size_type dn) { return createSubBufferView(dn); }
     
 private:
-    /** Build a (non-owning) N-1 HyperBuffer view from an existing N Hyperbuffer */
-    const HyperBufferPreAllocFlat<T, N-1> createSubBufferView(size_type dn) const
+    /** Build a (non-owning) N-1 HyperBuffer view to this Hyperbuffer's data */
+    const HyperBufferPreAllocFlat<T, N-1> createSubBufferView(size_type index) const
     {
-        const int offset = m_bufferGeometry.getDataOffsetForHighestOrderDimStart(dn);
+        ASSERT(index < this->dim(0), "Index out of range");
+        const int offset = m_bufferGeometry.getDataOffsetForHighestOrderDimStart(index);
         // NOTE: explicitly cast away the const-ness - need to provide a non-const pointer to HyperBufferPreAllocFlat ctor, even if we turn it into a const object
         T* subDimData = const_cast<T*>(&m_data[offset]);
         return HyperBufferPreAllocFlat<T, N-1>(subDimData, StdArrayOperations::subArray(this->dims()));
     }
     
-    /** Build a (non-owning) N-1 HyperBuffer const view from an existing N Hyperbuffer */
-    HyperBufferPreAllocFlat<T, N-1> createSubBufferView(size_type dn)
+    /** Build a (non-owning) N-1 HyperBuffer const view to this Hyperbuffer's data */
+    HyperBufferPreAllocFlat<T, N-1> createSubBufferView(size_type index)
     {
-        const int offset = m_bufferGeometry.getDataOffsetForHighestOrderDimStart(dn);
+        ASSERT(index < this->dim(0), "Index out of range");
+        const int offset = m_bufferGeometry.getDataOffsetForHighestOrderDimStart(index);
         return HyperBufferPreAllocFlat<T, N-1>(&m_data[offset], StdArrayOperations::subArray(this->dims()));
     }
 
@@ -172,26 +174,26 @@ public:
     FOR_N1 T& operator() (size_type i) { return getDataPointer_N1()[i]; }
     
     /** Create sub-buffer by returning a N-1 view (no data ownership) (recursive, multiple arguments) */
-    FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) const { return createSubBuffer(*this, dn).operator()(i...); }
-    FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) { return createSubBuffer(*this, dn).operator()(i...); }
+    FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) const { return createSubBufferView(dn).operator()(i...); }
+    FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) { return createSubBufferView(dn).operator()(i...); }
     
     /** Create sub-buffer by returning a N-1 view (no data ownership) (single argument) */
-    FOR_Nx decltype(auto) operator() (size_type dn) const { return createSubBuffer(*this, dn); }
-    FOR_Nx decltype(auto) operator() (size_type dn) { return createSubBuffer(*this, dn); }
+    FOR_Nx decltype(auto) operator() (size_type dn) const { return createSubBufferView(dn); }
+    FOR_Nx decltype(auto) operator() (size_type dn) { return createSubBufferView(dn); }
     
 private:
-    /** Build a const N-1 HyperBuffer from an existing Hyperbuffer */
-    const HyperBufferPreAlloc<T, N-1> createSubBuffer(const HyperBufferPreAlloc<T, N>& parent, size_type index) const
+    /** Build a const N-1 HyperBuffer view to this Hyperbuffer's data */
+    const HyperBufferPreAlloc<T, N-1> createSubBufferView(size_type index) const
     {
-        ASSERT(index < parent.dims()[0], "Index out of range");
-        return HyperBufferPreAlloc<T, N-1>(parent.m_externalData[index], StdArrayOperations::subArray(parent.dims()));
+        ASSERT(index < this->dim(0), "Index out of range");
+        return HyperBufferPreAlloc<T, N-1>(m_externalData[index], StdArrayOperations::subArray(this->dims()));
     }
     
-    /** Build a N-1 HyperBuffer from an existing Hyperbuffer */
-    HyperBufferPreAlloc<T, N-1> createSubBuffer(const HyperBufferPreAlloc<T, N>& parent, size_type index)
+    /** Build a N-1 HyperBuffer view to this Hyperbuffer's data */
+    HyperBufferPreAlloc<T, N-1> createSubBufferView(const size_type index)
     {
-        ASSERT(index < parent.dims()[0], "Index out of range");
-        return HyperBufferPreAlloc<T, N-1>(parent.m_externalData[index], StdArrayOperations::subArray(parent.dims()));
+        ASSERT(index < this->dim(0), "Index out of range");
+        return HyperBufferPreAlloc<T, N-1>(m_externalData[index], StdArrayOperations::subArray(this->dims()));
     }
 
     const_pointer_type getDataPointer_Nx() const override { return m_externalData; }
