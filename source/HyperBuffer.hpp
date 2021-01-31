@@ -42,15 +42,15 @@ public:
     
     // MARK: operator()
     FOR_N1 const T& operator() (size_type i) const { return getDataPointer_N1()[i]; }
-    FOR_N1 T& operator() (size_type i) { return getDataPointer_N1()[i]; }
+    FOR_N1       T& operator() (size_type i)       { return getDataPointer_N1()[i]; }
     
     /** Create sub-buffer by returning a N-1 view (no data ownership) (recursive, multiple arguments) */
     FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) const { return createSubBufferView(dn).operator()(i...); }
-    FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) { return createSubBufferView(dn).operator()(i...); }
+    FOR_Nx_V decltype(auto) operator() (size_type dn, I... i)       { return createSubBufferView(dn).operator()(i...); }
 
     /** Create sub-buffer by returning a N-1 view (no data ownership) (single argument) */
     FOR_Nx decltype(auto) operator() (size_type dn) const { return createSubBufferView(dn); }
-    FOR_Nx decltype(auto) operator() (size_type dn) { return createSubBufferView(dn); }
+    FOR_Nx decltype(auto) operator() (size_type dn)       { return createSubBufferView(dn); }
 
 private:
     /** Build a const N-1 HyperBuffer view to this Hyperbuffer's data */
@@ -106,15 +106,15 @@ public:
 
     // MARK:  operator()
     FOR_N1 const T& operator() (size_type i) const { return getDataPointer_N1()[i]; }
-    FOR_N1 T& operator() (size_type i) { return getDataPointer_N1()[i]; }
+    FOR_N1       T& operator() (size_type i)       { return getDataPointer_N1()[i]; }
    
     /** Create sub-buffer by returning a N-1 view (no data ownership) in the form of a HyperBufferPreAllocFlat (recursive, multiple arguments) */
     FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) const { return createSubBufferView(dn).operator()(i...); }
-    FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) { return createSubBufferView(dn).operator()(i...); }
+    FOR_Nx_V decltype(auto) operator() (size_type dn, I... i)       { return createSubBufferView(dn).operator()(i...); }
     
     /** Create sub-buffer by returning a N-1 view (no data ownership) in the form of a HyperBufferPreAllocFlat (single argument) */
     FOR_Nx decltype(auto) operator() (size_type dn) const { return createSubBufferView(dn); }
-    FOR_Nx decltype(auto) operator() (size_type dn) { return createSubBufferView(dn); }
+    FOR_Nx decltype(auto) operator() (size_type dn)       { return createSubBufferView(dn); }
     
 private:
     /** Build a (non-owning) N-1 HyperBuffer view to this Hyperbuffer's data */
@@ -171,15 +171,15 @@ public:
     
     // MARK: operator()
     FOR_N1 const T& operator() (size_type i) const { return getDataPointer_N1()[i]; }
-    FOR_N1 T& operator() (size_type i) { return getDataPointer_N1()[i]; }
+    FOR_N1       T& operator() (size_type i)       { return getDataPointer_N1()[i]; }
     
     /** Create sub-buffer by returning a N-1 view (no data ownership) (recursive, multiple arguments) */
     FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) const { return createSubBufferView(dn).operator()(i...); }
-    FOR_Nx_V decltype(auto) operator() (size_type dn, I... i) { return createSubBufferView(dn).operator()(i...); }
+    FOR_Nx_V decltype(auto) operator() (size_type dn, I... i)       { return createSubBufferView(dn).operator()(i...); }
     
     /** Create sub-buffer by returning a N-1 view (no data ownership) (single argument) */
     FOR_Nx decltype(auto) operator() (size_type dn) const { return createSubBufferView(dn); }
-    FOR_Nx decltype(auto) operator() (size_type dn) { return createSubBufferView(dn); }
+    FOR_Nx decltype(auto) operator() (size_type dn)       { return createSubBufferView(dn); }
     
 private:
     /** Build a const N-1 HyperBuffer view to this Hyperbuffer's data */
