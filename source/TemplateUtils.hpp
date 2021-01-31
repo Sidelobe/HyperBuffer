@@ -14,14 +14,28 @@
 
 #define UNUSED(x) (void)x
 
+/* these functions are coming in C++17, MSVC already defines them */
+#if (__cplusplus < 201703) && !defined(_MSC_VER)
+namespace std
+{
+// MARK: - std::as_const
+template <class T>
+static constexpr std::add_const_t<T>& as_const(T& t) noexcept { return t; }
+} // namespace std
+#endif
+
 namespace slb
 {
 
 // MARK: - Assertion handling
 namespace Assertions
 {
-#define ASSERT(condition, ...) Assertions::handleAssert(#condition, condition, __FILE__, __LINE__, ##__VA_ARGS__)
-#define ASSERT_ALWAYS(...) Assertions::handleAssert("", false, __FILE__, __LINE__, ##__VA_ARGS__)
+#ifndef ASSERT
+    #define ASSERT(condition, ...) Assertions::handleAssert(#condition, condition, __FILE__, __LINE__, ##__VA_ARGS__)
+#endif
+#ifndef ASSERT_ALWAYS
+    #define ASSERT_ALWAYS(...) Assertions::handleAssert("", false, __FILE__, __LINE__, ##__VA_ARGS__)
+#endif
 
 /**
  * NOTE: this assertion handler is constexpr - to allow its use inside constexpr functions.
@@ -35,7 +49,6 @@ static constexpr void handleAssert(const char* conditionAsText, bool condition, 
     }
 }
 } // namespace Assertions
-
 
 // MARK: - Add pointers to type
 // Recursive Template trick to add an arbitrary number of pointers to a type
@@ -54,6 +67,25 @@ struct add_pointers_to_type<T, 0>
 static_assert(std::is_same<add_pointers_to_type<int,1>::type, int*>{}, "");
 static_assert(std::is_same<add_pointers_to_type<float,3>::type, float***>{}, "");
 static_assert(std::is_same<add_pointers_to_type<float,0>::type, float>{}, "");
+
+// MARK: - Add const pointers to type
+// Recursive Template trick to add an arbitrary number of const pointers to a type
+template<class T, int N>
+struct add_const_pointers_to_type
+{
+  using type = typename add_const_pointers_to_type<const T*, N-1>::type;
+};
+
+template<class T>
+struct add_const_pointers_to_type<T, 0>
+{
+  using type = T;
+};
+
+static_assert(std::is_same<add_const_pointers_to_type<int,1>::type, int const*>{}, "");
+static_assert(std::is_same<add_const_pointers_to_type<int,2>::type, int const* const*>{}, "");
+static_assert(std::is_same<add_const_pointers_to_type<float,3>::type, float const* const* const*>{}, "");
+static_assert(std::is_same<add_const_pointers_to_type<float,0>::type, float>{}, "");
 
 // MARK: - Remove pointers from type
 // Recursive Template trick to remove an arbitrary number of pointers from a type
