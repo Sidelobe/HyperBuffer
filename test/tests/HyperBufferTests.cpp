@@ -304,7 +304,7 @@ TEST_CASE("HyperBuffer: sub-buffer construction & operator() access")
     }
 }
 
-TEST_CASE("Sub-Buffer Assignmemt")
+TEST_CASE("HyperBuffer: Sub-Buffer Assignmemt")
 {
     HyperBuffer<int, 3> buffer(2, 2, 4);
     fillWith3DSequence(buffer);

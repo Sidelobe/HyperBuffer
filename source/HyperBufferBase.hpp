@@ -85,14 +85,6 @@ protected:
 
     // Helper to make interfacing with STL a bit more readable
     static constexpr stl_size_type STL(int i) { return static_cast<stl_size_type>(i); }
-    
-    // https://stackoverflow.com/questions/5695548/public-friend-swap-member-function
-    friend void swap(HyperBufferBase<T, N>& first, HyperBufferBase<T, N>& second) noexcept
-    {
-        using std::swap; // allow use of std::swap
-        swap(first.m_dimensionExtents, second.m_dimensionExtents); // but select overloads, first
-        // if swap(x, y) finds a better match, via ADL, it will use that instead; otherwise it falls back to std::swap
-    }
 
 private:
     std::array<int, N> m_dimensionExtents; // only required as a member because of the dims functions
