@@ -182,7 +182,7 @@ TEST_CASE("HyperBuffer ctor: different dimension variants")
     }
 }
 
-TEST_CASE("HyperBuffer const objects")
+TEST_CASE("HyperBuffer const correctness")
 {
     auto verify = [](auto& buffer)
     {
@@ -192,7 +192,7 @@ TEST_CASE("HyperBuffer const objects")
         // verify data read access
         REQUIRE(buffer(0, 0, 7) == 7);
         REQUIRE(constBuffer(0, 0, 7) == 7);
-        
+
         // static checks: verify we can assign to a const, but not to a non-const
         static_assert(std::is_assignable<const int*&, decltype(constBuffer(0, 1).data())>::value == true, "Can assign to a const");
         static_assert(std::is_assignable<int*&,       decltype(constBuffer(0, 1).data())>::value == false, "Cannot assign to a non-const");
@@ -256,6 +256,7 @@ TEST_CASE("HyperBuffer: sub-buffer construction & operator() access")
         
         // N-1 Sub-buffer -> 2D
         int subBufferIndex = GENERATE(0, 1, 2);
+        
         auto subBuffer = buffer(subBufferIndex);
         REQUIRE(subBuffer.dims() == std::array<int, 2>{buffer.dim(1), buffer.dim(2)});
         int j = 0;
@@ -289,13 +290,17 @@ TEST_CASE("HyperBuffer: sub-buffer construction & operator() access")
         HyperBufferPreAllocFlat<int, 3> buffer(dataRaw1, 3, 3, 8);
         fillWith3DSequence(buffer);
         verify(buffer);
-
     }
     SECTION("prealloc") {
         BUILD_MULTIDIM_ON_STACK_3_3_8(multiDimData);
         HyperBufferPreAlloc<int, 3> buffer(multiDimData, 3, 3, 8);
         fillWith3DSequence(buffer);
         verify(buffer);
+        
+        { // Creating a subbuffer also does not allocate memory
+            ScopedMemorySentinel sentinel;
+            auto subBuffer = buffer(1);
+        }
     }
 }
 
@@ -338,14 +343,12 @@ void testHyperBuffer1D_size4(HyperBufferBase<T, 1>& buffer)
     { // Verify all access operations do not allocate memory
         ScopedMemorySentinel sentinel;
         buffer[2] = -2;
-        int d0 = buffer.dim(0);
-        const int* dims = buffer.dims().data();
-        auto dimsArray = buffer.dims();
-        int* raw = buffer.data();
-        UNUSED(d0);
-        UNUSED(dims);
-        UNUSED(dimsArray);
-        UNUSED(raw);
+        int d0 = buffer.dim(0); UNUSED(d0);
+        const int* dims = buffer.dims().data(); UNUSED(dims);
+        auto dimsArray = buffer.dims(); UNUSED(dimsArray);
+        int* raw = buffer.data(); UNUSED(raw);
+        const auto& constBuffer = buffer;
+        const int* rawConst = constBuffer.data(); UNUSED(rawConst);
     }
 }
 
@@ -376,14 +379,10 @@ void testHyperBuffer2D_sizes2_4(HyperBufferBase<T, 2>& buffer)
     { // Verify all access operations do not allocate memory
         ScopedMemorySentinel sentinel;
         buffer[0][2] = -2;
-        int d0 = buffer.dim(0);
-        const int* dims = buffer.dims().data();
-        auto dimsArray = buffer.dims();
-        int** raw = buffer.data();
-        UNUSED(d0);
-        UNUSED(dims);
-        UNUSED(dimsArray);
-        UNUSED(raw);
+        int d0 = buffer.dim(0); UNUSED(d0);
+        const int* dims = buffer.dims().data(); UNUSED(dims);
+        auto dimsArray = buffer.dims(); UNUSED(dimsArray);
+        int** raw = buffer.data(); UNUSED(raw);
     }
 }
 
@@ -409,13 +408,11 @@ void testHyperBuffer3D_sizes3_3_8(HyperBufferBase<T, 3>& buffer)
     { // Verify all access operations do not allocate memory
         ScopedMemorySentinel sentinel;
         buffer[0][2][0] = -2;
-        int d0 = buffer.dim(0);
-        const int* dimsPtr = buffer.dims().data();
-        auto dimsArray = buffer.dims();
-        int*** raw = buffer.data();
-        UNUSED(d0);
-        UNUSED(dimsPtr);
-        UNUSED(dimsArray);
-        UNUSED(raw);
+        int d0 = buffer.dim(0); UNUSED(d0);
+        const int* dimsPtr = buffer.dims().data(); UNUSED(dimsPtr);
+        auto dimsArray = buffer.dims(); UNUSED(dimsArray);
+        int*** raw = buffer.data();     UNUSED(raw);
+        const auto& constBuffer = buffer;
+        const int* const* const* rawConst = constBuffer.data(); UNUSED(rawConst);
     }
 }
