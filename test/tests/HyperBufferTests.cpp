@@ -319,8 +319,8 @@ TEST_CASE("Sub-Buffer Assignmemt")
 template<typename T>
 void testHyperBuffer1D_size4(HyperBufferBase<T, 1>& buffer)
 {
+    REQUIRE(buffer.dims() == std::array<int, 1>{4});
     REQUIRE(buffer.dim(0) == 4);
-    REQUIRE(buffer.dims()[0] == 4);
     buffer[0] = 0;
     buffer[1] = -1;
     buffer[2] = -2;
@@ -352,8 +352,7 @@ void testHyperBuffer1D_size4(HyperBufferBase<T, 1>& buffer)
 template<typename T>
 void testHyperBuffer2D_sizes2_4(HyperBufferBase<T, 2>& buffer)
 {
-    REQUIRE(buffer.dims()[0] == 2);
-    REQUIRE(buffer.dims()[1] == 4);
+    REQUIRE(buffer.dims() == std::array<int, 2>{2, 4});
     REQUIRE(buffer.dim(1) == 4);
     buffer[0][0] = 0;
     buffer[0][1] = -1;
@@ -391,8 +390,7 @@ void testHyperBuffer2D_sizes2_4(HyperBufferBase<T, 2>& buffer)
 template<typename T>
 void testHyperBuffer3D_sizes3_3_8(HyperBufferBase<T, 3>& buffer)
 {
-    std::vector<int> dims(buffer.dims().begin(), buffer.dims().end());
-    REQUIRE(dims == std::vector<int>{3, 3, 8});    
+    REQUIRE(buffer.dims() == std::array<int, 3>{3, 3, 8});
     buffer[0][1][0] = -1;
     buffer[0][2][0] = -2;
     buffer[1][0][6] = -10;

@@ -57,7 +57,7 @@ private:
     const HyperBufferPreAllocFlat<T, N-1> createSubBufferView(size_type index) const
     {
         ASSERT(index < this->dim(0), "Index out of range");
-        int offset = m_bufferGeometry.getOffsetForSubDimData(index);
+        int offset = m_bufferGeometry.getDataArrayOffsetForHighestOrderSubDim(index);
         return HyperBufferPreAllocFlat<T, N-1>(&m_externalData[offset], StdArrayOperations::shaveOffFirstElement(this->dims()));
     }
     
@@ -65,7 +65,7 @@ private:
     HyperBufferPreAllocFlat<T, N-1> createSubBufferView(size_type index)
     {
         ASSERT(index < this->dim(0), "Index out of range");
-        int offset = m_bufferGeometry.getOffsetForSubDimData(index);
+        int offset = m_bufferGeometry.getDataArrayOffsetForHighestOrderSubDim(index);
         return HyperBufferPreAllocFlat<T, N-1>(&m_externalData[offset], StdArrayOperations::shaveOffFirstElement(this->dims()));
     }
     
@@ -121,7 +121,7 @@ private:
     const HyperBufferPreAllocFlat<T, N-1> createSubBufferView(size_type index) const
     {
         ASSERT(index < this->dim(0), "Index out of range");
-        const int offset = m_bufferGeometry.getOffsetForSubDimData(index);
+        const int offset = m_bufferGeometry.getDataArrayOffsetForHighestOrderSubDim(index);
         // NOTE: explicitly cast away the const-ness - need to provide a non-const pointer to HyperBufferPreAllocFlat ctor, even if we turn it into a const object
         T* subDimData = const_cast<T*>(&m_data[offset]);
         return HyperBufferPreAllocFlat<T, N-1>(subDimData, StdArrayOperations::shaveOffFirstElement(this->dims()));
@@ -131,7 +131,7 @@ private:
     HyperBufferPreAllocFlat<T, N-1> createSubBufferView(size_type index)
     {
         ASSERT(index < this->dim(0), "Index out of range");
-        const int offset = m_bufferGeometry.getOffsetForSubDimData(index);
+        const int offset = m_bufferGeometry.getDataArrayOffsetForHighestOrderSubDim(index);
         return HyperBufferPreAllocFlat<T, N-1>(&m_data[offset], StdArrayOperations::shaveOffFirstElement(this->dims()));
     }
 

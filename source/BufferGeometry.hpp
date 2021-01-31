@@ -61,11 +61,11 @@ public:
     }
     
     /**
-     * Calculates the offset of where data for the highest-order dimension (at the given index) starts.
-     * e.g. if the highest-order dimension's extent is 2, all data for index=0 is in the first half of the data array
-     * and the all data for index=1 in the second half.
+     * Calculates the offset of where data that belongs to a specific (given index) highest-order sub-dimension starts.
+     * e.g. if the highest-order dimension's extent is 2, all data for index=0 is located in the first half of
+     * the **data** array and the all data for index=1 in the second half.
      */
-    int getOffsetForSubDimData(int index) const
+    int getDataArrayOffsetForHighestOrderSubDim(int index) const
     {
         const int totalNumDataEntries = getRequiredDataArraySize();
         ASSERT(index < m_dimensionExtents[0], "Index out of range");
