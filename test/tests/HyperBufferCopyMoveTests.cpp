@@ -52,7 +52,7 @@ TEST_CASE("Copy/Move a HyperBuffer with internal allocation")
         bufferCopySameSize = buffer;
     }
     
-    // this will work, but will allocate memoery
+    // this will work, but will allocate memory
     std::array<int, 3> dimsSmaller {2, 2, 6};
     HyperBuffer<int, N> bufferCopySmallerSize(dimsSmaller);
     bufferCopySmallerSize = buffer;
