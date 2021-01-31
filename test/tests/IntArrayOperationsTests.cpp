@@ -68,6 +68,6 @@ TEST_CASE("StdArrayOperations Tests")
     REQUIRE(sumOfCumulativeProduct(std::array<int, 4>{2, 3, 2, 3}) == 56);
     REQUIRE(sumOfCumulativeProductCapped(3, std::array<int, 4>{2, 3, 2, 3}) == 20);
 
-    REQUIRE(subArray(std::array<int, 4>{6, 5, 2, 3}) == std::array<int, 3>{5, 2, 3});
-    REQUIRE(subArray(std::array<int, 2>{5, 3}) == std::array<int, 1>{3});
+    REQUIRE(shaveOffFirstElement(std::array<int, 4>{6, 5, 2, 3}) == std::array<int, 3>{5, 2, 3});
+    REQUIRE(shaveOffFirstElement(std::array<int, 2>{5, 3}) == std::array<int, 1>{3});
 }
