@@ -64,9 +64,7 @@ private:
     /** Build a N-1 HyperBuffer view to this Hyperbuffer's data */
     HyperBufferPreAllocFlat<T, N-1> createSubBufferView(size_type index)
     {
-        ASSERT(index < this->dim(0), "Index out of range");
-        int offset = m_bufferGeometry.getDataArrayOffsetForHighestOrderSubDim(index);
-        return HyperBufferPreAllocFlat<T, N-1>(&m_externalData[offset], StdArrayOperations::shaveOffFirstElement(this->dims()));
+        return std::as_const(*this).createSubBufferView(index);
     }
     
     const_pointer_type getDataPointer_Nx() const override { return reinterpret_cast<const_pointer_type>(m_pointers.data()); }
@@ -130,9 +128,7 @@ private:
     /** Build a (non-owning) N-1 HyperBuffer const view to this Hyperbuffer's data */
     HyperBufferPreAllocFlat<T, N-1> createSubBufferView(size_type index)
     {
-        ASSERT(index < this->dim(0), "Index out of range");
-        const int offset = m_bufferGeometry.getDataArrayOffsetForHighestOrderSubDim(index);
-        return HyperBufferPreAllocFlat<T, N-1>(&m_data[offset], StdArrayOperations::shaveOffFirstElement(this->dims()));
+        return std::as_const(*this).createSubBufferView(index);
     }
 
     const_pointer_type getDataPointer_Nx() const override { return reinterpret_cast<const_pointer_type>(m_pointers.data()); }
@@ -190,10 +186,9 @@ private:
     }
     
     /** Build a N-1 HyperBuffer view to this Hyperbuffer's data */
-    HyperBufferPreAlloc<T, N-1> createSubBufferView(const size_type index)
+    HyperBufferPreAlloc<T, N-1> createSubBufferView(size_type index)
     {
-        ASSERT(index < this->dim(0), "Index out of range");
-        return HyperBufferPreAlloc<T, N-1>(m_externalData[index], StdArrayOperations::shaveOffFirstElement(this->dims()));
+        return std::as_const(*this).createSubBufferView(index);
     }
 
     const_pointer_type getDataPointer_Nx() const override { return m_externalData; }
