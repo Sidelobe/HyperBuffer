@@ -16,7 +16,12 @@
 namespace slb
 {
 
-/** Performs the 'geometry' calculations for certain set of dimension extents */
+/**
+ * This class performs the 'geometry' calculations for certain set of dimension extents.
+ *
+ * The underlying data model resembles two self-referencing flat arrays that contain all the pointers (for every
+ * dimension except the lowest-order) and all the data (lowest-order dimension).
+ */
 template<int N>
 class BufferGeometry
 {
@@ -34,6 +39,7 @@ public:
     /** Constructor that takes the extents of the dimensions as a std::vector */
     explicit BufferGeometry(const std::vector<int>& dimensionExtents)
     {
+        ASSERT(dimensionExtents.size() == N, "Incorrect number of dimension extents");
         std::copy(dimensionExtents.begin(), dimensionExtents.end(), m_dimensionExtents.begin());
     }
 
@@ -51,14 +57,6 @@ public:
     {
         return std::max(StdArrayOperations::sumOfCumulativeProductCapped(N-1, m_dimensionExtents), 1); // at least size 1
     }
-
-    /** The data is saved in row-major ordering */
-    template<typename... I>
-    int getOffsetInDataArray(int dn, I... dk) const
-    {
-        static_assert(sizeof...(I) == N-1, "Incorrect number of arguments");
-        return getOffset<N>(1, 0, dn, dk...);  // we start with dimIndex=1 - don't care about highest dimension's value
-    }
     
     /**
      * Calculates the offset of where data that belongs to a specific (given index) highest-order sub-dimension starts.
@@ -71,17 +69,6 @@ public:
         ASSERT(index < m_dimensionExtents[0], "Index out of range");
         ASSERT(totalNumDataEntries % m_dimensionExtents[0] == 0, "Internal error in buffer geometry!");
         return index * totalNumDataEntries / m_dimensionExtents[0];
-    }
-    
-    /** DimIdx corresponds to index in dimensions array, i.e. DimIdx=0 is the highest-order dimension */
-    template<int DimIdx, typename... I>
-    int getOffsetInPointerArray(int dn, I... dk) const
-    {
-        static_assert(sizeof...(I) == DimIdx, "Number of arguments should be DimIdx+1");
-        static_assert(N==1 || DimIdx < N-1, "Can only get pointers for any but the lowest-order dimension");
-
-        int startOfThisDimension = StdArrayOperations::sumOfCumulativeProductCapped(DimIdx, m_dimensionExtents);
-        return startOfThisDimension + getOffset<N-1>(1, 0, dn, dk...); // We ignore the 'data dimension', therefore N-1
     }
     
     /**
@@ -132,21 +119,6 @@ private:
         // recursive call to lower-order dimension
         arrayIndex += numPointersInThisDimension;
         return hookupHigherDimPointers(pointerArray, arrayIndex, dimIndex+1);
-    }
-
-    template<std::size_t Nmax>
-    int getOffset(int dimIndex, int cumulativeOffset, int d0) const
-    {
-        UNUSED(dimIndex);
-        return cumulativeOffset + d0; // lowest-order dimension (dimIndex = N)
-    }
-
-    template<std::size_t Nmax, typename... I>
-    int getOffset(int dimIndex, int cumulativeOffset, int dn, I... dk) const
-    {
-        int p = StdArrayOperations::productOverRange(dimIndex, Nmax, m_dimensionExtents); // Size of a block of data "above" this dimIndex
-        int index = p * dn + cumulativeOffset;
-        return getOffset<Nmax>(dimIndex+1, index, dk...); // recusive call
     }
                                                      
 private:
