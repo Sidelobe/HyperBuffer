@@ -31,7 +31,7 @@ The main use case for this container is to hold dynamically-allocated N-dimensio
  - Compiled & Tested with:
  	- GCC/g++ 9.3.0 (Linux)
 	- Clang 11 (Xcode 11.3, macos)
-	- MSVC++ 14.1 (Visual Studio 2017, Windows) 
+	- MSVC++ 19.28 (Visual Studio 2019, Windows) 
 
 ## Design paradigms:
 
@@ -115,10 +115,9 @@ For a `HyperBuffer<float, 3>(2, 4, 5)` this would mean:
 
 ## Lessons Learned: Unwanted Dynamic Memory (De-)Allocation
 
-Since we could potentially use any data structure for both the pointers and data, `std::vector` is an obvious candidate. Defining a custom allocator would give us control over the allocation per se, but not over whether or when the allocator's `allocate()` function is called. As it turns out, the default constructor `std::vector` will allocate in some STL implementations, and not in others)!
+Since we could potentially use any data structure for both the pointers and data, `std::vector` is an obvious candidate. Defining a custom allocator would give us control over the allocation per se, but not over whether or when the allocator's `allocate()` function is called. As it turns out, the default constructor `std::vector` will allocate in some STL implementations, and not in others!
 
-This means that we have to manually define copy and move constructors and assignment operators for our class and make sure the default constructor is NEVER called. This is not trivial
-
+This means that we have to manually define copy and move constructors and assignment operators for our class and make sure the default constructor is NEVER called. This is not trivial.
 
 The Microsoft Visual Studio Compiler (MSVC) allocates dynamic memory in the default constructors of some STL containers. This leads to unwanted allocation in move semantics, where the default constructor is implicitly called by the compiler at some point in the process. This has pushed us to avoid using STL containers in these scenarios.
 
