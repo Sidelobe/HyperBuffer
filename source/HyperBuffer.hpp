@@ -32,13 +32,15 @@ public:
     /** Constructor that takes the extents of the dimensions as a variable argument list */
     template<typename... I>
     HyperBufferPreAllocFlat(T* preAllocatedDataFlat, I... i) :
-        HyperBufferBase<T, N, HyperBufferPreAllocFlat<T, N>>(i...),
         m_bufferGeometry(i...),
         m_externalData(preAllocatedDataFlat),
         m_pointers(STL(m_bufferGeometry.getRequiredPointerArraySize()))
     {
         m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
     }
+    
+    int dim(int i) const override { ASSERT(i < N); return m_bufferGeometry.getDimensionExtents()[i]; }
+    const std::array<int, N>& dims() const override { return m_bufferGeometry.getDimensionExtents(); }
     
 private:
     /** Build a const N-1 HyperBuffer view to this Hyperbuffer's data */
@@ -82,7 +84,6 @@ public:
     /** Constructor that takes the extents of the dimensions as a variable argument list */
     template<typename... I>
     explicit HyperBuffer(I... i) :
-        HyperBufferBase<T, N,HyperBuffer<T, N>>(i...),
         m_bufferGeometry(i...),
         m_data(STL(m_bufferGeometry.getRequiredDataArraySize())),
         m_pointers(STL(m_bufferGeometry.getRequiredPointerArraySize()))
@@ -90,8 +91,9 @@ public:
         m_bufferGeometry.hookupPointerArrayToData(m_data.data(), m_pointers.data());
     }
     
-    // MARK: - common functions not in base class (they differ in return type)
-
+    int dim(int i) const override { ASSERT(i < N); return m_bufferGeometry.getDimensionExtents()[i]; }
+    const std::array<int, N>& dims() const override { return m_bufferGeometry.getDimensionExtents(); }
+    
 private:
     /** Build a (non-owning) N-1 HyperBuffer view to this Hyperbuffer's data */
     const HyperBufferPreAllocFlat<T, N-1> createSubBufferView(size_type index) const
@@ -140,8 +142,24 @@ public:
     /** Constructor that takes the extents of the dimensions as a variable argument list */
     template<typename... I>
     HyperBufferPreAlloc(pointer_type preAllocatedData, I... i) :
-        HyperBufferBase<T, N, HyperBufferPreAlloc<T, N>>(i...),
+        m_dimensionExtents{static_cast<int>(i)...},
         m_externalData(preAllocatedData) {}
+            
+    /** Constructor that takes the extents of the dimensions as a std::array */
+    HyperBufferPreAlloc(pointer_type preAllocatedData, std::array<int, N> dimensionExtents) :
+        m_dimensionExtents(dimensionExtents),
+        m_externalData(preAllocatedData) {}
+    
+    /** Constructor that takes the extents of the dimensions as a std::vector */
+    HyperBufferPreAlloc(pointer_type preAllocatedData, std::vector<int> dimensionExtents) :
+        m_externalData(preAllocatedData)
+    {
+        ASSERT(dimensionExtents.size() == N, "Incorrect number of dimension extents");
+        std::copy(dimensionExtents.begin(), dimensionExtents.end(), m_dimensionExtents.begin());
+    }
+    
+    int dim(int i) const override { ASSERT(i < N); return m_dimensionExtents[i]; }
+    const std::array<int, N>& dims() const override { return m_dimensionExtents; }
     
 private:
     /** Build a const N-1 HyperBuffer view to this Hyperbuffer's data */
@@ -164,7 +182,8 @@ private:
     
 private:
     friend HyperBufferBase<T, N, HyperBufferPreAlloc<T, N>>;
-
+    
+    std::array<int, N> m_dimensionExtents;
     pointer_type m_externalData;
 };
 

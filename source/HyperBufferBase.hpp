@@ -42,8 +42,8 @@ public:
     virtual ~HyperBufferBase() = default;
     
     // MARK: dimension extents
-    int dim(int i) const { ASSERT(i < N); return m_dimensionExtents[STL(i)]; }
-    const std::array<int, N>& dims() const { return m_dimensionExtents; }
+    virtual int dim(int i) const = 0;
+    virtual const std::array<int, N>& dims() const = 0;
 
     // NOTE: We cannot make these virtual functions because of the different return types required.
     // Overloading by return type is not allowed, so we need an enable_if construct for selective compilation
@@ -68,23 +68,6 @@ public:
     FOR_N1       T& at (size_type i)       { return getDataPointer_N1()[i]; }
 
 protected:
-    // MARK: constructors
-    /** Constructor that takes the extents of the dimensions as a variable argument list */
-    template<typename... I>
-    explicit HyperBufferBase(I... i) : m_dimensionExtents{static_cast<int>(i)...}
-    {
-        static_assert(sizeof...(I) == N, "Incorrect number of arguments");
-    }
-    
-    /** Constructor that takes the extents of the dimensions as a std::array */
-    explicit HyperBufferBase(const std::array<int, N>& dimensionExtents) : m_dimensionExtents{dimensionExtents} {}
-    
-    /** Constructor that takes the extents of the dimensions as a std::vector */
-    explicit HyperBufferBase(const std::vector<int>& dimensionExtents)
-    {
-        std::copy(dimensionExtents.begin(), dimensionExtents.end(), m_dimensionExtents.begin());
-    }
-
     // MARK: Virtual functions to be defined by derived classes
     virtual const_pointer_type getDataPointer_Nx() const = 0;
     virtual       pointer_type getDataPointer_Nx() = 0;
@@ -93,10 +76,6 @@ protected:
 
     // Helper to make interfacing with STL a bit more readable
     static constexpr stl_size_type STL(int i) { return static_cast<stl_size_type>(i); }
-
-private:
-    std::array<int, N> m_dimensionExtents; // only required as a member because of the dims functions
-
 };
 
 } // namespace slb
