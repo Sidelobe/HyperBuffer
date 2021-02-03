@@ -60,10 +60,10 @@ public:
     FOR_N1 T& operator[] (size_type i) { return getDataPointer_N1()[i]; }
     
     // MARK: at() -- data/subbuffer access; returns Derived<T,N-1> instance or data
-    FOR_Nx_V decltype(auto) at (size_type dn, I... i) const { return static_cast<const Derived*>(this)->operator()(dn, i...); }
-    FOR_Nx_V decltype(auto) at (size_type dn, I... i)       { return static_cast<Derived*>(this)->operator()(dn, i...); }
-    FOR_Nx decltype(auto) at(size_type dn) const { return static_cast<const Derived*>(this)->operator()(dn); }
-    FOR_Nx decltype(auto) at (size_type dn)      { return static_cast<Derived*>(this)->operator()(dn); }
+    FOR_Nx_V decltype(auto) at (size_type dn, I... i) const { return static_cast<const Derived*>(this)->createSubBufferView(dn).at(i...); }
+    FOR_Nx_V decltype(auto) at (size_type dn, I... i)       { return static_cast<Derived*>(this)->createSubBufferView(dn).at(i...); }
+    FOR_Nx decltype(auto) at(size_type dn) const { return static_cast<const Derived*>(this)->createSubBufferView(dn); }
+    FOR_Nx decltype(auto) at (size_type dn)      { return static_cast<Derived*>(this)->createSubBufferView(dn); }
     FOR_N1 const T& at (size_type i) const { return getDataPointer_N1()[i]; }
     FOR_N1       T& at (size_type i)       { return getDataPointer_N1()[i]; }
 
