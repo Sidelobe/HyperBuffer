@@ -17,8 +17,6 @@
 namespace slb
 {
 
-template<typename T, int N> class HyperBuffer; // forward-declare
-
 // MARK: - HyperBufferPreAllocFlat - manages existing 1D data
 template<typename T, int N>
 class HyperBufferPreAllocFlat : public HyperBufferBase<T, N, HyperBufferPreAllocFlat<T, N>>
