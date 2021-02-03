@@ -77,10 +77,7 @@ protected:
     virtual       pointer_type getDataPointer_Nx() = 0;
     virtual const T* getDataPointer_N1() const = 0;
     virtual       T* getDataPointer_N1() = 0;
-
-    // Helper to make interfacing with STL a bit more readable
-    using stl_size_type = typename std::vector<T*>::size_type;
-    static constexpr stl_size_type STL(int i) { return static_cast<stl_size_type>(i); }
+    
 };
 
 } // namespace slb

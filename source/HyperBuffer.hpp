@@ -24,7 +24,6 @@ class HyperBufferPreAllocFlat : public IHyperBuffer<T, N, HyperBufferPreAllocFla
     using typename IHyperBuffer<T, N, HyperBufferPreAllocFlat>::pointer_type;
     using typename IHyperBuffer<T, N, HyperBufferPreAllocFlat>::const_pointer_type;
     using typename IHyperBuffer<T, N, HyperBufferPreAllocFlat>::size_type;
-    using IHyperBuffer<T, N, HyperBufferPreAllocFlat>::STL;
 
 public:
     /** Constructor that takes the extents of the dimensions as a variable argument list */
@@ -32,7 +31,7 @@ public:
     HyperBufferPreAllocFlat(T* preAllocatedDataFlat, I... i) :
         m_bufferGeometry(i...),
         m_externalData(preAllocatedDataFlat),
-        m_pointers(STL(m_bufferGeometry.getRequiredPointerArraySize()))
+        m_pointers(m_bufferGeometry.getRequiredPointerArraySize())
     {
         m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
     }
@@ -76,15 +75,14 @@ class HyperBuffer : public IHyperBuffer<T, N, HyperBuffer<T, N>>
     using typename IHyperBuffer<T, N, HyperBuffer<T, N>>::size_type;
     using typename IHyperBuffer<T, N, HyperBuffer<T, N>>::pointer_type;
     using typename IHyperBuffer<T, N, HyperBuffer<T, N>>::const_pointer_type;
-    using IHyperBuffer<T, N, HyperBuffer<T, N>>::STL;
 
 public:
     /** Constructor that takes the extents of the dimensions as a variable argument list */
     template<typename... I>
     explicit HyperBuffer(I... i) :
         m_bufferGeometry(i...),
-        m_data(STL(m_bufferGeometry.getRequiredDataArraySize())),
-        m_pointers(STL(m_bufferGeometry.getRequiredPointerArraySize()))
+        m_data(m_bufferGeometry.getRequiredDataArraySize()),
+        m_pointers(m_bufferGeometry.getRequiredPointerArraySize())
     {
         m_bufferGeometry.hookupPointerArrayToData(m_data.data(), m_pointers.data());
     }
