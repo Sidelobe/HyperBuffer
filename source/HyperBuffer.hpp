@@ -23,9 +23,9 @@ template<typename T, int N> class HyperBuffer; // forward-declare
 template<typename T, int N>
 class HyperBufferPreAllocFlat : public HyperBufferBase<T, N, HyperBufferPreAllocFlat<T, N>>
 {
-    using pointer_type = typename HyperBufferBase<T, N, HyperBufferPreAllocFlat>::pointer_type;
-    using const_pointer_type = typename HyperBufferBase<T, N, HyperBufferPreAllocFlat>::const_pointer_type;
-    using size_type = typename HyperBufferBase<T, N, HyperBufferPreAllocFlat>::size_type;
+    using typename HyperBufferBase<T, N, HyperBufferPreAllocFlat>::pointer_type;
+    using typename HyperBufferBase<T, N, HyperBufferPreAllocFlat>::const_pointer_type;
+    using typename HyperBufferBase<T, N, HyperBufferPreAllocFlat>::size_type;
     using HyperBufferBase<T, N, HyperBufferPreAllocFlat>::STL;
 
 public:
@@ -62,8 +62,6 @@ private:
 
 private:
     friend HyperBufferBase<T, N, HyperBufferPreAllocFlat<T, N>>;
-    friend HyperBufferPreAllocFlat<T, N+1>;
-    friend HyperBuffer<T, N+1>;
 
     BufferGeometry<N> m_bufferGeometry;
     T* m_externalData;
@@ -75,9 +73,9 @@ private:
 template<typename T, int N>
 class HyperBuffer : public HyperBufferBase<T, N, HyperBuffer<T, N>>
 {
-    using pointer_type = typename HyperBufferBase<T, N, HyperBuffer<T, N>>::pointer_type;
-    using const_pointer_type = typename HyperBufferBase<T, N, HyperBuffer<T, N>>::const_pointer_type;
-    using size_type = typename HyperBufferBase<T, N, HyperBuffer<T, N>>::size_type;
+    using typename HyperBufferBase<T, N, HyperBuffer<T, N>>::size_type;
+    using typename HyperBufferBase<T, N, HyperBuffer<T, N>>::pointer_type;
+    using typename HyperBufferBase<T, N, HyperBuffer<T, N>>::const_pointer_type;
     using HyperBufferBase<T, N, HyperBuffer<T, N>>::STL;
 
 public:
@@ -100,7 +98,8 @@ private:
     {
         ASSERT(index < this->dim(0), "Index out of range");
         const int offset = m_bufferGeometry.getDataArrayOffsetForHighestOrderSubDim(index);
-        // NOTE: explicitly cast away the const-ness - need to provide a non-const pointer to HyperBufferPreAllocFlat ctor, even if we turn it into a const object
+        // NOTE: explicitly cast away the const-ness - need to provide a non-const pointer to the
+        // HyperBufferPreAllocFlat ctor, even if we turn it into a const object upon return
         T* subDimData = const_cast<T*>(&m_data[offset]);
         return HyperBufferPreAllocFlat<T, N-1>(subDimData, StdArrayOperations::shaveOffFirstElement(this->dims()));
     }
@@ -114,7 +113,7 @@ private:
     const_pointer_type getDataPointer_Nx() const override { return reinterpret_cast<const_pointer_type>(m_pointers.data()); }
     pointer_type getDataPointer_Nx()             override { return reinterpret_cast<pointer_type>(m_pointers.data()); }
     const T* getDataPointer_N1() const           override { return *m_pointers.data(); }
-    T* getDataPointer_N1()                       override { return *m_pointers.data(); }
+          T* getDataPointer_N1()                 override { return *m_pointers.data(); }
 
 private:
     friend HyperBufferBase<T, N, HyperBuffer<T, N>>;
@@ -133,9 +132,9 @@ private:
 template<typename T, int N>
 class HyperBufferPreAlloc : public HyperBufferBase<T, N, HyperBufferPreAlloc<T, N>>
 {
-    using pointer_type = typename HyperBufferBase<T, N, HyperBufferPreAlloc<T, N>>::pointer_type;
-    using const_pointer_type = typename HyperBufferBase<T, N, HyperBufferPreAlloc<T, N>>::const_pointer_type;
-    using size_type = typename HyperBufferBase<T, N, HyperBufferPreAlloc<T, N>>::size_type;
+    using typename HyperBufferBase<T, N, HyperBufferPreAlloc<T, N>>::size_type;
+    using typename HyperBufferBase<T, N, HyperBufferPreAlloc<T, N>>::pointer_type;
+    using typename HyperBufferBase<T, N, HyperBufferPreAlloc<T, N>>::const_pointer_type;
 
 public:
     /** Constructor that takes the extents of the dimensions as a variable argument list */
@@ -165,7 +164,6 @@ private:
     
 private:
     friend HyperBufferBase<T, N, HyperBufferPreAlloc<T, N>>;
-    friend HyperBufferPreAlloc<T, N+1>;
 
     pointer_type m_externalData;
 };

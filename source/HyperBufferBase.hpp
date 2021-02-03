@@ -47,17 +47,17 @@ public:
 
     // NOTE: We cannot make these virtual functions because of the different return types required.
     // Overloading by return type is not allowed, so we need an enable_if construct for selective compilation
-    // MARK: data()
+    // MARK: data() -- raw pointer to beginning of underlying storage (pointers or data, depending on dimension)
     FOR_Nx const_pointer_type data() const { return getDataPointer_Nx(); }
-    FOR_Nx pointer_type data() { return getDataPointer_Nx(); }
+    FOR_Nx       pointer_type data()       { return getDataPointer_Nx(); }
     FOR_N1 const T* data() const { return getDataPointer_N1(); }
-    FOR_N1 T* data() { return getDataPointer_N1(); }
+    FOR_N1       T* data()       { return getDataPointer_N1(); }
     
     // MARK: operator[] -- raw data/pointer access; returns pointer N>1, reference for N=1
     FOR_Nx subdim_const_pointer_type operator[] (size_type i) const { return getDataPointer_Nx()[i]; }
-    FOR_Nx subdim_pointer_type operator[] (size_type i) { return getDataPointer_Nx()[i]; }
+    FOR_Nx       subdim_pointer_type operator[] (size_type i)       { return getDataPointer_Nx()[i]; }
     FOR_N1 const T& operator[] (size_type i) const { return getDataPointer_N1()[i]; }
-    FOR_N1 T& operator[] (size_type i) { return getDataPointer_N1()[i]; }
+    FOR_N1       T& operator[] (size_type i)       { return getDataPointer_N1()[i]; }
     
     // MARK: at() -- data/subbuffer access; returns Derived<T,N-1> instance or data
     FOR_Nx_V decltype(auto) at (size_type dn, I... i) const { return static_cast<const Derived*>(this)->createSubBufferView(dn).at(i...); }
@@ -87,9 +87,9 @@ protected:
 
     // MARK: Virtual functions to be defined by derived classes
     virtual const_pointer_type getDataPointer_Nx() const = 0;
-    virtual pointer_type getDataPointer_Nx() = 0;
+    virtual       pointer_type getDataPointer_Nx() = 0;
     virtual const T* getDataPointer_N1() const = 0;
-    virtual T* getDataPointer_N1() = 0;
+    virtual       T* getDataPointer_N1() = 0;
 
     // Helper to make interfacing with STL a bit more readable
     static constexpr stl_size_type STL(int i) { return static_cast<stl_size_type>(i); }
