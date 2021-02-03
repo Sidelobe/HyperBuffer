@@ -25,7 +25,7 @@ namespace slb
  * This has to be a base and interface class at once, because we cannot apply std::enable_if to virtual functions and
  * we need the former for this to work in C++14.
  */
-template<typename T, int N>
+template<typename T, int N, typename Derived=int> // CRTP with dummy default argument (Derived=int will never be used)
 class HyperBufferBase
 {
 protected:
@@ -53,12 +53,20 @@ public:
     FOR_N1 const T* data() const { return getDataPointer_N1(); }
     FOR_N1 T* data() { return getDataPointer_N1(); }
     
-    // MARK: operator[] -- returns pointer N>1, reference for N=1
+    // MARK: operator[] -- raw data/pointer access; returns pointer N>1, reference for N=1
     FOR_Nx subdim_const_pointer_type operator[] (size_type i) const { return getDataPointer_Nx()[i]; }
     FOR_Nx subdim_pointer_type operator[] (size_type i) { return getDataPointer_Nx()[i]; }
     FOR_N1 const T& operator[] (size_type i) const { return getDataPointer_N1()[i]; }
     FOR_N1 T& operator[] (size_type i) { return getDataPointer_N1()[i]; }
     
+    // MARK: at() -- data/subbuffer access; returns Derived<T,N-1> instance or data
+    FOR_Nx_V decltype(auto) at (size_type dn, I... i) const { return static_cast<const Derived*>(this)->operator()(dn, i...); }
+    FOR_Nx_V decltype(auto) at (size_type dn, I... i)       { return static_cast<Derived*>(this)->operator()(dn, i...); }
+    FOR_Nx decltype(auto) at(size_type dn) const { return static_cast<const Derived*>(this)->operator()(dn); }
+    FOR_Nx decltype(auto) at (size_type dn)      { return static_cast<Derived*>(this)->operator()(dn); }
+    FOR_N1 const T& at (size_type i) const { return getDataPointer_N1()[i]; }
+    FOR_N1       T& at (size_type i)       { return getDataPointer_N1()[i]; }
+
 protected:
     // MARK: constructors
     /** Constructor that takes the extents of the dimensions as a variable argument list */

@@ -18,7 +18,8 @@
 
 using namespace slb;
 
-void verifyBuffer(const HyperBufferBase<int, 3>& b)
+template<typename U>
+void verifyBuffer(const U& b)
 {
     REQUIRE (b.dim(0) == 3);
     REQUIRE (b.dim(1) == 2);

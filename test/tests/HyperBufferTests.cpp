@@ -38,9 +38,9 @@ int** VARNAME[] = { pointerDim1_0, pointerDim1_1, pointerDim1_2 };
 using namespace slb;
 
 // functions to test the integrity of the different variants throught the same API
-template<typename T> void testHyperBuffer1D_size4(HyperBufferBase<T, 1>& buffer);
-template<typename T> void testHyperBuffer2D_sizes2_4(HyperBufferBase<T, 2>& buffer);
-template<typename T> void testHyperBuffer3D_sizes3_3_8(HyperBufferBase<T, 3>& buffer);
+template<typename U> void testHyperBuffer1D_size4(HyperBufferBase<int, 1, U>& buffer);
+template<typename U> void testHyperBuffer2D_sizes2_4(HyperBufferBase<int, 2, U>& buffer);
+template<typename U> void testHyperBuffer3D_sizes3_3_8(HyperBufferBase<int, 3, U>& buffer);
 
 // helper lambda
 static auto fillWith3DSequence = [](auto& buffer)
@@ -321,8 +321,8 @@ TEST_CASE("HyperBuffer: Sub-Buffer Assignmemt")
 
 // MARK: - Data Verification
 
-template<typename T>
-void testHyperBuffer1D_size4(HyperBufferBase<T, 1>& buffer)
+template<typename U>
+void testHyperBuffer1D_size4(HyperBufferBase<int, 1, U>& buffer)
 {
     REQUIRE(buffer.dims() == std::array<int, 1>{4});
     REQUIRE(buffer.dim(0) == 4);
@@ -352,8 +352,8 @@ void testHyperBuffer1D_size4(HyperBufferBase<T, 1>& buffer)
     }
 }
 
-template<typename T>
-void testHyperBuffer2D_sizes2_4(HyperBufferBase<T, 2>& buffer)
+template<typename U>
+void testHyperBuffer2D_sizes2_4(HyperBufferBase<int, 2, U>& buffer)
 {
     REQUIRE(buffer.dims() == std::array<int, 2>{2, 4});
     REQUIRE(buffer.dim(1) == 4);
@@ -386,8 +386,8 @@ void testHyperBuffer2D_sizes2_4(HyperBufferBase<T, 2>& buffer)
     }
 }
 
-template<typename T>
-void testHyperBuffer3D_sizes3_3_8(HyperBufferBase<T, 3>& buffer)
+template<typename U>
+void testHyperBuffer3D_sizes3_3_8(HyperBufferBase<int, 3, U>& buffer)
 {
     REQUIRE(buffer.dims() == std::array<int, 3>{3, 3, 8});
     buffer[0][1][0] = -1;
