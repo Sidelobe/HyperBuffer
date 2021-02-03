@@ -10,7 +10,7 @@
 #include <array>
 #include <vector>
 
-#include "HyperBufferBase.hpp"
+#include "IHyperBuffer.hpp"
 #include "TemplateUtils.hpp"
 #include "BufferGeometry.hpp"
 
@@ -19,12 +19,12 @@ namespace slb
 
 // MARK: - HyperBufferPreAllocFlat - manages existing 1D data
 template<typename T, int N>
-class HyperBufferPreAllocFlat : public HyperBufferBase<T, N, HyperBufferPreAllocFlat<T, N>>
+class HyperBufferPreAllocFlat : public IHyperBuffer<T, N, HyperBufferPreAllocFlat<T, N>>
 {
-    using typename HyperBufferBase<T, N, HyperBufferPreAllocFlat>::pointer_type;
-    using typename HyperBufferBase<T, N, HyperBufferPreAllocFlat>::const_pointer_type;
-    using typename HyperBufferBase<T, N, HyperBufferPreAllocFlat>::size_type;
-    using HyperBufferBase<T, N, HyperBufferPreAllocFlat>::STL;
+    using typename IHyperBuffer<T, N, HyperBufferPreAllocFlat>::pointer_type;
+    using typename IHyperBuffer<T, N, HyperBufferPreAllocFlat>::const_pointer_type;
+    using typename IHyperBuffer<T, N, HyperBufferPreAllocFlat>::size_type;
+    using IHyperBuffer<T, N, HyperBufferPreAllocFlat>::STL;
 
 public:
     /** Constructor that takes the extents of the dimensions as a variable argument list */
@@ -61,7 +61,7 @@ private:
     T* getDataPointer_N1()                       override { return *m_pointers.data(); }
 
 private:
-    friend HyperBufferBase<T, N, HyperBufferPreAllocFlat<T, N>>;
+    friend IHyperBuffer<T, N, HyperBufferPreAllocFlat<T, N>>;
 
     BufferGeometry<N> m_bufferGeometry;
     T* m_externalData;
@@ -71,12 +71,12 @@ private:
 // ====================================================================================================================
 // MARK: - HyperBuffer - owns its own data
 template<typename T, int N>
-class HyperBuffer : public HyperBufferBase<T, N, HyperBuffer<T, N>>
+class HyperBuffer : public IHyperBuffer<T, N, HyperBuffer<T, N>>
 {
-    using typename HyperBufferBase<T, N, HyperBuffer<T, N>>::size_type;
-    using typename HyperBufferBase<T, N, HyperBuffer<T, N>>::pointer_type;
-    using typename HyperBufferBase<T, N, HyperBuffer<T, N>>::const_pointer_type;
-    using HyperBufferBase<T, N, HyperBuffer<T, N>>::STL;
+    using typename IHyperBuffer<T, N, HyperBuffer<T, N>>::size_type;
+    using typename IHyperBuffer<T, N, HyperBuffer<T, N>>::pointer_type;
+    using typename IHyperBuffer<T, N, HyperBuffer<T, N>>::const_pointer_type;
+    using IHyperBuffer<T, N, HyperBuffer<T, N>>::STL;
 
 public:
     /** Constructor that takes the extents of the dimensions as a variable argument list */
@@ -116,7 +116,7 @@ private:
           T* getDataPointer_N1()                 override { return *m_pointers.data(); }
 
 private:
-    friend HyperBufferBase<T, N, HyperBuffer<T, N>>;
+    friend IHyperBuffer<T, N, HyperBuffer<T, N>>;
 
     BufferGeometry<N> m_bufferGeometry;
     
@@ -130,11 +130,11 @@ private:
 // ====================================================================================================================
 // MARK: - HyperBufferPreAlloc - manages existing multi-dimensional data (wrapper)
 template<typename T, int N>
-class HyperBufferPreAlloc : public HyperBufferBase<T, N, HyperBufferPreAlloc<T, N>>
+class HyperBufferPreAlloc : public IHyperBuffer<T, N, HyperBufferPreAlloc<T, N>>
 {
-    using typename HyperBufferBase<T, N, HyperBufferPreAlloc<T, N>>::size_type;
-    using typename HyperBufferBase<T, N, HyperBufferPreAlloc<T, N>>::pointer_type;
-    using typename HyperBufferBase<T, N, HyperBufferPreAlloc<T, N>>::const_pointer_type;
+    using typename IHyperBuffer<T, N, HyperBufferPreAlloc<T, N>>::size_type;
+    using typename IHyperBuffer<T, N, HyperBufferPreAlloc<T, N>>::pointer_type;
+    using typename IHyperBuffer<T, N, HyperBufferPreAlloc<T, N>>::const_pointer_type;
 
 public:
     /** Constructor that takes the extents of the dimensions as a variable argument list */
@@ -179,7 +179,7 @@ private:
     T* getDataPointer_N1()                       override { return reinterpret_cast<T*>(m_externalData); }
     
 private:
-    friend HyperBufferBase<T, N, HyperBufferPreAlloc<T, N>>;
+    friend IHyperBuffer<T, N, HyperBufferPreAlloc<T, N>>;
     
     std::array<int, N> m_dimensionExtents;
     pointer_type m_externalData;
