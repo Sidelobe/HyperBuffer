@@ -37,11 +37,6 @@ int** VARNAME[] = { pointerDim1_0, pointerDim1_1, pointerDim1_2 };
 
 using namespace slb;
 
-// functions to test the integrity of the different variants throught the same API
-template<typename U> void testHyperBuffer1D_size4(IHyperBuffer<int, 1, U>& buffer);
-template<typename U> void testHyperBuffer2D_sizes2_4(IHyperBuffer<int, 2, U>& buffer);
-template<typename U> void testHyperBuffer3D_sizes3_3_8(IHyperBuffer<int, 3, U>& buffer);
-
 // helper lambda
 static auto fillWith3DSequence = [](auto& buffer)
 {
@@ -55,33 +50,110 @@ static auto fillWith3DSequence = [](auto& buffer)
     }
 };
 
-
 TEST_CASE("HyperBuffer Tests - Construction and Data Access")
 {
-    // test operator() read & write (cannot do this through base class API)
+    // test read & write
     auto verify1D = [](auto& buffer)
     {
-        testHyperBuffer1D_size4(buffer);
-        buffer[2] = 666;
-        REQUIRE(buffer.at(2) == 666);
+        REQUIRE(buffer.dims() == std::array<int, 1>{4});
+        REQUIRE(buffer.dim(0) == 4);
+        buffer[0] = 0;
+        buffer[1] = -1;
+        buffer[2] = -2;
+        buffer[3] = -3;
+        REQUIRE(buffer.data() != nullptr);
+        int* rawData = buffer.data();
+        REQUIRE(rawData[0] == 0);
+        REQUIRE(rawData[1] == -1);
+        REQUIRE(rawData[2] == -2);
+        REQUIRE(rawData[3] == -3);
+        
+        rawData[1] = -99;
+        REQUIRE(rawData[1] == -99);
+
+        REQUIRE(buffer.at(1) == -99);
         buffer.at(2) = -2;
         REQUIRE(buffer[2] == -2);
+        
+        { // Verify all access operations do not allocate memory
+            ScopedMemorySentinel sentinel;
+            buffer[2] = -2;
+            buffer.at(3) = -888;
+            int d0 = buffer.dim(0); UNUSED(d0);
+            const int* dims = buffer.dims().data(); UNUSED(dims);
+            auto dimsArray = buffer.dims(); UNUSED(dimsArray);
+            int* raw = buffer.data(); UNUSED(raw);
+            const auto& constBuffer = buffer;
+            const int* rawConst = constBuffer.data(); UNUSED(rawConst);
+        }
     };
     auto verify2D = [](auto& buffer)
     {
-        testHyperBuffer2D_sizes2_4(buffer);
-        buffer[1][2] = 666;
-        REQUIRE(buffer.at(1, 2) == 666);
+        REQUIRE(buffer.dims() == std::array<int, 2>{2, 4});
+        REQUIRE(buffer.dim(1) == 4);
+        buffer[0][0] = 0;
+        buffer[0][1] = -1;
+        buffer[0][2] = -2;
+        buffer[0][3] = -3;
+        buffer[1][0] = -10;
+        buffer[1][1] = -11;
+        buffer[1][2] = -22;
+        buffer[1][3] = -33;
+        REQUIRE(buffer.data() != nullptr);
+        int** rawData = buffer.data();
+        REQUIRE(rawData[0][0] == 0);
+        REQUIRE(rawData[0][1] == -1);
+        REQUIRE(rawData[0][2] == -2);
+        REQUIRE(rawData[0][3] == -3);
+        REQUIRE(rawData[1][0] == -10);
+        REQUIRE(rawData[1][1] == -11);
+        REQUIRE(rawData[1][2] == -22);
+        REQUIRE(rawData[1][3] == -33);
+        
+        REQUIRE(buffer.at(1, 3) == -33);
         buffer.at(1, 2) = -2;
         REQUIRE(buffer[1][2] == -2);
+        
+        { // Verify all access operations do not allocate memory
+            ScopedMemorySentinel sentinel;
+            buffer[0][2] = -2;
+            int d0 = buffer.dim(0); UNUSED(d0);
+            const int* dims = buffer.dims().data(); UNUSED(dims);
+            auto dimsArray = buffer.dims(); UNUSED(dimsArray);
+            int** raw = buffer.data(); UNUSED(raw);
+        }
     };
     auto verify3D = [](auto& buffer)
     {
-        testHyperBuffer3D_sizes3_3_8(buffer);
-        buffer[1][2][6] = 666;
-        REQUIRE(buffer.at(1, 2, 6) == 666);
-        buffer.at(1, 2, 6) = -22;
-        REQUIRE(buffer[1][2][6] == -22);
+        REQUIRE(buffer.dims() == std::array<int, 3>{3, 3, 8});
+        buffer[0][1][0] = -1;
+        buffer[0][2][0] = -2;
+        buffer[1][0][6] = -10;
+        buffer[1][1][6] = -11;
+        buffer[1][2][6] = -22;
+        buffer[2][2][6] = -33;
+        REQUIRE(buffer.data() != nullptr);
+        int*** rawData = buffer.data();
+        REQUIRE(rawData[0][1][0] == -1);
+        REQUIRE(rawData[0][2][0] == -2);
+        REQUIRE(rawData[1][0][6] == -10);
+        REQUIRE(rawData[1][1][6] == -11);
+        REQUIRE(rawData[1][2][6] == -22);
+        REQUIRE(rawData[2][2][6] == -33);
+        
+        REQUIRE(buffer.at(2, 2, 6) == -33);
+        buffer.at(1, 2, 6) = 666;
+        REQUIRE(buffer[1][2][6] == 666);
+        { // Verify all access operations do not allocate memory
+            ScopedMemorySentinel sentinel;
+            buffer[0][2][0] = -2;
+            int d0 = buffer.dim(0); UNUSED(d0);
+            const int* dimsPtr = buffer.dims().data(); UNUSED(dimsPtr);
+            auto dimsArray = buffer.dims(); UNUSED(dimsArray);
+            int*** raw = buffer.data();     UNUSED(raw);
+            const auto& constBuffer = buffer;
+            const int* const* const* rawConst = constBuffer.data(); UNUSED(rawConst);
+        }
     };
     
     SECTION("Owning") {
@@ -182,6 +254,25 @@ TEST_CASE("HyperBuffer ctor: different dimension variants")
     }
 }
 
+TEST_CASE("HyperBuffer use non-primitive data types")
+{
+    struct UserType
+    {
+        int index;
+        std::string tag;
+        std::vector<float> data;
+    };
+    
+    HyperBuffer<UserType, 3> userTypeCube(3, 2, 6);
+    
+    userTypeCube.at(0, 0, 1) = { 99, "myTag", {1.2f, 2.3f, 3.3f}};
+    UserType myTypeElement =  userTypeCube[0][0][1];
+    
+    REQUIRE(myTypeElement.index == 99);
+    REQUIRE(myTypeElement.tag == "myTag");
+    REQUIRE(myTypeElement.data == std::vector<float>{1.2f, 2.3f, 3.3f});
+}
+
 TEST_CASE("HyperBuffer const correctness")
 {
     auto verify = [](auto& buffer)
@@ -243,12 +334,12 @@ TEST_CASE("HyperBuffer const correctness")
     }
 }
 
-TEST_CASE("HyperBuffer: sub-buffer construction & operator() access")
+TEST_CASE("HyperBuffer: sub-buffer construction & at() access")
 {
     // assumes a {3, 3, 8} buffer
     auto verify = [](auto& buffer)
     {
-        // RW Access to data via operator()
+        // RW Access to data via at()
         REQUIRE(buffer.at(0, 1, 5) == 13);
         buffer.at(0, 1, 5) = -13;
         REQUIRE(buffer.at(0, 1, 5) == -13);
@@ -317,102 +408,4 @@ TEST_CASE("HyperBuffer: Sub-Buffer Assignmemt")
     
     //TODO: Sub-Buffer assigment
     //buffer.at(0,0) = bufferData;
-}
-
-// MARK: - Data Verification
-
-template<typename U>
-void testHyperBuffer1D_size4(IHyperBuffer<int, 1, U>& buffer)
-{
-    REQUIRE(buffer.dims() == std::array<int, 1>{4});
-    REQUIRE(buffer.dim(0) == 4);
-    buffer[0] = 0;
-    buffer[1] = -1;
-    buffer[2] = -2;
-    buffer[3] = -3;
-    REQUIRE(buffer.data() != nullptr);
-    int* rawData = buffer.data();
-    REQUIRE(rawData[0] == 0);
-    REQUIRE(rawData[1] == -1);
-    REQUIRE(rawData[2] == -2);
-    REQUIRE(rawData[3] == -3);
-    
-    rawData[1] = -99;
-    REQUIRE(rawData[1] == -99);
-    
-    { // Verify all access operations do not allocate memory
-        ScopedMemorySentinel sentinel;
-        buffer[2] = -2;
-        int d0 = buffer.dim(0); UNUSED(d0);
-        const int* dims = buffer.dims().data(); UNUSED(dims);
-        auto dimsArray = buffer.dims(); UNUSED(dimsArray);
-        int* raw = buffer.data(); UNUSED(raw);
-        const auto& constBuffer = buffer;
-        const int* rawConst = constBuffer.data(); UNUSED(rawConst);
-    }
-}
-
-template<typename U>
-void testHyperBuffer2D_sizes2_4(IHyperBuffer<int, 2, U>& buffer)
-{
-    REQUIRE(buffer.dims() == std::array<int, 2>{2, 4});
-    REQUIRE(buffer.dim(1) == 4);
-    buffer[0][0] = 0;
-    buffer[0][1] = -1;
-    buffer[0][2] = -2;
-    buffer[0][3] = -3;
-    buffer[1][0] = -10;
-    buffer[1][1] = -11;
-    buffer[1][2] = -22;
-    buffer[1][3] = -33;
-    REQUIRE(buffer.data() != nullptr);
-    int** rawData = buffer.data();
-    REQUIRE(rawData[0][0] == 0);
-    REQUIRE(rawData[0][1] == -1);
-    REQUIRE(rawData[0][2] == -2);
-    REQUIRE(rawData[0][3] == -3);
-    REQUIRE(rawData[1][0] == -10);
-    REQUIRE(rawData[1][1] == -11);
-    REQUIRE(rawData[1][2] == -22);
-    REQUIRE(rawData[1][3] == -33);
-    
-    { // Verify all access operations do not allocate memory
-        ScopedMemorySentinel sentinel;
-        buffer[0][2] = -2;
-        int d0 = buffer.dim(0); UNUSED(d0);
-        const int* dims = buffer.dims().data(); UNUSED(dims);
-        auto dimsArray = buffer.dims(); UNUSED(dimsArray);
-        int** raw = buffer.data(); UNUSED(raw);
-    }
-}
-
-template<typename U>
-void testHyperBuffer3D_sizes3_3_8(IHyperBuffer<int, 3, U>& buffer)
-{
-    REQUIRE(buffer.dims() == std::array<int, 3>{3, 3, 8});
-    buffer[0][1][0] = -1;
-    buffer[0][2][0] = -2;
-    buffer[1][0][6] = -10;
-    buffer[1][1][6] = -11;
-    buffer[1][2][6] = -22;
-    buffer[2][2][6] = -33;
-    REQUIRE(buffer.data() != nullptr);
-    int*** rawData = buffer.data();
-    REQUIRE(rawData[0][1][0] == -1);
-    REQUIRE(rawData[0][2][0] == -2);
-    REQUIRE(rawData[1][0][6] == -10);
-    REQUIRE(rawData[1][1][6] == -11);
-    REQUIRE(rawData[1][2][6] == -22);
-    REQUIRE(rawData[2][2][6] == -33);
-    
-    { // Verify all access operations do not allocate memory
-        ScopedMemorySentinel sentinel;
-        buffer[0][2][0] = -2;
-        int d0 = buffer.dim(0); UNUSED(d0);
-        const int* dimsPtr = buffer.dims().data(); UNUSED(dimsPtr);
-        auto dimsArray = buffer.dims(); UNUSED(dimsArray);
-        int*** raw = buffer.data();     UNUSED(raw);
-        const auto& constBuffer = buffer;
-        const int* const* const* rawConst = constBuffer.data(); UNUSED(rawConst);
-    }
 }
