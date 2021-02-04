@@ -14,7 +14,7 @@
 The main use case for this container is to hold dynamically-allocated N-dimensional datasets in memory and provide convenient access to it, while minimizing performance/memory overhead and avoid unnecessary dynamic allocation.
 
 ## Usage Example
-```
+```cpp
 HyperBuffer<float, 2> buffer2D (2, 5);
 
 float element01 = buffer2D[0][1];
