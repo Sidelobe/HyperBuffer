@@ -210,6 +210,16 @@ TEST_CASE("HyperBuffer Tests - Construction and Data Access")
         std::array<int, 3> dims  {3, 3, 8};
         HyperBufferViewMD<int, 3> bufferFromStdArray(multiDimData, dims);
         verify3D(bufferFromStdArray);
+        
+        { // Verify .at() operations do not allocate memory for HyperBufferViewMD
+            ScopedMemorySentinel sentinel;
+            buffer2D.at(1, 2) = -1;
+            int a = buffer2D.at(1, 2); UNUSED(a);
+            auto aa = buffer2D.at(1); UNUSED(aa);
+            buffer3D.at(1, 2, 0) = -888;
+            int b = buffer3D.at(1, 2, 0); UNUSED(b);
+            auto bb = buffer3D.at(1, 2); UNUSED(bb);
+        }
     }
 }
 
