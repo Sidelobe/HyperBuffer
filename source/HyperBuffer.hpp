@@ -117,9 +117,9 @@ private:
     }
     
     const_pointer_type  getDataPointer_Nx() const override { return reinterpret_cast<const_pointer_type>(m_pointers.data()); }
-    pointer_type getDataPointer_Nx()             override { return reinterpret_cast<pointer_type>(m_pointers.data()); }
-    const T* getDataPointer_N1()           const override { return *m_pointers.data(); }
-    T* getDataPointer_N1()                       override { return *m_pointers.data(); }
+           pointer_type getDataPointer_Nx()       override { return reinterpret_cast<pointer_type>(m_pointers.data()); }
+               const T* getDataPointer_N1() const override { return *m_pointers.data(); }
+                     T* getDataPointer_N1()       override { return *m_pointers.data(); }
     
 private:
     friend IHyperBuffer<T, N, HyperBufferView<T, N>>;
@@ -177,7 +177,7 @@ private:
     }
 
     const_pointer_type getDataPointer_Nx() const override { return m_externalData; }
-    pointer_type       getDataPointer_Nx()       override { return m_externalData; }
+         pointer_type  getDataPointer_Nx()       override { return m_externalData; }
               const T* getDataPointer_N1() const override { return reinterpret_cast<const T*>(m_externalData); }
                     T* getDataPointer_N1()       override { return reinterpret_cast<T*>(m_externalData); }
     
