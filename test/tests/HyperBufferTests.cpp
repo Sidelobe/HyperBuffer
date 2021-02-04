@@ -38,9 +38,9 @@ int** VARNAME[] = { pointerDim1_0, pointerDim1_1, pointerDim1_2 };
 using namespace slb;
 
 // functions to test the integrity of the different variants throught the same API
-template<typename T> void testHyperBuffer1D_size4(HyperBufferBase<T, 1>& buffer);
-template<typename T> void testHyperBuffer2D_sizes2_4(HyperBufferBase<T, 2>& buffer);
-template<typename T> void testHyperBuffer3D_sizes3_3_8(HyperBufferBase<T, 3>& buffer);
+template<typename U> void testHyperBuffer1D_size4(IHyperBuffer<int, 1, U>& buffer);
+template<typename U> void testHyperBuffer2D_sizes2_4(IHyperBuffer<int, 2, U>& buffer);
+template<typename U> void testHyperBuffer3D_sizes3_3_8(IHyperBuffer<int, 3, U>& buffer);
 
 // helper lambda
 static auto fillWith3DSequence = [](auto& buffer)
@@ -63,24 +63,24 @@ TEST_CASE("HyperBuffer Tests - Construction and Data Access")
     {
         testHyperBuffer1D_size4(buffer);
         buffer[2] = 666;
-        REQUIRE(buffer(2) == 666);
-        buffer(2) = -2;
+        REQUIRE(buffer.at(2) == 666);
+        buffer.at(2) = -2;
         REQUIRE(buffer[2] == -2);
     };
     auto verify2D = [](auto& buffer)
     {
         testHyperBuffer2D_sizes2_4(buffer);
         buffer[1][2] = 666;
-        REQUIRE(buffer(1, 2) == 666);
-        buffer(1, 2) = -2;
+        REQUIRE(buffer.at(1, 2) == 666);
+        buffer.at(1, 2) = -2;
         REQUIRE(buffer[1][2] == -2);
     };
     auto verify3D = [](auto& buffer)
     {
         testHyperBuffer3D_sizes3_3_8(buffer);
         buffer[1][2][6] = 666;
-        REQUIRE(buffer(1, 2, 6) == 666);
-        buffer(1, 2, 6) = -22;
+        REQUIRE(buffer.at(1, 2, 6) == 666);
+        buffer.at(1, 2, 6) = -22;
         REQUIRE(buffer[1][2][6] == -22);
     };
     
@@ -190,14 +190,14 @@ TEST_CASE("HyperBuffer const correctness")
         const auto& constBuffer = buffer;
         
         // verify data read access
-        REQUIRE(buffer(0, 0, 7) == 7);
-        REQUIRE(constBuffer(0, 0, 7) == 7);
+        REQUIRE(buffer.at(0, 0, 7) == 7);
+        REQUIRE(constBuffer.at(0, 0, 7) == 7);
 
         // static checks: verify we can assign to a const, but not to a non-const
-        static_assert(std::is_assignable<const int*&, decltype(constBuffer(0, 1).data())>::value == true, "Can assign to a const");
-        static_assert(std::is_assignable<int*&,       decltype(constBuffer(0, 1).data())>::value == false, "Cannot assign to a non-const");
-        static_assert(std::is_assignable<const int* const*&, decltype(constBuffer(2).data())>::value == true, "Can assign to a const");
-        static_assert(std::is_assignable<int**&,             decltype(constBuffer(2).data())>::value == false, "Cannot assign to a non-const");
+        static_assert(std::is_assignable<const int*&, decltype(constBuffer.at(0, 1).data())>::value == true, "Can assign to a const");
+        static_assert(std::is_assignable<int*&,       decltype(constBuffer.at(0, 1).data())>::value == false, "Cannot assign to a non-const");
+        static_assert(std::is_assignable<const int* const*&, decltype(constBuffer.at(2).data())>::value == true, "Can assign to a const");
+        static_assert(std::is_assignable<int**&,             decltype(constBuffer.at(2).data())>::value == false, "Cannot assign to a non-const");
         static_assert(std::is_assignable<const int*&,  decltype(constBuffer[0][0])>::value == true, "Can assign to a const");
         static_assert(std::is_assignable<int*&,        decltype(constBuffer[0][0])>::value == false, "Cannot assign to a non-const");
         static_assert(std::is_assignable<const int* const*&, decltype(constBuffer[0])>::value == true, "Can assign to a const");
@@ -211,11 +211,11 @@ TEST_CASE("HyperBuffer const correctness")
         static_assert(std::is_assignable<int* const* const*&, decltype(constBuffer.data())>::value == false, "Cannot assign to a non-const");
         static_assert(std::is_assignable<int***&,             decltype(constBuffer.data())>::value == false, "Cannot assign to a non-const");
 
-        static_assert(std::is_trivially_assignable<decltype(constBuffer(0, 0, 7)), int>::value == false, "Cannot write to a const");
+        static_assert(std::is_trivially_assignable<decltype(constBuffer.at(0, 0, 7)), int>::value == false, "Cannot write to a const");
         static_assert(std::is_trivially_assignable<decltype(constBuffer[0][0][7]), int>::value == false, "Cannot write to a const");
         static_assert(std::is_trivially_assignable<decltype(constBuffer.data()[0][0][7]), int>::value == false, "Cannot write to a const");
-        static_assert(std::is_trivially_assignable<decltype(constBuffer(0, 1).data()), int*>::value == false, "Cannot write to a const");
-        static_assert(std::is_trivially_assignable<decltype(constBuffer(1).data()), int*>::value == false, "Cannot write to a const");
+        static_assert(std::is_trivially_assignable<decltype(constBuffer.at(0, 1).data()), int*>::value == false, "Cannot write to a const");
+        static_assert(std::is_trivially_assignable<decltype(constBuffer.at(1).data()), int*>::value == false, "Cannot write to a const");
     };
 
     SECTION("owning") {
@@ -225,9 +225,9 @@ TEST_CASE("HyperBuffer const correctness")
         
         // Explicitly test a 1D owning, because above verify function only checks HyperBufferPreAllocFlat after being reduced to subBuffers
         const HyperBuffer<int, 1> constBuffer1D(4);
-        int a = constBuffer1D(2); (UNUSED(a));
-        static_assert(std::is_trivially_assignable<int&, decltype(constBuffer1D(1))>::value == true, "Can assign to a const");
-        static_assert(std::is_trivially_assignable<decltype(constBuffer1D(1)), int*>::value == false, "Cannot write to a const");
+        int a = constBuffer1D.at(2); (UNUSED(a));
+        static_assert(std::is_trivially_assignable<int&, decltype(constBuffer1D.at(1))>::value == true, "Can assign to a const");
+        static_assert(std::is_trivially_assignable<decltype(constBuffer1D.at(1)), int*>::value == false, "Cannot write to a const");
     }
     SECTION("prealloc flat") {
         int dataRaw1 [3*3*8];
@@ -249,15 +249,15 @@ TEST_CASE("HyperBuffer: sub-buffer construction & operator() access")
     auto verify = [](auto& buffer)
     {
         // RW Access to data via operator()
-        REQUIRE(buffer(0, 1, 5) == 13);
-        buffer(0, 1, 5) = -13;
-        REQUIRE(buffer(0, 1, 5) == -13);
-        buffer(0, 1, 5) = 13; // restore original value
+        REQUIRE(buffer.at(0, 1, 5) == 13);
+        buffer.at(0, 1, 5) = -13;
+        REQUIRE(buffer.at(0, 1, 5) == -13);
+        buffer.at(0, 1, 5) = 13; // restore original value
         
         // N-1 Sub-buffer -> 2D
         int subBufferIndex = GENERATE(0, 1, 2);
         
-        auto subBuffer = buffer(subBufferIndex);
+        auto subBuffer = buffer.at(subBufferIndex);
         REQUIRE(subBuffer.dims() == std::array<int, 2>{buffer.dim(1), buffer.dim(2)});
         int j = 0;
         for (int l=0; l < subBuffer.dim(0); ++l) {
@@ -268,7 +268,7 @@ TEST_CASE("HyperBuffer: sub-buffer construction & operator() access")
         
         // N-2 Sub-buffer -> 1D
         int subBufferIndex2 = 1; // just test one value
-        auto subBuffer2 = buffer(subBufferIndex, subBufferIndex2);
+        auto subBuffer2 = buffer.at(subBufferIndex, subBufferIndex2);
         REQUIRE(subBuffer2.dims() == std::array<int, 1>{buffer.dim(2)});
         j = 0;
         for (int m=0; m < subBuffer2.dim(0); ++m) {
@@ -299,7 +299,7 @@ TEST_CASE("HyperBuffer: sub-buffer construction & operator() access")
         
         { // Creating a subbuffer also does not allocate memory
             ScopedMemorySentinel sentinel;
-            auto subBuffer = buffer(1);
+            auto subBuffer = buffer.at(1);
         }
     }
 }
@@ -316,13 +316,13 @@ TEST_CASE("HyperBuffer: Sub-Buffer Assignmemt")
     bufferData[3] = -4;
     
     //TODO: Sub-Buffer assigment
-    //buffer(0,0) = bufferData;
+    //buffer.at(0,0) = bufferData;
 }
 
 // MARK: - Data Verification
 
-template<typename T>
-void testHyperBuffer1D_size4(HyperBufferBase<T, 1>& buffer)
+template<typename U>
+void testHyperBuffer1D_size4(IHyperBuffer<int, 1, U>& buffer)
 {
     REQUIRE(buffer.dims() == std::array<int, 1>{4});
     REQUIRE(buffer.dim(0) == 4);
@@ -352,8 +352,8 @@ void testHyperBuffer1D_size4(HyperBufferBase<T, 1>& buffer)
     }
 }
 
-template<typename T>
-void testHyperBuffer2D_sizes2_4(HyperBufferBase<T, 2>& buffer)
+template<typename U>
+void testHyperBuffer2D_sizes2_4(IHyperBuffer<int, 2, U>& buffer)
 {
     REQUIRE(buffer.dims() == std::array<int, 2>{2, 4});
     REQUIRE(buffer.dim(1) == 4);
@@ -386,8 +386,8 @@ void testHyperBuffer2D_sizes2_4(HyperBufferBase<T, 2>& buffer)
     }
 }
 
-template<typename T>
-void testHyperBuffer3D_sizes3_3_8(HyperBufferBase<T, 3>& buffer)
+template<typename U>
+void testHyperBuffer3D_sizes3_3_8(IHyperBuffer<int, 3, U>& buffer)
 {
     REQUIRE(buffer.dims() == std::array<int, 3>{3, 3, 8});
     buffer[0][1][0] = -1;
