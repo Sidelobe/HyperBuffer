@@ -41,9 +41,9 @@ using namespace slb;
 static auto fillWith3DSequence = [](auto& buffer)
 {
     int i = 0;
-    for (int k=0; k < buffer.dim(0); ++k) {
-        for (int l=0; l < buffer.dim(1); ++l) {
-            for (int m=0; m < buffer.dim(2); ++m) {
+    for (int k=0; k < buffer.size(0); ++k) {
+        for (int l=0; l < buffer.size(1); ++l) {
+            for (int m=0; m < buffer.size(2); ++m) {
                 buffer[k][l][m] = i++;
             }
         }
@@ -55,8 +55,8 @@ TEST_CASE("HyperBuffer Tests - Construction and Data Access")
     // test read & write
     auto verify1D = [](auto& buffer)
     {
-        REQUIRE(buffer.dims() == std::array<int, 1>{4});
-        REQUIRE(buffer.dim(0) == 4);
+        REQUIRE(buffer.sizes() == std::array<int, 1>{4});
+        REQUIRE(buffer.size(0) == 4);
         buffer[0] = 0;
         buffer[1] = -1;
         buffer[2] = -2;
@@ -79,9 +79,9 @@ TEST_CASE("HyperBuffer Tests - Construction and Data Access")
             ScopedMemorySentinel sentinel;
             buffer[2] = -2;
             buffer.at(3) = -888;
-            int d0 = buffer.dim(0); UNUSED(d0);
-            const int* dims = buffer.dims().data(); UNUSED(dims);
-            auto dimsArray = buffer.dims(); UNUSED(dimsArray);
+            int d0 = buffer.size(0); UNUSED(d0);
+            const int* dims = buffer.sizes().data(); UNUSED(dims);
+            auto dimsArray = buffer.sizes(); UNUSED(dimsArray);
             int* raw = buffer.data(); UNUSED(raw);
             const auto& constBuffer = buffer;
             const int* rawConst = constBuffer.data(); UNUSED(rawConst);
@@ -89,8 +89,8 @@ TEST_CASE("HyperBuffer Tests - Construction and Data Access")
     };
     auto verify2D = [](auto& buffer)
     {
-        REQUIRE(buffer.dims() == std::array<int, 2>{2, 4});
-        REQUIRE(buffer.dim(1) == 4);
+        REQUIRE(buffer.sizes() == std::array<int, 2>{2, 4});
+        REQUIRE(buffer.size(1) == 4);
         buffer[0][0] = 0;
         buffer[0][1] = -1;
         buffer[0][2] = -2;
@@ -117,15 +117,15 @@ TEST_CASE("HyperBuffer Tests - Construction and Data Access")
         { // Verify all access operations do not allocate memory
             ScopedMemorySentinel sentinel;
             buffer[0][2] = -2;
-            int d0 = buffer.dim(0); UNUSED(d0);
-            const int* dims = buffer.dims().data(); UNUSED(dims);
-            auto dimsArray = buffer.dims(); UNUSED(dimsArray);
+            int d0 = buffer.size(0); UNUSED(d0);
+            const int* dims = buffer.sizes().data(); UNUSED(dims);
+            auto dimsArray = buffer.sizes(); UNUSED(dimsArray);
             int** raw = buffer.data(); UNUSED(raw);
         }
     };
     auto verify3D = [](auto& buffer)
     {
-        REQUIRE(buffer.dims() == std::array<int, 3>{3, 3, 8});
+        REQUIRE(buffer.sizes() == std::array<int, 3>{3, 3, 8});
         buffer[0][1][0] = -1;
         buffer[0][2][0] = -2;
         buffer[1][0][6] = -10;
@@ -147,9 +147,9 @@ TEST_CASE("HyperBuffer Tests - Construction and Data Access")
         { // Verify all access operations do not allocate memory
             ScopedMemorySentinel sentinel;
             buffer[0][2][0] = -2;
-            int d0 = buffer.dim(0); UNUSED(d0);
-            const int* dimsPtr = buffer.dims().data(); UNUSED(dimsPtr);
-            auto dimsArray = buffer.dims(); UNUSED(dimsArray);
+            int d0 = buffer.size(0); UNUSED(d0);
+            const int* dimsPtr = buffer.sizes().data(); UNUSED(dimsPtr);
+            auto dimsArray = buffer.sizes(); UNUSED(dimsArray);
             int*** raw = buffer.data();     UNUSED(raw);
             const auto& constBuffer = buffer;
             const int* const* const* rawConst = constBuffer.data(); UNUSED(rawConst);
@@ -230,37 +230,37 @@ TEST_CASE("HyperBuffer ctor: different dimension variants")
     
     SECTION("owning") {
         HyperBuffer<int, 2> hostClass(dim1, dim0); // calls int ctor
-        REQUIRE(hostClass.dims() == std::array<int, 2>({3, 5}));
+        REQUIRE(hostClass.sizes() == std::array<int, 2>({3, 5}));
         std::array<int, 2> dimArray = {3, 5};
         HyperBuffer<int, 2> hostClass2(dimArray); // calls array ctor
-        REQUIRE(hostClass2.dims() == std::array<int, 2>({3, 5}));
+        REQUIRE(hostClass2.sizes() == std::array<int, 2>({3, 5}));
         std::vector<int> dimVector = {3, 5};
         HyperBuffer<int, 2> hostClass3(dimVector); // calls int* ctor
-        REQUIRE(hostClass3.dims() == std::array<int, 2>({3, 5}));
+        REQUIRE(hostClass3.sizes() == std::array<int, 2>({3, 5}));
     }
     
     SECTION("flat view") {
         int data [32];
         HyperBufferView<int, 2> hostClass(data, dim1, dim0); // calls int ctor
-        REQUIRE(hostClass.dims() == std::array<int, 2>({3, 5}));
+        REQUIRE(hostClass.sizes() == std::array<int, 2>({3, 5}));
         std::array<int, 2> dimArray = {3, 5};
         HyperBufferView<int, 2> hostClass2(data, dimArray); // calls array ctor
-        REQUIRE(hostClass2.dims() == std::array<int, 2>({3, 5}));
+        REQUIRE(hostClass2.sizes() == std::array<int, 2>({3, 5}));
         std::vector<int> dimVector = {3, 5};
         HyperBufferView<int, 2> hostClass3(data, dimVector); // calls int* ctor
-        REQUIRE(hostClass3.dims() == std::array<int, 2>({3, 5}));
+        REQUIRE(hostClass3.sizes() == std::array<int, 2>({3, 5}));
     }
     
     SECTION("multidim view") {
         int* data [32];
         HyperBufferViewMD<int, 2> hostClass(data, dim1, dim0); // calls int ctor
-        REQUIRE(hostClass.dims() == std::array<int, 2>({3, 5}));
+        REQUIRE(hostClass.sizes() == std::array<int, 2>({3, 5}));
         std::array<int, 2> dimArray = {3, 5};
         HyperBufferViewMD<int, 2> hostClass2(data, dimArray); // calls array ctor
-        REQUIRE(hostClass2.dims() == std::array<int, 2>({3, 5}));
+        REQUIRE(hostClass2.sizes() == std::array<int, 2>({3, 5}));
         std::vector<int> dimVector = {3, 5};
         HyperBufferViewMD<int, 2> hostClass3(data, dimVector); // calls int* ctor
-        REQUIRE(hostClass3.dims() == std::array<int, 2>({3, 5}));
+        REQUIRE(hostClass3.sizes() == std::array<int, 2>({3, 5}));
     }
 }
 
@@ -359,21 +359,21 @@ TEST_CASE("HyperBuffer: sub-buffer construction & at() access")
         int subBufferIndex = GENERATE(0, 1, 2);
         
         auto subBuffer = buffer.at(subBufferIndex);
-        REQUIRE(subBuffer.dims() == std::array<int, 2>{buffer.dim(1), buffer.dim(2)});
+        REQUIRE(subBuffer.sizes() == std::array<int, 2>{buffer.size(1), buffer.size(2)});
         int j = 0;
-        for (int l=0; l < subBuffer.dim(0); ++l) {
-            for (int m=0; m < subBuffer.dim(1); ++m) {
-                REQUIRE(subBuffer[l][m] == buffer.dim(1) * buffer.dim(2) * subBufferIndex + j++);
+        for (int l=0; l < subBuffer.size(0); ++l) {
+            for (int m=0; m < subBuffer.size(1); ++m) {
+                REQUIRE(subBuffer[l][m] == buffer.size(1) * buffer.size(2) * subBufferIndex + j++);
             }
         }
         
         // N-2 Sub-buffer -> 1D
         int subBufferIndex2 = 1; // just test one value
         auto subBuffer2 = buffer.at(subBufferIndex, subBufferIndex2);
-        REQUIRE(subBuffer2.dims() == std::array<int, 1>{buffer.dim(2)});
+        REQUIRE(subBuffer2.sizes() == std::array<int, 1>{buffer.size(2)});
         j = 0;
-        for (int m=0; m < subBuffer2.dim(0); ++m) {
-            REQUIRE(subBuffer2[m] == buffer.dim(1) * buffer.dim(2) * subBufferIndex + buffer.dim(2) * subBufferIndex2 + j++);
+        for (int m=0; m < subBuffer2.size(0); ++m) {
+            REQUIRE(subBuffer2[m] == buffer.size(1) * buffer.size(2) * subBufferIndex + buffer.size(2) * subBufferIndex2 + j++);
         }
     };
     

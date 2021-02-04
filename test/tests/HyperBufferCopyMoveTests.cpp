@@ -21,9 +21,9 @@ using namespace slb;
 template<typename U>
 void verifyBuffer(const U& b)
 {
-    REQUIRE (b.dim(0) == 3);
-    REQUIRE (b.dim(1) == 2);
-    REQUIRE (b.dim(2) == 8);
+    REQUIRE (b.size(0) == 3);
+    REQUIRE (b.size(1) == 2);
+    REQUIRE (b.size(2) == 8);
     REQUIRE (b[1][0][5] == 333);
     REQUIRE (b[2][1][3] == -666);
 }

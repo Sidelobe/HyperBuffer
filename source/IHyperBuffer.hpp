@@ -48,8 +48,8 @@ public:
     virtual ~IHyperBuffer() = default;
     
     // MARK: dimension extents
-    virtual int dim(int i) const = 0;
-    virtual const std::array<int, N>& dims() const = 0;
+    virtual                   int size(int i) const = 0;
+    virtual const std::array<int, N>& sizes() const = 0;
 
     // MARK: data() -- raw pointer to beginning of underlying storage (pointers or data, depending on dimension)
     FOR_Nx const_pointer_type data() const { return getDataPointer_Nx(); }
