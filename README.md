@@ -20,8 +20,10 @@ HyperBuffer<float, 2> buffer2D (2, 5);
 float element01 = buffer2D[0][1];
 float element14 = buffer2D.at(1, 4);
 float** rawPointer = buffer2D.data();
+float* outerDimension0 = buffer2D[0];
 
 HyperBufferView<float, 1> subBuffer = buffer2D.at(1);
+float* outerDimension1 = subBuffer.data();
 
 // Any number of dimensions
 HyperBuffer<int, 8> buffer8D (3, 4, 3, 1, 6, 256, 11, 7); 
@@ -65,7 +67,7 @@ In addition to information about the geometry (dimensions and extent thereof), t
 |-------------|---------------|--------------------|----------------|:---------------:|:--------------:|
 | `.data()` | access the start of highest dimension of the data | raw pointer (e.g. `float***`) | non-allocating | non-allocating  | non-allocating |
 | `operator[.]` | access the N-1 sub-dimension at the given index; can be chained: `h[3][0][6]` | raw pointer  (e.g. `float**`) | non-allocating | non-allocating  | non-allocating |
-| `at(...)` | access data in any dimension (variables argument length): e.g. `h.at(3, 0, 6)` or `h.at(3, 0)`| N-x view to the data | **allocating** | **allocating**  | non-allocating |
+| `at(...)` | access data in any dimension (variable-length argument) | N-x view to the data | **allocating** | **allocating**  | non-allocating |
 
 While `HyperBufferMD` never allocates memory, you can see above that the `.at()` accessor allocates dynamic memory. This only happens *when accessing sub-dimensions* and is because a new `HyperBufferView` is constructed, which allocates memory for the pointers.
 
