@@ -35,32 +35,50 @@ The main use case for this container is to hold dynamically-allocated N-dimensio
 
 ## Design paradigms:
 
-* **data types**: defined at compile-time (template argument), identical for all dimensions
-* **number of dimensions**: defined at compile-time (template argument)
-* **extent of dimensions**: can be defined at **run-time**, but cannot be changed once the object is constructed: `HyperBuffer` is non-resizable.
+HyperBuffer is designed as a multi-dimensional extension to `std::array` and/or `std::vector`. However, it differs from those classes with in the 'points of commitment', i.e. the point at which certain parameters have to be specified:
 
->**Note**: For the time being, I've constrained all dimensions to be uniform, i.e. each 'slice' in a given dimension has equal length.
+|                          | `HyperBuffer`           | `std::array` | `std::vector` |
+|--------------------------|:-----------------------:|:------------:|:------------:|
+| element data type (T)    | compile-time            | compile-time | compile-time |
+| number of dimensions (N) | compile-time            | = 1          | = 1          |
+| extent of dimensions     | construction-time       | compile-time | run-time     |
 
-API features:
+`HyperBuffer` is a non-resizable container like `std::array`, however in contrast, the extent of the dimensions **can** be specified at runtime.
 
-* can provide a (multi-dimensional) raw pointer (e.g. `float***`) to highest-order or any sub-dimension
-* supports `operator[]` to access the top-most dimension - can be chained: `h[3][0][6]`
-* supports variadic `operator(...)` to allow access to any dimension: `h(3, 0, 6)` or `h(3, 0)`
+>**Note**: For the time being, dimensions are constrained to be uniform, i.e. each 'slice' in a given dimension has equal length and data type. This is crucial in realtime environments with a strict need for deterministic behaviour. 
 
-Memory management details:
+Design choices were carefully weighed with the following prime directive in mind: avoid dynamic memory allocation as much as possible. Thanks to the chosen memory model, dynamic memory allocation happens only during construction. Furthermore, the entire data and pointer memory is allocated in a single call (cf. detailed documentation in `/docu`), thereby avoiding memory fragmentation/churn.
 
-* no dynamic allocation after construction
+### API features & Memory Management:
+
+In addition to information about the geometry (dimensions and extent thereof), the API has several ways of accessing data:
+
+| function    | description   | return value       | `HyperBuffer`  | `HyperBufferView` | `HyperBufferMD` |
+|-------------|---------------|--------------------|----------------|:---------------:|:--------------:|
+| `.data()` | access the start of highest dimension of the data | raw pointer (e.g. `float***`) | non-allocating | non-allocating  | non-allocating |
+| `operator[.]` | access the N-1 sub-dimension at the given index; can be chained: `h[3][0][6]` | raw pointer  (e.g. `float**`) | non-allocating | non-allocating  | non-allocating |
+| `at(...)` | access data in any dimension (variables argument length): e.g. `h.at(3, 0, 6)` or `h.at(3, 0)`| N-x view to the data | **allocating** | **allocating**  | non-allocating |
+
+While `HyperBufferMD` never allocates memory, you can see above that the `.at()` accessor allocates dynamic memory. This only happens *when accessing sub-dimensions* and is because a new `HyperBufferView` is constructed, which allocates memory for the pointers.
+
+Further guarantees:
+* accessing data is always allocation-free
 * dynamic allocation-free move() semantics
 * (*planned*) alignment of the data (lowest-order/innermost dimension) can be specified ('owning' mode only)
  
 ### Data Storage / Ownership Variants
-There are 3 variants of `HyperBuffer`:
 
-1. `HyperBuffer`: internally allocates the memory for the dimensions it was configured for.
-1. `HyperBufferPreAlloc`: wraps around already-allocated multi-dimensional data and pointers. No dynamic memory allocation.
-1. `HyperBufferPreAllocFlat`: uses an already-allocated memory area for the data, but manages it using its internal memory model. Only allocates memory for the pointers.
+`HyperBuffer` comes in 3 incarnations that use different levels of ownership on the data. 
 
->**Note**: Behaviour on copy & move: `HyperBuffer` copies/moves the data like a normal object with data ownership. When copying `HyperBufferPreAlloc` and `HyperBufferPreAllocFlat`, however, the data is not duplicated - the copy references the original data as well.
+In multi-dimensional structures, we can differentiate between the memory required to store the pointers.
+
+|                     | ownership                                | use case                                                                                              |
+|---------------------|------------------------------------------|-------------------------------------------------------------------------------------------------------|
+| `HyperBuffer`       | owns/allocates pointers & data                     | Storing multi-dimensional data and providing a simple and safe API to it.                                                                                                      |
+| `HyperBufferView`   | owns pointers (static allocation!), externally-allocated data | View for existing data (contiguous 1D memory) - e.g. a view to a sub-dimension of `HyperBuffer`                                                                          |
+| `HyperBufferViewMD` | externally-allocated pointers & data | Wrapper for existing multi-dimensional data (e.g. `float**`); gives it the same API as `HyperBuffer` |
+
+>**Note**: Behaviour on copy & move: `HyperBuffer` copies/moves the data like a normal object with data ownership. When copying `HyperBufferViewMD ` and `HyperBufferView`, however, the data is not duplicated - the copy references the original data as well.
 
 ### Build Status / Quality Metrics
 
