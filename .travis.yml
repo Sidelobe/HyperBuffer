@@ -93,7 +93,7 @@ script:
           ./HyperBufferTest
           cd ..
           mkdir -p report
-          gcovr -r .. -f ../source --sonarqube -o report/coverage.xml  # Generate coverage report
+          gcovr -r .. -f ../source  --exclude-unreachable-branches --exclude-throw-branches --sonarqube -o report/coverage.xml  # Generate coverage report
           cd ..  # run sonar-scanner from repo root 
           sonar-scanner  
       else
