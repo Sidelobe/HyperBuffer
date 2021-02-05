@@ -20,7 +20,7 @@ In C++/C, there are two common ways of allocating a multi-dimensional data struc
 
 Essentially, with method \#2 we differentiate between the memory required for pointers and the memory used for the actual data, which is located at the lowest dimension. Allocating the memory for the pointers usually involves individual allocation on every dimension recursively.
 
-This also entails recursive (de-)allocation when copying or moving such a multidimensional data structure. For this reason, a linear memory model was chosen in this project, where both the data and all the pointers are stored linearly in a 'flat' array each.
+This also entails recursive (de-)allocation when copying or moving such a multi-dimensional data structure. For this reason, a **linear memory model** was chosen in this project, where both the data and all the pointers are stored linearly in a 'flat' array each.
 
 This way, only 2 one-dimensional arrays (or similar data structure) need be allocated, regardless of the order of dimensions: one for the data, and one for the pointers.
 
