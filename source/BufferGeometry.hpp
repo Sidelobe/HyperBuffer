@@ -28,13 +28,13 @@ class BufferGeometry
 public:
     /** Constructor that takes the extents of the dimensions as a variable argument list */
     template<typename... I>
-    explicit BufferGeometry(I... i) : m_dimensionExtents{i...}
+    explicit BufferGeometry(I... i) noexcept : m_dimensionExtents{i...}
     {
         static_assert(sizeof...(I) == N, "Incorrect number of arguments");
     }
     
     /** Constructor that takes the extents of the dimensions as a std::array */
-    explicit BufferGeometry(const std::array<int, N>& dimensionExtents) : m_dimensionExtents(dimensionExtents) {}
+    explicit BufferGeometry(const std::array<int, N>& dimensionExtents) noexcept : m_dimensionExtents(dimensionExtents) {}
     
     /** Constructor that takes the extents of the dimensions as a std::vector */
     explicit BufferGeometry(const std::vector<int>& dimensionExtents)
@@ -43,17 +43,17 @@ public:
         std::copy(dimensionExtents.begin(), dimensionExtents.end(), m_dimensionExtents.begin());
     }
 
-    const std::array<int, N>& getDimensionExtents() const { return m_dimensionExtents; }
-    const int* getDimensionExtentsPointer() const { return m_dimensionExtents.data(); }
+    const std::array<int, N>& getDimensionExtents() const noexcept { return m_dimensionExtents; }
+    const int* getDimensionExtentsPointer() const noexcept { return m_dimensionExtents.data(); }
     
     /** @return the number of required data entries (lowest-order dimension) given the configured geometry */
-    int getRequiredDataArraySize() const
+    int getRequiredDataArraySize() const noexcept
     {
         return StdArrayOperations::product(m_dimensionExtents);
     }
     
     /** @return the number of required pointer entries given the configured geometry */
-    int getRequiredPointerArraySize() const
+    int getRequiredPointerArraySize() const noexcept
     {
         return std::max(StdArrayOperations::sumOfCumulativeProductCapped(N-1, m_dimensionExtents), 1); // at least size 1
     }
@@ -101,7 +101,7 @@ public:
     
 private:
     template<typename T, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
-    int hookupHigherDimPointers(T** pointerArray, int arrayIndex, int dimIndex) const
+    int hookupHigherDimPointers(T** pointerArray, int arrayIndex, int dimIndex) const noexcept
     {
         if (dimIndex >= N-2) {
             return arrayIndex; // end recursion

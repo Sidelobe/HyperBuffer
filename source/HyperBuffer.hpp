@@ -46,7 +46,7 @@ public:
     }
     
     int size(int i) const override { ASSERT(i < N); return m_bufferGeometry.getDimensionExtents()[i]; }
-    const std::array<int, N>& sizes() const override { return m_bufferGeometry.getDimensionExtents(); }
+    const std::array<int, N>& sizes() const noexcept override { return m_bufferGeometry.getDimensionExtents(); }
     
 private:
     /** Build a (non-owning) N-1 HyperBuffer view to this Hyperbuffer's data */
@@ -66,10 +66,10 @@ private:
         return std::as_const(*this).createSubBufferView(index);
     }
 
-    const_pointer_type getDataPointer_Nx() const override { return reinterpret_cast<const_pointer_type>(m_pointers.data()); }
-          pointer_type getDataPointer_Nx()       override { return reinterpret_cast<pointer_type>(m_pointers.data()); }
-              const T* getDataPointer_N1() const override { return *m_pointers.data(); }
-                    T* getDataPointer_N1()       override { return *m_pointers.data(); }
+    const_pointer_type getDataPointer_Nx() const noexcept override { return reinterpret_cast<const_pointer_type>(m_pointers.data()); }
+          pointer_type getDataPointer_Nx()       noexcept override { return reinterpret_cast<pointer_type>(m_pointers.data()); }
+              const T* getDataPointer_N1() const noexcept override { return *m_pointers.data(); }
+                    T* getDataPointer_N1()       noexcept override { return *m_pointers.data(); }
 
 private:
     friend IHyperBuffer<T, N, HyperBuffer<T, N>>;
@@ -114,7 +114,7 @@ public:
     }
     
     int size(int i) const override { ASSERT(i < N); return m_bufferGeometry.getDimensionExtents()[i]; }
-    const std::array<int, N>& sizes() const override { return m_bufferGeometry.getDimensionExtents(); }
+    const std::array<int, N>& sizes() const noexcept override { return m_bufferGeometry.getDimensionExtents(); }
     
 private:
     /** Build a const N-1 HyperBuffer view to this Hyperbuffer's data */
@@ -131,10 +131,10 @@ private:
         return std::as_const(*this).createSubBufferView(index);
     }
     
-    const_pointer_type  getDataPointer_Nx() const override { return reinterpret_cast<const_pointer_type>(m_pointers.data()); }
-           pointer_type getDataPointer_Nx()       override { return reinterpret_cast<pointer_type>(m_pointers.data()); }
-               const T* getDataPointer_N1() const override { return *m_pointers.data(); }
-                     T* getDataPointer_N1()       override { return *m_pointers.data(); }
+    const_pointer_type  getDataPointer_Nx() const noexcept override { return reinterpret_cast<const_pointer_type>(m_pointers.data()); }
+           pointer_type getDataPointer_Nx()       noexcept override { return reinterpret_cast<pointer_type>(m_pointers.data()); }
+               const T* getDataPointer_N1() const noexcept override { return *m_pointers.data(); }
+                     T* getDataPointer_N1()       noexcept override { return *m_pointers.data(); }
     
 private:
     friend IHyperBuffer<T, N, HyperBufferView<T, N>>;
@@ -183,7 +183,7 @@ public:
     }
     
     int size(int i) const override { ASSERT(i < N); return m_dimensionExtents[i]; }
-    const std::array<int, N>& sizes() const override { return m_dimensionExtents; }
+    const std::array<int, N>& sizes() const noexcept override { return m_dimensionExtents; }
     
 private:
     /** Build a const N-1 HyperBuffer view to this Hyperbuffer's data */
@@ -199,10 +199,10 @@ private:
         return std::as_const(*this).createSubBufferView(index);
     }
 
-    const_pointer_type getDataPointer_Nx() const override { return m_externalData; }
-         pointer_type  getDataPointer_Nx()       override { return m_externalData; }
-              const T* getDataPointer_N1() const override { return reinterpret_cast<const T*>(m_externalData); }
-                    T* getDataPointer_N1()       override { return reinterpret_cast<T*>(m_externalData); }
+    const_pointer_type getDataPointer_Nx() const noexcept override { return m_externalData; }
+         pointer_type  getDataPointer_Nx()       noexcept override { return m_externalData; }
+              const T* getDataPointer_N1() const noexcept override { return reinterpret_cast<const T*>(m_externalData); }
+                    T* getDataPointer_N1()       noexcept override { return reinterpret_cast<T*>(m_externalData); }
     
 private:
     friend IHyperBuffer<T, N, HyperBufferViewMD<T, N>>;
