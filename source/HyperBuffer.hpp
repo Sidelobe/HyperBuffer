@@ -19,8 +19,14 @@ namespace slb
 
 template<typename T, int N> class HyperBufferView; // forward declaration
 
-
-// MARK: - HyperBuffer - owns its own data
+/**
+ *  HyperBuffer is a container for dynamically-allocated N-dimensional datasets. The extents of the dimensions have
+ *  to be supplied during construction. Memory for the pointers and the data is allocated separately (with  ownership).
+ *
+ *  - Template parameters: T=data type (e.g. float),  N=dimension (e.g. 3)
+ *
+ *  - Guarantees: Dynamic memory allocation only during construction and when calling .at()
+ */
 template<typename T, int N>
 class HyperBuffer : public IHyperBuffer<T, N, HyperBuffer<T, N>>
 {
@@ -79,7 +85,16 @@ private:
 
 
 // ====================================================================================================================
-// MARK: - HyperBufferView - owns only pointers to manage existing multidimensional data stored in a 1D buffer
+/**
+ *  A wrapper for existing HyperBuffer data, giving it the same API, but without data ownership. The extents of the
+ *  dimensions have to be supplied during construction. The pre-allocated data is expected to be in a
+ *  flat (one-dimensional), contiguous memory block. Pointer memory is allocated during construction and, unlike
+ *  data memory, is owned by a given instance of this class.
+ *
+ *  - Template parameters: T=data type (e.g. float),  N=dimension (e.g. 3)
+ *
+ *  - Guarantees: Dynamic memory allocation only during construction and when calling .at()
+ */
 template<typename T, int N>
 class HyperBufferView : public IHyperBuffer<T, N, HyperBufferView<T, N>>
 {
@@ -131,7 +146,15 @@ private:
 
 
 // ====================================================================================================================
-// MARK: - HyperBufferViewMD - manages existing multi-dimensional data (pure wrapper, owns neither pointers nor data)
+/**
+ *  A wrapper for existing multi-dimensional data (e.g. float**), giving it the same API as HyperBuffer. The extents
+ *  of the dimensions have to be supplied during construction. Both pointer and data memory are stored externally
+ *  (this class has no ownership).
+ *
+ *  - Template parameters: T=data type (e.g. float),  N=dimension (e.g. 3)
+ *
+ *  - Guarantees: Does not allocate any memory dynamically.
+ */
 template<typename T, int N>
 class HyperBufferViewMD : public IHyperBuffer<T, N, HyperBufferViewMD<T, N>>
 {

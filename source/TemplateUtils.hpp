@@ -39,13 +39,12 @@ namespace Assertions
 
 /**
  * NOTE: this assertion handler is constexpr - to allow its use inside constexpr functions.
- * The handler will still be evaluated at runtime, but t
+ * The handler will still be evaluated at runtime, but memory is only allocated IF the assertion is triggered.
  */
 static constexpr void handleAssert(const char* conditionAsText, bool condition, const char* file, int line, const char* message = "")
 {
     if (condition == false) {
-        throw std::runtime_error(std::string("Assertion failed: ") + conditionAsText + " (" +
-                                 file + ":" + std::to_string(line) + ") " + message);
+        throw std::runtime_error(std::string("Assertion failed: ") + conditionAsText + " (" + file + ":" + std::to_string(line) + ") " + message);
     }
 }
 } // namespace Assertions
