@@ -46,7 +46,7 @@ TEST_CASE("BufferGeometry Tests")
 
         float data [3*3] {0};
         constexpr int pointerDimensions = N-1;
-        float* pointers [VarArgOperations::sumOfCumulativeProductCapped(pointerDimensions, 3, 3)] {nullptr};
+        float* pointers [CompiletimeMath::sumOfCumulativeProductCapped(pointerDimensions, 3, 3)] {nullptr};
         REQUIRE(getRawArrayLength(pointers) == 3);
         bufferGeo.hookupPointerArrayToData(data, pointers);
         REQUIRE(pointers[0] == &data[bufferGeo.getDataArrayOffsetForHighestOrderSubDim(0)]);
@@ -60,9 +60,9 @@ TEST_CASE("BufferGeometry Tests")
         CHECK(bufferGeo.getDataArrayOffsetForHighestOrderSubDim(0) == 0);
         CHECK(bufferGeo.getDataArrayOffsetForHighestOrderSubDim(1) == 8);
 
-        float data [VarArgOperations::product(2, 4, 2)] {0};
+        float data [CompiletimeMath::product(2, 4, 2)] {0};
         constexpr int pointerDimensions = N-1;
-        float* pointers [VarArgOperations::sumOfCumulativeProductCapped(pointerDimensions, 2, 4, 2)] {nullptr};
+        float* pointers [CompiletimeMath::sumOfCumulativeProductCapped(pointerDimensions, 2, 4, 2)] {nullptr};
         REQUIRE(getRawArrayLength(pointers) == 10);
 
         bufferGeo.hookupPointerArrayToData(data, pointers);
@@ -106,9 +106,9 @@ TEST_CASE("BufferGeometry Tests")
         REQUIRE(bufferGeo.getRequiredDataArraySize() == 12);
         CHECK(bufferGeo.getDataArrayOffsetForHighestOrderSubDim(0) == 0);
 
-        float data [VarArgOperations::product(1, 3, 2, 2)] {0};
+        float data [CompiletimeMath::product(1, 3, 2, 2)] {0};
         constexpr int pointerDimensions = N-1;
-        float* pointers [VarArgOperations::sumOfCumulativeProductCapped(pointerDimensions, 1, 3, 2, 2)] {nullptr};
+        float* pointers [CompiletimeMath::sumOfCumulativeProductCapped(pointerDimensions, 1, 3, 2, 2)] {nullptr};
         REQUIRE(getRawArrayLength(pointers) == 10);
 
         bufferGeo.hookupPointerArrayToData(data, pointers);
@@ -151,9 +151,9 @@ TEST_CASE("BufferGeometry Tests")
         CHECK(bufferGeo.getDataArrayOffsetForHighestOrderSubDim(0) == 0);
         CHECK(bufferGeo.getDataArrayOffsetForHighestOrderSubDim(1) == 108);
 
-        float data [VarArgOperations::product(2, 3, 2, 3, 6)] {0};
+        float data [CompiletimeMath::product(2, 3, 2, 3, 6)] {0};
         constexpr int pointerDimensions = N-1;
-        float* pointers [VarArgOperations::sumOfCumulativeProductCapped(pointerDimensions, 2, 3, 2, 3, 6)] {nullptr};
+        float* pointers [CompiletimeMath::sumOfCumulativeProductCapped(pointerDimensions, 2, 3, 2, 3, 6)] {nullptr};
         REQUIRE(getRawArrayLength(pointers) == 56);
         REQUIRE(bufferGeo.getRequiredDataArraySize() == getRawArrayLength(data));
         REQUIRE(bufferGeo.getRequiredPointerArraySize() == getRawArrayLength(pointers));
@@ -263,9 +263,9 @@ TEST_CASE("BufferGeometry Tests")
 
             auto e = bufferGeo5.getDimensionExtents(); UNUSED(e);
            
-            float data [VarArgOperations::product(2, 3, 2, 3, 6)] {0};
+            float data [CompiletimeMath::product(2, 3, 2, 3, 6)] {0};
             constexpr int pointerDimensions = 4;
-            float* pointers [VarArgOperations::sumOfCumulativeProductCapped(pointerDimensions, 2, 3, 2, 3, 6)] {nullptr};
+            float* pointers [CompiletimeMath::sumOfCumulativeProductCapped(pointerDimensions, 2, 3, 2, 3, 6)] {nullptr};
             bufferGeo5.hookupPointerArrayToData(data, pointers);
 
             // dims as array rather than var arg
