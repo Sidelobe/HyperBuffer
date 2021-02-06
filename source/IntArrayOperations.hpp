@@ -27,7 +27,7 @@ namespace StdArrayOperations
 
 /** @see CompiletimeMath::product */
 template<std::size_t N>
-constexpr int product(const std::array<int, N>& array)
+constexpr int product(const std::array<int, N>& array) noexcept
 {
     return VarArgOperations::apply([](auto&&... args)
     {
@@ -37,7 +37,7 @@ constexpr int product(const std::array<int, N>& array)
 
 /** @see CompiletimeMath::productCapped */
 template<std::size_t N>
-constexpr int productCapped(int cap, const std::array<int, N>& array)
+constexpr int productCapped(int cap, const std::array<int, N>& array) noexcept
 {
     return VarArgOperations::apply([cap](auto&&... args)
     {
@@ -47,7 +47,7 @@ constexpr int productCapped(int cap, const std::array<int, N>& array)
 
 /** @see CompiletimeMath::sumOfCumulativeProductCapped */
 template<std::size_t N>
-constexpr int sumOfCumulativeProductCapped(int cap, const std::array<int, N>& array)
+constexpr int sumOfCumulativeProductCapped(int cap, const std::array<int, N>& array) noexcept
 {
     return VarArgOperations::apply([cap](auto&&... args)
     {
@@ -57,7 +57,7 @@ constexpr int sumOfCumulativeProductCapped(int cap, const std::array<int, N>& ar
 
 /** @returns the N-1 sub-array : removes / "shaves off" the first element */
 template<std::size_t N>
-constexpr std::array<int, N-1> shaveOffFirstElement(const std::array<int, N>& array)
+constexpr std::array<int, N-1> shaveOffFirstElement(const std::array<int, N>& array) noexcept
 {
     std::array<int, N-1> subarray;
     for (int i=0; i < N-1; ++i) {
