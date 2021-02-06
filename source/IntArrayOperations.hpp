@@ -9,6 +9,7 @@
 
 #include <array>
 
+#include "CompiletimeMath.hpp"
 #include "TemplateUtils.hpp"
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -21,13 +22,15 @@ namespace slb
 namespace IntArrayOperations
 {
 
+
+
 /** Calculates the sum of the elements of the supplied array */
 template<std::size_t N>
 constexpr int sum(const int (&array)[N])
 {
     return VarArgOperations::apply([](auto&&... args)
     {
-        return VarArgOperations::sum(std::forward<decltype(args)>(args)...);
+        return CompiletimeMath::sum(std::forward<decltype(args)>(args)...);
     }, VarArgOperations::makeIntTuple(array));
 }
 
@@ -37,7 +40,7 @@ constexpr int sumOverRange(int begin, int end, const int (&array)[N])
 {
     return VarArgOperations::apply([begin, end](auto&&... args)
     {
-        return VarArgOperations::sumOverRange(begin, end, std::forward<decltype(args)>(args)...);
+        return CompiletimeMath::sumOverRange(begin, end, std::forward<decltype(args)>(args)...);
     }, VarArgOperations::makeIntTuple(array));
 }
 /** Calculates the sum of the elements in range [0, cap[ of the supplied array */
@@ -46,7 +49,7 @@ constexpr int sumCapped(int cap, const int (&array)[N])
 {
     return VarArgOperations::apply([cap](auto&&... args)
     {
-        return VarArgOperations::sumCapped(cap, std::forward<decltype(args)>(args)...);
+        return CompiletimeMath::sumCapped(cap, std::forward<decltype(args)>(args)...);
     },  VarArgOperations::makeIntTuple(array));
 }
 
@@ -56,7 +59,7 @@ constexpr int product(const int (&array)[N])
 {
     return VarArgOperations::apply([](auto&&... args)
     {
-        return VarArgOperations::product(std::forward<decltype(args)>(args)...);
+        return CompiletimeMath::product(std::forward<decltype(args)>(args)...);
     }, VarArgOperations::makeIntTuple(array));
 }
 
@@ -66,7 +69,7 @@ constexpr int productOverRange(int begin, int end, const int (&array)[N])
 {
     return VarArgOperations::apply([begin, end](auto&&... args)
     {
-        return VarArgOperations::productOverRange(begin, end, std::forward<decltype(args)>(args)...);
+        return CompiletimeMath::productOverRange(begin, end, std::forward<decltype(args)>(args)...);
     }, VarArgOperations::makeIntTuple(array));
 }
 
@@ -76,7 +79,7 @@ constexpr int productCapped(int cap, const int (&array)[N])
 {
     return VarArgOperations::apply([cap](auto&&... args)
     {
-        return VarArgOperations::productCapped(cap, std::forward<decltype(args)>(args)...);
+        return CompiletimeMath::productCapped(cap, std::forward<decltype(args)>(args)...);
     }, VarArgOperations::makeIntTuple(array));
 }
 
@@ -86,7 +89,7 @@ constexpr int sumOfCumulativeProduct(const int (&array)[N])
 {
     return VarArgOperations::apply([](auto&&... args)
     {
-        return VarArgOperations::sumOfCumulativeProduct(std::forward<decltype(args)>(args)...);
+        return CompiletimeMath::sumOfCumulativeProduct(std::forward<decltype(args)>(args)...);
     }, VarArgOperations::makeIntTuple(array));
 }
 
@@ -96,7 +99,7 @@ constexpr int sumOfCumulativeProductCapped(int cap, const int (&array)[N])
 {
     return VarArgOperations::apply([cap](auto&&... args)
     {
-        return VarArgOperations::sumOfCumulativeProductCapped(cap, std::forward<decltype(args)>(args)...);
+        return CompiletimeMath::sumOfCumulativeProductCapped(cap, std::forward<decltype(args)>(args)...);
     }, VarArgOperations::makeIntTuple(array));
 }
 
@@ -113,7 +116,7 @@ constexpr int sum(const std::array<int, N>& array)
 {
     return VarArgOperations::apply([](auto&&... args)
     {
-        return VarArgOperations::sum(std::forward<decltype(args)>(args)...);
+        return CompiletimeMath::sum(std::forward<decltype(args)>(args)...);
     }, array);
 }
 
@@ -123,7 +126,7 @@ constexpr int sumOverRange(int begin, int end, const std::array<int, N>& array)
 {
     return VarArgOperations::apply([begin, end](auto&&... args)
     {
-        return VarArgOperations::sumOverRange(begin, end, std::forward<decltype(args)>(args)...);
+        return CompiletimeMath::sumOverRange(begin, end, std::forward<decltype(args)>(args)...);
     }, array);
 }
 /** Calculates the sum of the elements in range [0, cap[ of the supplied array */
@@ -132,7 +135,7 @@ constexpr int sumCapped(int cap, const std::array<int, N>& array)
 {
     return VarArgOperations::apply([cap](auto&&... args)
     {
-        return VarArgOperations::sumCapped(cap, std::forward<decltype(args)>(args)...);
+        return CompiletimeMath::sumCapped(cap, std::forward<decltype(args)>(args)...);
     },  array);
 }
 
@@ -142,7 +145,7 @@ constexpr int product(const std::array<int, N>& array)
 {
     return VarArgOperations::apply([](auto&&... args)
     {
-        return VarArgOperations::product(std::forward<decltype(args)>(args)...);
+        return CompiletimeMath::product(std::forward<decltype(args)>(args)...);
     }, array);
 }
 
@@ -152,7 +155,7 @@ constexpr int productOverRange(int begin, int end, const std::array<int, N>& arr
 {
     return VarArgOperations::apply([begin, end](auto&&... args)
     {
-        return VarArgOperations::productOverRange(begin, end, std::forward<decltype(args)>(args)...);
+        return CompiletimeMath::productOverRange(begin, end, std::forward<decltype(args)>(args)...);
     }, array);
 }
 
@@ -162,7 +165,7 @@ constexpr int productCapped(int cap, const std::array<int, N>& array)
 {
     return VarArgOperations::apply([cap](auto&&... args)
     {
-        return VarArgOperations::productCapped(cap, std::forward<decltype(args)>(args)...);
+        return CompiletimeMath::productCapped(cap, std::forward<decltype(args)>(args)...);
     }, array);
 }
 
@@ -172,7 +175,7 @@ constexpr int sumOfCumulativeProduct(const std::array<int, N>& array)
 {
     return VarArgOperations::apply([](auto&&... args)
     {
-        return VarArgOperations::sumOfCumulativeProduct(std::forward<decltype(args)>(args)...);
+        return CompiletimeMath::sumOfCumulativeProduct(std::forward<decltype(args)>(args)...);
     }, array);
 }
 
@@ -182,7 +185,7 @@ constexpr int sumOfCumulativeProductCapped(int cap, const std::array<int, N>& ar
 {
     return VarArgOperations::apply([cap](auto&&... args)
     {
-        return VarArgOperations::sumOfCumulativeProductCapped(cap, std::forward<decltype(args)>(args)...);
+        return CompiletimeMath::sumOfCumulativeProductCapped(cap, std::forward<decltype(args)>(args)...);
     }, array);
 }
 
