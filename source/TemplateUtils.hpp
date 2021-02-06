@@ -167,11 +167,11 @@ constexpr auto makeIntTuple(const int (&arr)[N]) noexcept
 // MARK: std::apply - like implementation
 /**
  * Helper to call a function with a std::tuple of arguments (standardized in C++17 as std::apply)
- * source: https://www.programming-books.io/essential/cpp/iterating-with-stdinteger-sequence-cca589107b7a499e9e7275427a994f97
+ * source: https://essential-cpp.programming-books.io/iterating-with-stdinteger-sequence-cca589107b7a499e9e7275427a994f97
  */
 namespace detail
 {
-    template <class F, class Tuple, std::size_t... Is>
+    template <typename F, class Tuple, std::size_t... Is>
     constexpr auto apply_impl(F&& f, Tuple&& tpl, std::index_sequence<Is...> ) noexcept
     {
         return std::forward<F>(f)(std::get<Is>(std::forward<Tuple>(tpl))...);
@@ -179,7 +179,7 @@ namespace detail
 }
 
 // apply from std::tuple
-template <class F, class Tuple>
+template <typename F, class Tuple>
 constexpr auto apply(F&& f, Tuple&& tpl) noexcept
 {
     return detail::apply_impl(std::forward<F>(f),
@@ -188,11 +188,19 @@ constexpr auto apply(F&& f, Tuple&& tpl) noexcept
 }
 
 // apply from std::array (directly)
-template <class F, std::size_t N>
+template <typename F, std::size_t N>
 constexpr auto apply(F&& f, const std::array<int, N>& arr) noexcept
 {
     return detail::apply_impl(std::forward<F>(f), makeIntTuple(arr), std::make_index_sequence<N>{});
 }
+
+// apply from int array (directly)
+template <typename F, std::size_t N>
+constexpr auto apply(F&& f, const int (&array)[N]) noexcept
+{
+    return detail::apply_impl(std::forward<F>(f), makeIntTuple(array), std::make_index_sequence<N>{});
+}
+
 
 } // namespace VarArgOperations
 

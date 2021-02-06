@@ -13,7 +13,7 @@
 
 using namespace slb;
 
-TEST_CASE("TemplateUtils VarArgOperations Tests")
+TEST_CASE("CompiletimeMath Tests")
 {
     using namespace CompiletimeMath;
     
