@@ -24,10 +24,9 @@ TEST_CASE("IntArrayOperations Tests")
     REQUIRE(sumCapped(1, {3, 2}) == 3);
     REQUIRE(sumCapped(2, {2, 7}) == 9);
     REQUIRE(sumCapped(2, {1, 2, 8}) == 3);
-
-    REQUIRE(sumOverRange(1, 4, {3, 1, 2, 5}) == 8);
-    REQUIRE(sumOverRange(0, 4, {3, 1, 2, 5}) == 11);
-    REQUIRE(sumOverRange(0, 3, {3, 1, 4, 5}) == 8);
+    REQUIRE(sumOverRange(2, 4, {3, 1, 2, 5}) == 8);
+    REQUIRE(sumOverRange(1, 4, {3, 1, 2, 5}) == 11);
+    REQUIRE(sumOverRange(1, 3, {3, 1, 4, 5}) == 8);
    
     REQUIRE(product({2, 3}) == 6);
     REQUIRE(productCapped(2, {1, 2, 0}) == 2);
@@ -35,9 +34,12 @@ TEST_CASE("IntArrayOperations Tests")
     REQUIRE(productCapped(2, {2, 7}) == 14);
     REQUIRE(productCapped(2, {1, 2, 0}) == 2);
 
-    REQUIRE(productOverRange(1, 4, {3, 1, 2, 5}) == 10);
-    REQUIRE(productOverRange(0, 4, {3, 1, 2, 5}) == 30);
-    REQUIRE(productOverRange(0, 3, {3, 1, 2, 5}) == 6);
+    REQUIRE(productOverRange(2, 4, {3, 1, 2, 5}) == 10);
+    REQUIRE(productOverRange(1, 4, {3, 1, 2, 5}) == 30);
+    REQUIRE(productOverRange(1, 3, {3, 1, 2, 5}) == 6);
+    REQUIRE(productOverRange(-1, 3, {3, 1, 2, 5}) == 6);
+    REQUIRE(productOverRange(0, -1, {3, 1, 2, 5}) == 0);
+    REQUIRE(productOverRange(-3, -1, {3, 1, 2, 5}) == 0);
 }
 
 TEST_CASE("StdArrayOperations Tests")
@@ -51,9 +53,9 @@ TEST_CASE("StdArrayOperations Tests")
     REQUIRE(sumCapped(2, std::array<int, 2>{2, 7}) == 9);
     REQUIRE(sumCapped(2, std::array<int, 3>{1, 2, 8}) == 3);
 
-    REQUIRE(sumOverRange(1, 4, std::array<int, 4>{3, 1, 2, 5}) == 8);
-    REQUIRE(sumOverRange(0, 4, std::array<int, 4>{3, 1, 2, 5}) == 11);
-    REQUIRE(sumOverRange(0, 3, std::array<int, 4>{3, 1, 4, 5}) == 8);
+    REQUIRE(sumOverRange(2, 4, std::array<int, 4>{3, 1, 2, 5}) == 8);
+    REQUIRE(sumOverRange(1, 4, std::array<int, 4>{3, 1, 2, 5}) == 11);
+    REQUIRE(sumOverRange(1, 3, std::array<int, 4>{3, 1, 4, 5}) == 8);
    
     REQUIRE(product(std::array<int, 2>{2, 3}) == 6);
     REQUIRE(productCapped(2, std::array<int, 3>{1, 2, 0}) == 2);
@@ -61,9 +63,13 @@ TEST_CASE("StdArrayOperations Tests")
     REQUIRE(productCapped(2, std::array<int, 2>{2, 7}) == 14);
     REQUIRE(productCapped(2, std::array<int, 3>{1, 2, 0}) == 2);
 
-    REQUIRE(productOverRange(1, 4, std::array<int, 4>{3, 1, 2, 5}) == 10);
-    REQUIRE(productOverRange(0, 4, std::array<int, 4>{3, 1, 2, 5}) == 30);
-    REQUIRE(productOverRange(0, 3, std::array<int, 4>{3, 1, 2, 5}) == 6);
+    REQUIRE(productOverRange(2, 4, std::array<int, 4>{3, 1, 2, 5}) == 10);
+    REQUIRE(productOverRange(1, 4, std::array<int, 4>{3, 1, 2, 5}) == 30);
+    REQUIRE(productOverRange(1, 3, std::array<int, 4>{3, 1, 2, 5}) == 6);
+    REQUIRE(productOverRange(1, 0, std::array<int, 4>{3, 1, 2, 5}) == 0);
+    REQUIRE(productOverRange(-1, 3, std::array<int, 4>{3, 1, 2, 5}) == 6);
+    REQUIRE(productOverRange(1, -1, std::array<int, 4>{3, 1, 2, 5}) == 0);
+    REQUIRE(productOverRange(-3, -1, std::array<int, 4>{3, 1, 2, 5}) == 0);
     
     REQUIRE(sumOfCumulativeProduct(std::array<int, 4>{2, 3, 2, 3}) == 56);
     REQUIRE(sumOfCumulativeProductCapped(3, std::array<int, 4>{2, 3, 2, 3}) == 20);

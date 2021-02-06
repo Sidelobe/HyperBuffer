@@ -137,83 +137,84 @@ namespace VarArgOperations
 {
 
 // MARK: - Sum
-/** Calculate the sum of all args in parameter pack - in range [start, end[ */
+/** Calculate the sum of a given number of args in parameter pack - starting from the given firstSummand (1-based) */
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
-constexpr T sumOverRange(int begin, int end, Args... args)
+constexpr T sumOverRange(int firstSummand, int numSummands, Args... args) noexcept
 {
-    ASSERT(begin >= 0);
-    ASSERT(static_cast<unsigned>(end) <= sizeof...(args));
-    ASSERT(end-begin > 0, "Cannot cap a length-one argument list");
-    T sum{0};
-    T values[]{ args... };
-    for (int i=begin; i < end; ++i) {
-        sum += values[i];
+    firstSummand = std::max<int>(firstSummand, 1);
+    numSummands = std::min<int>(numSummands, sizeof...(args) - firstSummand + 1);
+    
+    T sum {0};
+    T values[] { args... };
+    for (int i=firstSummand; i < firstSummand+numSummands; ++i) {
+        sum += values[i-1];
     }
     return sum;
 }
 
-/** Calculate the sum of all args in parameter pack - until before 'cap' index */
+/** Calculate the sum of a given number of args in parameter pack (starting with the first one) */
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
-constexpr T sumCapped(int cap, Args... args)
+constexpr T sumCapped(int numSummands, Args... args) noexcept
 {
-    ASSERT(cap > 0);
-    return sumOverRange(0, cap, args...);
+    return sumOverRange(1, numSummands, args...);
 }
 
 /** Calculate the sum of all args in parameter pack */
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
-constexpr T sum(Args... args)
+constexpr T sum(Args... args) noexcept
 {
     return sumCapped(sizeof...(args), args...);
 }
 
 // MARK: - Product
 
-/** Calculate the product of all args in parameter pack - in range [start, end[ */
+/** Calculate the product of a given number of args in parameter pack - starting from the given firstFactor (1-based) */
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
-constexpr T productOverRange(int begin, int end, Args... args)
+constexpr T productOverRange(int firstFactor, int numFactors, Args... args) noexcept
 {
-    ASSERT(begin >= 0);
-    ASSERT(static_cast<unsigned>(end) <= sizeof...(args));
-    ASSERT(end-begin > 0, "Cannot cap a length-one argument list");
+    if (numFactors <= 0) { return 0; }
+    firstFactor = std::max<int>(firstFactor, 1);
+    numFactors = std::min<int>(numFactors, sizeof...(args) - firstFactor + 1);
+    
     T product{1};
     T values[]{ args... };
-    for (int i=begin; i < end; ++i) {
-        product *= values[i];
+     for (int i=firstFactor; i < firstFactor+numFactors; ++i) {
+        product *= values[i-1];
     }
     return product;
 }
 
-/** Calculates the product of all args in parameter pack - until before 'cap' index */
+/** Calculate the product of a given number of args in parameter pack - starting with the first one */
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
-constexpr T productCapped(int cap, Args... args)
+constexpr T productCapped(int numSummands, Args... args) noexcept
 {
-    return productOverRange(0, cap, args...);
+    return productOverRange(1, numSummands, args...);
 }
 
 /** Multiply all args in parameter pack */
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
-constexpr T product(Args... args)
+constexpr T product(Args... args) noexcept
 {
     return productCapped(sizeof...(args), args...);
 }
 
 // MARK: - Sum of Cumulative Product
 
-/** Calculate the cumulative product of args in parameter pack - - in range [start, end[ */
+/**
+ * Calculate the sum of cumulative products of a given number of args in parameter pack
+ * -- starting from the given firstElement (1-based)
+ */
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
-constexpr T sumOfCumulativeProductOverRange(int begin, int end, Args... args)
+constexpr T sumOfCumulativeProductOverRange(int firstElement, int numElements, Args... args) noexcept
 {
-    ASSERT(begin >= 0);
-    ASSERT(static_cast<unsigned>(end) <= sizeof...(args));
-    if (end-begin == 0) {
-        return 0;
-    }
+    firstElement = std::max<int>(firstElement, 1);
+    numElements = std::min<int>(numElements, sizeof...(args) - firstElement + 1);
+    
     T sum{0};
     T values[]{ args... };
-    for (int i=begin; i < end; ++i) {
+    for (int i=firstElement; i < firstElement+numElements; ++i) {
         T cumulativeProduct{1};
-        for (int j=0; j <= i; ++j) {
+        for (int j=0; j <= i-1; ++j) {
             cumulativeProduct *= values[j];
         }
         sum += cumulativeProduct;
@@ -221,16 +222,19 @@ constexpr T sumOfCumulativeProductOverRange(int begin, int end, Args... args)
     return sum;
 }
 
-/** Calculate the cumulative product of args in parameter pack - until before 'cap' index */
+/** Calculate the sum of cumulative products of a given number of args in parameter pack -- starting from the first one */
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
-constexpr T sumOfCumulativeProductCapped(int cap, Args... args)
+constexpr T sumOfCumulativeProductCapped(int cap, Args... args) noexcept
 {
-    return sumOfCumulativeProductOverRange(0, cap, args...);
+    return sumOfCumulativeProductOverRange(1, cap, args...);
 }
 
-/** Calculate the cumulative product of all args in parameter pack */
+/**
+ * Calculate the sum of cumulative products of all args in parameter pack.
+ *  @note: This is equivalent to this Matlab/octave command: sum(cumprod(...))
+ */
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
-constexpr T sumOfCumulativeProduct(Args... args)
+constexpr T sumOfCumulativeProduct(Args... args) noexcept
 {
     return sumOfCumulativeProductCapped(sizeof...(Args), args...);
 }
@@ -238,26 +242,26 @@ constexpr T sumOfCumulativeProduct(Args... args)
 // MARK: - Tuple creation
 // Make Tuple from std::array
 template<std::size_t... I, std::size_t N>
-constexpr auto makeIntTuple(const std::array<int, N>& arr, std::index_sequence<I...>)
+constexpr auto makeIntTuple(const std::array<int, N>& arr, std::index_sequence<I...>) noexcept
 {
     return std::make_tuple(arr[I]...);
 }
 
 template<std::size_t N>
-constexpr auto makeIntTuple(const std::array<int, N>& arr)
+constexpr auto makeIntTuple(const std::array<int, N>& arr) noexcept
 {
     return makeIntTuple(arr, std::make_index_sequence<N>{});
 }
 
 // Make Tuple from Raw Array
 template<std::size_t... I, std::size_t N>
-constexpr auto makeIntTuple(const int (&arr)[N], std::index_sequence<I...>)
+constexpr auto makeIntTuple(const int (&arr)[N], std::index_sequence<I...>) noexcept
 {
     return std::make_tuple(arr[I]...);
 }
 
 template<std::size_t N>
-constexpr auto makeIntTuple(const int (&arr)[N])
+constexpr auto makeIntTuple(const int (&arr)[N]) noexcept
 {
     return makeIntTuple(arr, std::make_index_sequence<N>{});
 }
@@ -271,7 +275,7 @@ constexpr auto makeIntTuple(const int (&arr)[N])
 namespace detail
 {
     template <class F, class Tuple, std::size_t... Is>
-    decltype(auto) apply_impl(F&& f, Tuple&& tpl, std::index_sequence<Is...> )
+    constexpr auto apply_impl(F&& f, Tuple&& tpl, std::index_sequence<Is...> ) noexcept
     {
         return std::forward<F>(f)(std::get<Is>(std::forward<Tuple>(tpl))...);
     }
@@ -279,20 +283,18 @@ namespace detail
 
 // apply from std::tuple
 template <class F, class Tuple>
-decltype(auto) apply(F&& f, Tuple&& tpl)
+constexpr auto apply(F&& f, Tuple&& tpl) noexcept
 {
     return detail::apply_impl(std::forward<F>(f),
-        std::forward<Tuple>(tpl),
-        std::make_index_sequence<std::tuple_size<std::decay_t<Tuple>>::value>{});
+                              std::forward<Tuple>(tpl),
+                              std::make_index_sequence<std::tuple_size<std::decay_t<Tuple>>::value>{});
 }
 
 // apply from std::array (directly)
 template <class F, std::size_t N>
-decltype(auto) apply(F&& f, const std::array<int, N>& arr)
+constexpr auto apply(F&& f, const std::array<int, N>& arr) noexcept
 {
-    return detail::apply_impl(std::forward<F>(f),
-        makeIntTuple(arr),
-        std::make_index_sequence<N>{});
+    return detail::apply_impl(std::forward<F>(f), makeIntTuple(arr), std::make_index_sequence<N>{});
 }
 
 } // namespace VarArgOperations

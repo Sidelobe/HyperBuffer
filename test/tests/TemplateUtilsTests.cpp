@@ -42,12 +42,14 @@ TEST_CASE("TemplateUtils VarArgOperations Tests")
     
     SECTION("sumCapped and sumOverRange") {
         static_assert(sumCapped(2, 2, 2, 3, 0) == 4, "");
-        static_assert(sumOverRange(1, 3, 2, 2, 3, -4) == 5, "");
-        
-        REQUIRE_THROWS(sumCapped(0, 2, 2, 2, 3)); // 0 cap index
-        REQUIRE_THROWS(sumOverRange(1, 1, 2, 2, 3)); // range 0
-        REQUIRE_THROWS(sumOverRange(2, 1, 2, 2, 3)); // negative range
-        REQUIRE_THROWS(sumOverRange(-1, 1, 2, 2, 3)); // negative range start
+        static_assert(sumCapped(0, 2, 2, 2, 3) == 0, ""); // 0 cap index
+        static_assert(sumOverRange(2, 3, 2, 2, 3, -4) == 1, "");
+        static_assert(sumOverRange(1, 4, 2, 2, 3, -4) == 3, "");
+        static_assert(sumOverRange(1, 0, 2, 2, 3) == 0, "zero summands");
+        static_assert(sumOverRange(2, -1, 2, 2, 3) == 0, "negative num summands");
+        static_assert(sumOverRange(-1, 1, 2, 2, 3) == 2, "negative range start");
+        static_assert(sumOverRange(0, 4, 2, 2, 3) == sumOverRange(1, 3, 2, 2, 3), "num summands too high - absolute");
+        static_assert(sumOverRange(2, 3, 2, 2, 3) == sumOverRange(2, 2, 2, 2, 3), "num summands too high - relative");
     }
     
     SECTION("product") {
@@ -75,10 +77,13 @@ TEST_CASE("TemplateUtils VarArgOperations Tests")
         static_assert(productCapped(3, 2, 2, 3, 3) == 12, "");
         static_assert(productCapped(4, 2, 2, 3, 0) == 0, "");
         
-        REQUIRE_THROWS(productCapped(0, 2, 2, 2, 3)); // 0 cap index
-        REQUIRE_THROWS(productOverRange(1, 1, 2, 2, 3)); // range 0
-        REQUIRE_THROWS(productOverRange(2, 1, 2, 2, 3)); // negative range
-        REQUIRE_THROWS(productOverRange(-1, 1, 2, 2, 3)); // negative range start
+        static_assert(productOverRange(2, 3, 2, 2, 3, -4) == -24, "");
+        static_assert(productOverRange(1, 4, 2, 2, 3, -4) == -48, "");
+        static_assert(productOverRange(1, 0, 2, 2, 3) == 0, "zero factors");
+        static_assert(productOverRange(1, -1, 2, 2, 3) == 0, "neg num factors");
+        static_assert(productOverRange(-1, 3, 2, 2, 3) == 12, "negative range start");
+        static_assert(productOverRange(0, 4, 2, 2, 3) == productOverRange(1, 3, 2, 2, 3), "num factors too high - absolute");
+        static_assert(productOverRange(2, 3, 2, 2, 3) == productOverRange(2, 2, 2, 2, 3), "num factors too high - relative");
     }
     
     SECTION("sumOfCumulativeProduct") {
@@ -117,6 +122,15 @@ TEST_CASE("TemplateUtils VarArgOperations Tests")
             static_assert(sumOfCumulativeProductCapped(cap, 2, 2, 3, 3) == 18, "");
             static_assert(sumOfCumulativeProductCapped(cap, 2, 2, 3, 0) == 18, "");
         }
+        
+        static_assert(sumOfCumulativeProductOverRange(1, 3, 2, 2, 3) == 18, "");
+        static_assert(sumOfCumulativeProductOverRange(1, 2, 2, 2, 3) == 6, "");
+        static_assert(sumOfCumulativeProductOverRange(2, 2, 2, 2, 3) == 16, "");
+        static_assert(sumOfCumulativeProductOverRange(1, 0, 2, 2, 3) == 0, "zero elements");
+        static_assert(sumOfCumulativeProductOverRange(1, -1, 2, 2, 3) == 0, "neg num elements");
+        static_assert(sumOfCumulativeProductOverRange(-1, 3, 2, 2, 3) == 18, "negative range start");
+        static_assert(sumOfCumulativeProductOverRange(0, 4, 2, 2, 3) == sumOfCumulativeProductOverRange(1, 3, 2, 2, 3), "num elements too high - absolute");
+        static_assert(sumOfCumulativeProductOverRange(2, 3, 2, 2, 3) == sumOfCumulativeProductOverRange(2, 2, 2, 2, 3), "num elements too high - relative");
     }
 }
 
