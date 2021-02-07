@@ -126,4 +126,18 @@ TEST_CASE("CompiletimeMath Tests")
         static_assert(sumOfCumulativeProductOverRange(0, 4, 2, 2, 3) == sumOfCumulativeProductOverRange(1, 3, 2, 2, 3), "num elements too high - absolute");
         static_assert(sumOfCumulativeProductOverRange(2, 3, 2, 2, 3) == sumOfCumulativeProductOverRange(2, 2, 2, 2, 3), "num elements too high - relative");
     }
+    
+    // These run-time test were added solely to satisfy code coverage metrics (traverse every branch)
+    
+    REQUIRE(sumOverRange(1, 0, 2, 2, 3) == 0); // zero summands
+    REQUIRE(sumOverRange(2, -1, 2, 2, 3) == 0); // negative num summands
+    REQUIRE(sumOverRange(-1, 1, 2, 2, 3) == 2); // negative range start
+    REQUIRE(sumOverRange(0, 0, 1) == 0);
+    
+    REQUIRE(productOverRange(1, 0, 2, 2, 3) == 0); // zero summands
+    REQUIRE(productOverRange(2, -1, 2, 2, 3) == 0); // negative num summands
+    REQUIRE(productOverRange(-1, 1, 2, 2, 3) == 2); // negative range start
+    REQUIRE(productOverRange(0, 0, 1) == 0);
+
+    
 }
