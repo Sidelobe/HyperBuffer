@@ -428,3 +428,68 @@ TEST_CASE("HyperBuffer: Sub-Buffer Assignmemt")
     //TODO: Sub-Buffer assigment
     //buffer.at(0,0) = bufferData;
 }
+
+TEST_CASE("HyperBuffer: out of memory")
+{
+    // this test is mainly here to improve branch coverage by simulating an out-of-memory condition
+    // NOTE: cannot do REQUIRE_THROWS on a constructor
+ 
+    SECTION("owning")
+    {
+        { // fails allocating data
+            ScopedMemorySentinel scopedSentinel(100);
+            REQUIRE_THROWS(HyperBuffer<int, 3>(3, 3, 8));
+        }
+        { // succeeds allocating data, fails at pointers
+            ScopedMemorySentinel scopedSentinel(300);
+            REQUIRE_THROWS(HyperBuffer<int, 3>(3, 3, 8));
+        }
+    }
+    
+    SECTION("view flat")
+    {
+        ScopedMemorySentinel scopedSentinel(32); // allow allocation of 32 bytes only
+        int dataRaw1 [3*3*8];
+        REQUIRE_THROWS(HyperBufferView<int, 3>(dataRaw1, 3, 3, 8));
+    }
+    SECTION("view multidim -- does not allocate")
+    {
+        BUILD_MULTIDIM_ON_STACK_3_3_8(multiDimData); // this allocation shall not be monitored
+        {
+            ScopedMemorySentinel scopedSentinel;
+            HyperBufferViewMD<int, 3> buffer(multiDimData, 3, 3, 8);
+        }
+    }
+}
+
+TEST_CASE("HyperBuffer: memory allocation - precise verification")
+{
+    BufferGeometry<3> bufferGeo(3, 3, 8);
+    int dataArraySizeBytes = bufferGeo.getRequiredDataArraySize() * sizeof(int);
+    int pointerArraySizeBytes = bufferGeo.getRequiredPointerArraySize() * sizeof(int*);
+    int totalMemoryBytes = pointerArraySizeBytes + dataArraySizeBytes;
+    
+    auto& sentinel = MemorySentinel::getInstance();
+    sentinel.setTransgressionBehaviour(MemorySentinel::TransgressionBehaviour::THROW_EXCEPTION);
+    
+    SECTION("owning") {
+        sentinel.setArmed(true);
+        sentinel.setAllocationQuota(totalMemoryBytes);
+        HyperBuffer<int, 3> buffer(bufferGeo.getDimensionExtents());
+        
+        sentinel.setAllocationQuota(totalMemoryBytes-1);
+        REQUIRE_THROWS(HyperBuffer<int, 3>(bufferGeo.getDimensionExtents()));
+        sentinel.setArmed(false);
+    }
+    SECTION("view") {
+        std::vector<int> data(dataArraySizeBytes);
+        sentinel.setArmed(true);
+
+        sentinel.setAllocationQuota(pointerArraySizeBytes);
+        HyperBufferView<int, 3> buffer(data.data(), bufferGeo.getDimensionExtents());
+        
+        sentinel.setAllocationQuota(pointerArraySizeBytes-1);
+        REQUIRE_THROWS(HyperBufferView<int, 3>(data.data(), bufferGeo.getDimensionExtents()));
+        sentinel.setArmed(false);
+    }
+}
