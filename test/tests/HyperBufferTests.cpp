@@ -225,11 +225,8 @@ TEST_CASE("HyperBuffer Tests - Construction and Data Access")
 
 TEST_CASE("HyperBuffer ctor: different dimension variants")
 {
-    int dim1 = 3;
-    int dim0 = 5;
-    
     SECTION("owning") {
-        HyperBuffer<int, 2> hostClass(dim1, dim0); // calls int ctor
+        HyperBuffer<int, 2> hostClass(3, 5); // calls int ctor
         REQUIRE(hostClass.sizes() == std::array<int, 2>({3, 5}));
         std::array<int, 2> dimArray = {3, 5};
         HyperBuffer<int, 2> hostClass2(dimArray); // calls array ctor
@@ -237,11 +234,15 @@ TEST_CASE("HyperBuffer ctor: different dimension variants")
         std::vector<int> dimVector = {3, 5};
         HyperBuffer<int, 2> hostClass3(dimVector); // calls int* ctor
         REQUIRE(hostClass3.sizes() == std::array<int, 2>({3, 5}));
+        
+        REQUIRE_THROWS(HyperBuffer<int, 1>(0));
+        REQUIRE_THROWS(HyperBuffer<int, 2>(0, 0));
+        REQUIRE_THROWS(HyperBuffer<int, 2>(1, -20));
     }
     
     SECTION("flat view") {
         int data [32];
-        HyperBufferView<int, 2> hostClass(data, dim1, dim0); // calls int ctor
+        HyperBufferView<int, 2> hostClass(data, 3, 5); // calls int ctor
         REQUIRE(hostClass.sizes() == std::array<int, 2>({3, 5}));
         std::array<int, 2> dimArray = {3, 5};
         HyperBufferView<int, 2> hostClass2(data, dimArray); // calls array ctor
@@ -249,11 +250,15 @@ TEST_CASE("HyperBuffer ctor: different dimension variants")
         std::vector<int> dimVector = {3, 5};
         HyperBufferView<int, 2> hostClass3(data, dimVector); // calls int* ctor
         REQUIRE(hostClass3.sizes() == std::array<int, 2>({3, 5}));
+        
+        REQUIRE_THROWS(HyperBufferView<int, 1>(data, 0));
+        REQUIRE_THROWS(HyperBufferView<int, 2>(data, 0, 0));
+        REQUIRE_THROWS(HyperBufferView<int, 2>(data, 1, -20));
     }
     
     SECTION("multidim view") {
         int* data [32];
-        HyperBufferViewMD<int, 2> hostClass(data, dim1, dim0); // calls int ctor
+        HyperBufferViewMD<int, 2> hostClass(data, 3, 5); // calls int ctor
         REQUIRE(hostClass.sizes() == std::array<int, 2>({3, 5}));
         std::array<int, 2> dimArray = {3, 5};
         HyperBufferViewMD<int, 2> hostClass2(data, dimArray); // calls array ctor
@@ -261,6 +266,10 @@ TEST_CASE("HyperBuffer ctor: different dimension variants")
         std::vector<int> dimVector = {3, 5};
         HyperBufferViewMD<int, 2> hostClass3(data, dimVector); // calls int* ctor
         REQUIRE(hostClass3.sizes() == std::array<int, 2>({3, 5}));
+        
+        REQUIRE_THROWS(HyperBufferViewMD<int, 1>(nullptr, 0));
+        REQUIRE_THROWS(HyperBufferViewMD<int, 2>(data, 0, 0));
+        REQUIRE_THROWS(HyperBufferViewMD<int, 2>(data, 1, -20));
     }
 }
 

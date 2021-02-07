@@ -16,6 +16,20 @@ namespace slb
 namespace CompiletimeMath
 {
 
+// MARK: - isEveryElementLargerThanZero
+/** @returns true if every element of the parameter pack is > 0 */
+template<typename... Args, typename T = typename std::common_type<Args...>::type>
+constexpr bool isEveryElementLargerThanZero(Args... args) noexcept
+{
+    T limit {0};
+    T values[] { args... };
+    bool r = true;
+    for (int i = 0 ; i < sizeof...(args); ++i) {
+        r = r && values[i] > limit;
+    }
+    return r;
+}
+
 // MARK: - Sum
 /** Calculate the sum of a given number of args in parameter pack - starting from the given firstSummand (1-based) */
 template<typename... Args, typename T = typename std::common_type<Args...>::type>

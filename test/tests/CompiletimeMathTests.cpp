@@ -19,6 +19,13 @@ TEST_CASE("CompiletimeMath Tests")
     
     // These functions are evaluated at compile-time, therefore we do static_asserts instead of run-time tests.
     // They are written in catch2 style for convenience only.
+    
+    SECTION("isEveryElementLargerThanZero") {
+        static_assert(isEveryElementLargerThanZero(1, 2, 99) == true, "");
+        static_assert(isEveryElementLargerThanZero(1, 2, -99) == false, "");
+        static_assert(isEveryElementLargerThanZero(0, 0) == false, "");
+    }
+    
     SECTION("sum") {
         static_assert(sum(1) == 1, "");
         static_assert(sum(0) == 0, "");

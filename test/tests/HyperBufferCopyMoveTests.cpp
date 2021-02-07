@@ -63,7 +63,7 @@ TEST_CASE("Copy/Move a HyperBuffer with internal allocation")
     // Move assignment operator
     {
         HyperBuffer<int, N> bufferMovedFrom = buffer; // working copy
-        HyperBuffer<int, N> bufferMovedTo(0, 0, 0);
+        HyperBuffer<int, N> bufferMovedTo(1, 1, 1);
         bufferMovedTo = std::move(bufferMovedFrom);
         verifyBuffer(bufferMovedTo);
         REQUIRE(bufferMovedTo.data() != nullptr);

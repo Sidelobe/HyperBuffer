@@ -42,6 +42,7 @@ public:
         m_data(m_bufferGeometry.getRequiredDataArraySize()),
         m_pointers(m_bufferGeometry.getRequiredPointerArraySize())
     {
+        ASSERT(CompiletimeMath::isEveryElementLargerThanZero(i...), "Invalid Dimension extents");
         m_bufferGeometry.hookupPointerArrayToData(m_data.data(), m_pointers.data());
     }
     
@@ -110,6 +111,7 @@ public:
     m_externalData(preAllocatedDataFlat),
     m_pointers(m_bufferGeometry.getRequiredPointerArraySize())
     {
+        ASSERT(CompiletimeMath::isEveryElementLargerThanZero(i...), "Invalid Dimension extents");
         m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
     }
     
@@ -167,19 +169,26 @@ public:
     template<typename... I>
     HyperBufferViewMD(pointer_type preAllocatedData, I... i) :
         m_dimensionExtents{static_cast<int>(i)...},
-        m_externalData(preAllocatedData) {}
+        m_externalData(preAllocatedData)
+        {
+            ASSERT(CompiletimeMath::isEveryElementLargerThanZero(i...), "Invalid Dimension extents");
+        }
             
     /** Constructor that takes the extents of the dimensions as a std::array */
     HyperBufferViewMD(pointer_type preAllocatedData, std::array<int, N> dimensionExtents) :
         m_dimensionExtents(dimensionExtents),
-        m_externalData(preAllocatedData) {}
+        m_externalData(preAllocatedData)
+        {
+            ASSERT(CompiletimeMath::isEveryElementLargerThanZero(m_dimensionExtents), "Invalid Dimension extents");
+        }
     
     /** Constructor that takes the extents of the dimensions as a std::vector */
-    HyperBufferViewMD(pointer_type preAllocatedData, std::vector<int> dimensionExtents) :
+    HyperBufferViewMD(pointer_type preAllocatedData, std::vector<int> dimensionExtentsVector) :
         m_externalData(preAllocatedData)
     {
-        ASSERT(dimensionExtents.size() == N, "Incorrect number of dimension extents");
-        std::copy(dimensionExtents.begin(), dimensionExtents.end(), m_dimensionExtents.begin());
+        ASSERT(dimensionExtentsVector.size() == N, "Incorrect number of dimension extents");
+        std::copy(dimensionExtentsVector.begin(), dimensionExtentsVector.end(), m_dimensionExtents.begin());
+        ASSERT(CompiletimeMath::isEveryElementLargerThanZero(m_dimensionExtents), "Invalid Dimension extents");
     }
     
     int size(int i) const override { ASSERT(i < N); return m_dimensionExtents[i]; }
