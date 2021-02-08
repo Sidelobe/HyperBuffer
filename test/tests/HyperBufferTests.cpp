@@ -479,27 +479,30 @@ TEST_CASE("HyperBuffer: memory allocation - precise verification")
     BufferGeometry<3> bufferGeo(3, 3, 8);
     int dataArraySizeBytes = bufferGeo.getRequiredDataArraySize() * sizeof(int);
     int pointerArraySizeBytes = bufferGeo.getRequiredPointerArraySize() * sizeof(int*);
-    int totalMemoryBytes = pointerArraySizeBytes + dataArraySizeBytes;
-    #if defined(_MSC_VER) && defined(_DEBUG) &&_ITERATOR_DEBUG_LEVEL > 1
-        totalMemoryBytes += 16; // debug iterator (?)
-    #endif
-    
+
     auto& sentinel = MemorySentinel::getInstance();
     sentinel.setTransgressionBehaviour(MemorySentinel::TransgressionBehaviour::THROW_EXCEPTION);
     
     SECTION("owning") {
         sentinel.setArmed(true);
-        sentinel.setAllocationQuota(totalMemoryBytes);
+#if defined(_MSC_VER) && defined(_DEBUG) &&_ITERATOR_DEBUG_LEVEL > 1
+        dataArraySizeBytes += 16; // debug iterator (?)
+        pointerArraySizeBytes += 16; // debug iterator (?)
+#endif
+        sentinel.setAllocationQuota(dataArraySizeBytes + pointerArraySizeBytes);
         HyperBuffer<int, 3> buffer(bufferGeo.getDimensionExtents());
         
-        sentinel.setAllocationQuota(totalMemoryBytes-1);
+        sentinel.setAllocationQuota(dataArraySizeBytes + pointerArraySizeBytes - 1);
         REQUIRE_THROWS(HyperBuffer<int, 3>(bufferGeo.getDimensionExtents()));
         sentinel.setArmed(false);
     }
     SECTION("view") {
-        std::vector<int> data(dataArraySizeBytes);
+        std::vector<int> data(bufferGeo.getRequiredDataArraySize());
         sentinel.setArmed(true);
 
+#if defined(_MSC_VER) && defined(_DEBUG) &&_ITERATOR_DEBUG_LEVEL > 1
+        pointerArraySizeBytes += 16; // debug iterator (?)
+#endif
         sentinel.setAllocationQuota(pointerArraySizeBytes);
         HyperBufferView<int, 3> buffer(data.data(), bufferGeo.getDimensionExtents());
         
