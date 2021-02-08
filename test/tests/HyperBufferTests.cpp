@@ -481,7 +481,7 @@ TEST_CASE("HyperBuffer: memory allocation - precise verification")
     int pointerArraySizeBytes = bufferGeo.getRequiredPointerArraySize() * sizeof(int*);
 
     auto& sentinel = MemorySentinel::getInstance();
-    sentinel.setTransgressionBehaviour(MemorySentinel::TransgressionBehaviour::THROW_EXCEPTION);
+    MemorySentinel::setTransgressionBehaviour(MemorySentinel::TransgressionBehaviour::THROW_EXCEPTION);
     
     SECTION("owning") {
         sentinel.setArmed(true);
@@ -489,10 +489,10 @@ TEST_CASE("HyperBuffer: memory allocation - precise verification")
         dataArraySizeBytes += 16; // debug iterator (?)
         pointerArraySizeBytes += 16; // debug iterator (?)
 #endif
-        sentinel.setAllocationQuota(dataArraySizeBytes + pointerArraySizeBytes);
+        MemorySentinel::setAllocationQuota(dataArraySizeBytes + pointerArraySizeBytes);
         HyperBuffer<int, 3> buffer(bufferGeo.getDimensionExtents());
         
-        sentinel.setAllocationQuota(dataArraySizeBytes + pointerArraySizeBytes - 1);
+        MemorySentinel::setAllocationQuota(dataArraySizeBytes + pointerArraySizeBytes - 1);
         REQUIRE_THROWS(HyperBuffer<int, 3>(bufferGeo.getDimensionExtents()));
         sentinel.setArmed(false);
     }
@@ -503,10 +503,10 @@ TEST_CASE("HyperBuffer: memory allocation - precise verification")
 #if defined(_MSC_VER) && defined(_DEBUG) &&_ITERATOR_DEBUG_LEVEL > 1
         pointerArraySizeBytes += 16; // debug iterator (?)
 #endif
-        sentinel.setAllocationQuota(pointerArraySizeBytes);
+        MemorySentinel::setAllocationQuota(pointerArraySizeBytes);
         HyperBufferView<int, 3> buffer(data.data(), bufferGeo.getDimensionExtents());
         
-        sentinel.setAllocationQuota(pointerArraySizeBytes-1);
+        MemorySentinel::setAllocationQuota(pointerArraySizeBytes-1);
         REQUIRE_THROWS(HyperBufferView<int, 3>(data.data(), bufferGeo.getDimensionExtents()));
         sentinel.setArmed(false);
     }
