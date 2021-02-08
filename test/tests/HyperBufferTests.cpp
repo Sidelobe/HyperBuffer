@@ -493,7 +493,7 @@ TEST_CASE("HyperBuffer: memory allocation - precise verification")
         HyperBuffer<int, 3> buffer(bufferGeo.getDimensionExtents());
         
         sentinel.setAllocationQuota(totalMemoryBytes-1);
-        REQUIRE_THROWS_AS(HyperBuffer<int, 3>(bufferGeo.getDimensionExtents()), std::bad_alloc);
+        REQUIRE_THROWS(HyperBuffer<int, 3>(bufferGeo.getDimensionExtents()));
         sentinel.setArmed(false);
     }
     SECTION("view") {
@@ -504,7 +504,7 @@ TEST_CASE("HyperBuffer: memory allocation - precise verification")
         HyperBufferView<int, 3> buffer(data.data(), bufferGeo.getDimensionExtents());
         
         sentinel.setAllocationQuota(pointerArraySizeBytes-1);
-        REQUIRE_THROWS_AS(HyperBufferView<int, 3>(data.data(), bufferGeo.getDimensionExtents()), std::bad_alloc);
+        REQUIRE_THROWS(HyperBufferView<int, 3>(data.data(), bufferGeo.getDimensionExtents()));
         sentinel.setArmed(false);
     }
 }
