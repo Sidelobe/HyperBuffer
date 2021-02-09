@@ -50,7 +50,7 @@ public:
     const std::array<int, N>& sizes() const noexcept override { return m_bufferGeometry.getDimensionExtents(); }
     
 private:
-    /** Build a (non-owning) N-1 HyperBuffer view to this Hyperbuffer's data */
+    /** Build a (non-owning) N-1 HyperBuffer const view to this Hyperbuffer's data */
     const HyperBufferView<T, N-1> createSubBufferView(size_type index) const
     {
         ASSERT(index < this->size(0), "Index out of range");
@@ -61,7 +61,7 @@ private:
         return HyperBufferView<T, N-1>(subDimData, StdArrayOperations::shaveOffFirstElement(this->sizes()));
     }
     
-    /** Build a (non-owning) N-1 HyperBuffer const view to this Hyperbuffer's data */
+    /** Build a (non-owning) N-1 HyperBuffer view to this Hyperbuffer's data */
     HyperBufferView<T, N-1> createSubBufferView(size_type index)
     {
         return std::as_const(*this).createSubBufferView(index);
@@ -119,7 +119,7 @@ public:
     const std::array<int, N>& sizes() const noexcept override { return m_bufferGeometry.getDimensionExtents(); }
     
 private:
-    /** Build a const N-1 HyperBuffer view to this Hyperbuffer's data */
+    /** Build a N-1 HyperBuffer const view to this Hyperbuffer's data */
     const HyperBufferView<T, N-1> createSubBufferView(size_type index) const
     {
         ASSERT(index < this->size(0), "Index out of range");
@@ -170,17 +170,17 @@ public:
     HyperBufferViewMD(pointer_type preAllocatedData, I... i) :
         m_dimensionExtents{static_cast<int>(i)...},
         m_externalData(preAllocatedData)
-        {
-            ASSERT(CompiletimeMath::isEveryElementLargerThanZero(i...), "Invalid Dimension extents");
-        }
+    {
+        ASSERT(CompiletimeMath::isEveryElementLargerThanZero(i...), "Invalid Dimension extents");
+    }
             
     /** Constructor that takes the extents of the dimensions as a std::array */
     HyperBufferViewMD(pointer_type preAllocatedData, std::array<int, N> dimensionExtents) :
         m_dimensionExtents(dimensionExtents),
         m_externalData(preAllocatedData)
-        {
-            ASSERT(CompiletimeMath::isEveryElementLargerThanZero(m_dimensionExtents), "Invalid Dimension extents");
-        }
+    {
+        ASSERT(CompiletimeMath::isEveryElementLargerThanZero(m_dimensionExtents), "Invalid Dimension extents");
+    }
     
     /** Constructor that takes the extents of the dimensions as a std::vector */
     HyperBufferViewMD(pointer_type preAllocatedData, std::vector<int> dimensionExtentsVector) :
@@ -195,7 +195,7 @@ public:
     const std::array<int, N>& sizes() const noexcept override { return m_dimensionExtents; }
     
 private:
-    /** Build a const N-1 HyperBuffer view to this Hyperbuffer's data */
+    /** Build a N-1 HyperBuffer const view to this Hyperbuffer's data */
     const HyperBufferViewMD<T, N-1> createSubBufferView(size_type index) const
     {
         ASSERT(index < this->size(0), "Index out of range");
