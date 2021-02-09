@@ -21,6 +21,9 @@ TEST_CASE("CompiletimeMath Tests")
     // They are written in catch2 style for convenience only.
     
     SECTION("isEveryElementLargerThanZero") {
+        static_assert(isEveryElementLargerThanZero(1) == true, "");
+        static_assert(isEveryElementLargerThanZero(-1) == false, "");
+        static_assert(isEveryElementLargerThanZero(0) == false, "");
         static_assert(isEveryElementLargerThanZero(1, 2, 99) == true, "");
         static_assert(isEveryElementLargerThanZero(1, 2, -99) == false, "");
         static_assert(isEveryElementLargerThanZero(0, 0) == false, "");
