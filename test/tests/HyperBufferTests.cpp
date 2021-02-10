@@ -225,11 +225,8 @@ TEST_CASE("HyperBuffer Tests - Construction and Data Access")
 
 TEST_CASE("HyperBuffer ctor: different dimension variants")
 {
-    int dim1 = 3;
-    int dim0 = 5;
-    
     SECTION("owning") {
-        HyperBuffer<int, 2> hostClass(dim1, dim0); // calls int ctor
+        HyperBuffer<int, 2> hostClass(3, 5); // calls int ctor
         REQUIRE(hostClass.sizes() == std::array<int, 2>({3, 5}));
         std::array<int, 2> dimArray = {3, 5};
         HyperBuffer<int, 2> hostClass2(dimArray); // calls array ctor
@@ -237,11 +234,19 @@ TEST_CASE("HyperBuffer ctor: different dimension variants")
         std::vector<int> dimVector = {3, 5};
         HyperBuffer<int, 2> hostClass3(dimVector); // calls int* ctor
         REQUIRE(hostClass3.sizes() == std::array<int, 2>({3, 5}));
+  
+        REQUIRE_THROWS(HyperBuffer<int, 2>(std::vector<int>{})); // empty
+        REQUIRE_THROWS(HyperBuffer<int, 2>(std::vector<int>{4})); // missing one dimension
+        REQUIRE_THROWS(HyperBuffer<int, 2>(std::vector<int>{2, 3, 64})); // one dimension too many
+
+        REQUIRE_THROWS(HyperBuffer<int, 1>(0));
+        REQUIRE_THROWS(HyperBuffer<int, 2>(0, 0));
+        REQUIRE_THROWS(HyperBuffer<int, 2>(1, -20));
     }
     
     SECTION("flat view") {
         int data [32];
-        HyperBufferView<int, 2> hostClass(data, dim1, dim0); // calls int ctor
+        HyperBufferView<int, 2> hostClass(data, 3, 5); // calls int ctor
         REQUIRE(hostClass.sizes() == std::array<int, 2>({3, 5}));
         std::array<int, 2> dimArray = {3, 5};
         HyperBufferView<int, 2> hostClass2(data, dimArray); // calls array ctor
@@ -249,11 +254,19 @@ TEST_CASE("HyperBuffer ctor: different dimension variants")
         std::vector<int> dimVector = {3, 5};
         HyperBufferView<int, 2> hostClass3(data, dimVector); // calls int* ctor
         REQUIRE(hostClass3.sizes() == std::array<int, 2>({3, 5}));
+        
+        REQUIRE_THROWS(HyperBufferView<int, 2>(data, std::vector<int>{})); // empty
+        REQUIRE_THROWS(HyperBufferView<int, 2>(data, std::vector<int>{4})); // missing one dimension
+        REQUIRE_THROWS(HyperBufferView<int, 2>(data, std::vector<int>{2, 3, 64})); // one dimension too many
+
+        REQUIRE_THROWS(HyperBufferView<int, 1>(data, 0));
+        REQUIRE_THROWS(HyperBufferView<int, 2>(data, 0, 0));
+        REQUIRE_THROWS(HyperBufferView<int, 2>(data, 1, -20));
     }
     
     SECTION("multidim view") {
         int* data [32];
-        HyperBufferViewMD<int, 2> hostClass(data, dim1, dim0); // calls int ctor
+        HyperBufferViewMD<int, 2> hostClass(data, 3, 5); // calls int ctor
         REQUIRE(hostClass.sizes() == std::array<int, 2>({3, 5}));
         std::array<int, 2> dimArray = {3, 5};
         HyperBufferViewMD<int, 2> hostClass2(data, dimArray); // calls array ctor
@@ -261,6 +274,14 @@ TEST_CASE("HyperBuffer ctor: different dimension variants")
         std::vector<int> dimVector = {3, 5};
         HyperBufferViewMD<int, 2> hostClass3(data, dimVector); // calls int* ctor
         REQUIRE(hostClass3.sizes() == std::array<int, 2>({3, 5}));
+        
+        REQUIRE_THROWS(HyperBufferViewMD<int, 2>(data, std::vector<int>{})); // empty
+        REQUIRE_THROWS(HyperBufferViewMD<int, 2>(data, std::vector<int>{4})); // missing one dimension
+        REQUIRE_THROWS(HyperBufferViewMD<int, 2>(data, std::vector<int>{2, 3, 64})); // one dimension too many
+
+        REQUIRE_THROWS(HyperBufferViewMD<int, 1>(nullptr, 0));
+        REQUIRE_THROWS(HyperBufferViewMD<int, 2>(data, 0, 0));
+        REQUIRE_THROWS(HyperBufferViewMD<int, 2>(data, 1, -20));
     }
 }
 
@@ -418,4 +439,75 @@ TEST_CASE("HyperBuffer: Sub-Buffer Assignmemt")
     
     //TODO: Sub-Buffer assigment
     //buffer.at(0,0) = bufferData;
+}
+
+TEST_CASE("HyperBuffer: out of memory")
+{
+    // this test is mainly here to improve branch coverage by simulating an out-of-memory condition
+    // NOTE: cannot do REQUIRE_THROWS on a constructor
+ 
+    SECTION("owning")
+    {
+        { // fails allocating data
+            ScopedMemorySentinel scopedSentinel(100);
+            REQUIRE_THROWS(HyperBuffer<int, 3>(3, 3, 8));
+        }
+        { // succeeds allocating data, fails at pointers
+            ScopedMemorySentinel scopedSentinel(300);
+            REQUIRE_THROWS(HyperBuffer<int, 3>(3, 3, 8));
+        }
+    }
+    
+    SECTION("view flat")
+    {
+        ScopedMemorySentinel scopedSentinel(32); // allow allocation of 32 bytes only
+        int dataRaw1 [3*3*8];
+        REQUIRE_THROWS(HyperBufferView<int, 3>(dataRaw1, 3, 3, 8));
+    }
+    SECTION("view multidim -- does not allocate")
+    {
+        BUILD_MULTIDIM_ON_STACK_3_3_8(multiDimData); // this allocation shall not be monitored
+        {
+            ScopedMemorySentinel scopedSentinel;
+            HyperBufferViewMD<int, 3> buffer(multiDimData, 3, 3, 8);
+        }
+    }
+}
+
+TEST_CASE("HyperBuffer: memory allocation - precise verification")
+{
+    BufferGeometry<3> bufferGeo(3, 3, 8);
+    int dataArraySizeBytes = bufferGeo.getRequiredDataArraySize() * sizeof(int);
+    int pointerArraySizeBytes = bufferGeo.getRequiredPointerArraySize() * sizeof(int*);
+
+    auto& sentinel = MemorySentinel::getInstance();
+    MemorySentinel::setTransgressionBehaviour(MemorySentinel::TransgressionBehaviour::THROW_EXCEPTION);
+    
+    SECTION("owning") {
+        sentinel.setArmed(true);
+#if defined(_MSC_VER) && defined(_DEBUG) &&_ITERATOR_DEBUG_LEVEL > 1
+        dataArraySizeBytes += 16; // debug iterator (?)
+        pointerArraySizeBytes += 16; // debug iterator (?)
+#endif
+        MemorySentinel::setAllocationQuota(dataArraySizeBytes + pointerArraySizeBytes);
+        HyperBuffer<int, 3> buffer(bufferGeo.getDimensionExtents());
+        
+        MemorySentinel::setAllocationQuota(dataArraySizeBytes + pointerArraySizeBytes - 1);
+        REQUIRE_THROWS(HyperBuffer<int, 3>(bufferGeo.getDimensionExtents()));
+        sentinel.setArmed(false);
+    }
+    SECTION("view") {
+        std::vector<int> data(bufferGeo.getRequiredDataArraySize());
+        sentinel.setArmed(true);
+
+#if defined(_MSC_VER) && defined(_DEBUG) &&_ITERATOR_DEBUG_LEVEL > 1
+        pointerArraySizeBytes += 16; // debug iterator (?)
+#endif
+        MemorySentinel::setAllocationQuota(pointerArraySizeBytes);
+        HyperBufferView<int, 3> buffer(data.data(), bufferGeo.getDimensionExtents());
+        
+        MemorySentinel::setAllocationQuota(pointerArraySizeBytes-1);
+        REQUIRE_THROWS(HyperBufferView<int, 3>(data.data(), bufferGeo.getDimensionExtents()));
+        sentinel.setArmed(false);
+    }
 }

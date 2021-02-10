@@ -16,13 +16,27 @@ namespace slb
 namespace CompiletimeMath
 {
 
+// MARK: - isEveryElementLargerThanZero
+/** @returns true if every element of the parameter pack is > 0 */
+template<typename... Args, typename T = typename std::common_type<Args...>::type>
+constexpr bool isEveryElementLargerThanZero(Args... args) noexcept
+{
+    T limit {0};
+    T values[] { args... };
+    bool r = true;
+    for (int i = 0 ; i < static_cast<int>(sizeof...(args)); ++i) {
+        r = r && values[i] > limit;
+    }
+    return r;
+}
+
 // MARK: - Sum
 /** Calculate the sum of a given number of args in parameter pack - starting from the given firstSummand (1-based) */
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
 constexpr T sumOverRange(int firstSummand, int numSummands, Args... args) noexcept
 {
     firstSummand = std::max<int>(firstSummand, 1);
-    numSummands = std::min<int>(numSummands, sizeof...(args) - firstSummand + 1);
+    numSummands = std::min<int>(numSummands, static_cast<int>(sizeof...(args)) - firstSummand + 1);
     
     T sum {0};
     T values[] { args... };
@@ -54,7 +68,7 @@ constexpr T productOverRange(int firstFactor, int numFactors, Args... args) noex
 {
     if (numFactors <= 0) { return 0; }
     firstFactor = std::max<int>(firstFactor, 1);
-    numFactors = std::min<int>(numFactors, sizeof...(args) - firstFactor + 1);
+    numFactors = std::min<int>(numFactors, static_cast<int>(sizeof...(args)) - firstFactor + 1);
     
     T product{1};
     T values[]{ args... };
@@ -88,7 +102,7 @@ template<typename... Args, typename T = typename std::common_type<Args...>::type
 constexpr T sumOfCumulativeProductOverRange(int firstElement, int numElements, Args... args) noexcept
 {
     firstElement = std::max<int>(firstElement, 1);
-    numElements = std::min<int>(numElements, sizeof...(args) - firstElement + 1);
+    numElements = std::min<int>(numElements, static_cast<int>(sizeof...(args)) - firstElement + 1);
     
     T sum{0};
     T values[]{ args... };

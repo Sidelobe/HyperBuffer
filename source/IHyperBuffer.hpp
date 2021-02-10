@@ -49,13 +49,13 @@ public:
     
     // MARK: dimension extents
     virtual                   int size(int i) const = 0;
-    virtual const std::array<int, N>& sizes() const = 0;
+    virtual const std::array<int, N>& sizes() const noexcept = 0;
 
     // MARK: data() -- raw pointer to beginning of underlying storage (pointers or data, depending on dimension)
-    FOR_Nx const_pointer_type data() const { return getDataPointer_Nx(); }
-    FOR_Nx       pointer_type data()       { return getDataPointer_Nx(); }
-    FOR_N1           const T* data() const { return getDataPointer_N1(); }
-    FOR_N1                 T* data()       { return getDataPointer_N1(); }
+    FOR_Nx const_pointer_type data() const noexcept { return getDataPointer_Nx(); }
+    FOR_Nx       pointer_type data()       noexcept { return getDataPointer_Nx(); }
+    FOR_N1           const T* data() const noexcept { return getDataPointer_N1(); }
+    FOR_N1                 T* data()       noexcept { return getDataPointer_N1(); }
     
     // MARK: operator[] -- raw data/pointer access; returns pointer N>1, reference for N=1
     FOR_Nx subdim_const_pointer_type operator[] (size_type i) const { return getDataPointer_Nx()[i]; }
@@ -73,10 +73,10 @@ public:
 
 protected:
     // MARK: Virtual functions to be defined by derived classes
-    virtual const_pointer_type getDataPointer_Nx() const = 0;
-    virtual       pointer_type getDataPointer_Nx() = 0;
-    virtual const T* getDataPointer_N1() const = 0;
-    virtual       T* getDataPointer_N1() = 0;
+    virtual const_pointer_type getDataPointer_Nx() const noexcept = 0;
+    virtual       pointer_type getDataPointer_Nx()       noexcept = 0;
+    virtual           const T* getDataPointer_N1() const noexcept = 0;
+    virtual                 T* getDataPointer_N1()       noexcept = 0;
     
 };
 

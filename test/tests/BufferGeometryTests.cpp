@@ -203,6 +203,28 @@ TEST_CASE("BufferGeometry Tests")
         std::array<int, N> dims{3};
         BufferGeometry<N> bufferGeo2(dims);
     }
+    
+    SECTION("Empty & singleton dimensions") {
+        BufferGeometry<3> bufferGeo(1, 1, 1);
+        REQUIRE(bufferGeo.getRequiredDataArraySize() == 1);
+        REQUIRE(bufferGeo.getRequiredPointerArraySize() == 2);
+
+        BufferGeometry<4>bufferGeo2(1, 1, 1, 0);
+        REQUIRE(bufferGeo2.getRequiredDataArraySize() == 0);
+        REQUIRE(bufferGeo2.getRequiredPointerArraySize() == 3);
+
+        BufferGeometry<1> bufferGeo3(1);
+        REQUIRE(bufferGeo3.getRequiredDataArraySize() == 1);
+        REQUIRE(bufferGeo3.getRequiredPointerArraySize() == 1);
+        
+        BufferGeometry<1> bufferGeo4(0);
+        REQUIRE(bufferGeo4.getRequiredDataArraySize() == 0);
+        REQUIRE(bufferGeo4.getRequiredPointerArraySize() == 1);
+
+        BufferGeometry<2> bufferGeo5(0, 0);
+        REQUIRE(bufferGeo5.getRequiredDataArraySize() == 0);
+        REQUIRE(bufferGeo5.getRequiredPointerArraySize() == 1);
+    }
 
     SECTION("Allocation in Dynamic containers") {
         constexpr int N = 3;
