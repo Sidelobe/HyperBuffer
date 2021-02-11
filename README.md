@@ -45,7 +45,7 @@ wrapper[0][1] = 0.22f; // access left channel, second sample
 
 ## Design paradigms:
 
-HyperBuffer is designed as a multi-dimensional extension to `std::array` and/or `std::vector`. However, it differs from said standard library classes on the 'points of commitment', i.e. the point in time at which certain parameters have to be specified (and cannot be changed afterwards):
+HyperBuffer is designed as a multi-dimensional counterpart to `std::array` and/or `std::vector`. However, it differs from said standard library classes on the 'points of commitment', i.e. the point in time at which certain parameters have to be specified (and cannot be changed afterwards):
 
 |                          | `HyperBuffer`           | `std::array` | `std::vector` |
 |--------------------------|:-----------------------:|:------------:|:------------:|
