@@ -75,6 +75,7 @@ private:
 private:
     friend IHyperBuffer<T, N, HyperBuffer<T, N>>;
 
+    /** Handles the geometry (organization) of the data memory, enabling multi-dimensional access to it */
     BufferGeometry<N> m_bufferGeometry;
     
     /** All the data (innermost dimension) is stored in a 1D structure and access with offsets to simulate multi-dimensionality */
@@ -150,8 +151,13 @@ private:
 private:
     friend IHyperBuffer<T, N, HyperBufferView<T, N>>;
     
+    /** Handles the geometry (organization) of the data memory, enabling multi-dimensional access to it */
     BufferGeometry<N> m_bufferGeometry;
+    
+    /** Pointer to the externally-allocated data memory */
     T* m_externalData;
+    
+    /** All but the innermost dimensions consist of pointers only, which are stored in a 1D structure as well */
     std::vector<T*> m_pointers;
 };
 
@@ -226,6 +232,8 @@ private:
     friend IHyperBuffer<T, N, HyperBufferViewMD<T, N>>;
     
     std::array<int, N> m_dimensionExtents;
+    
+    /** Pointer to the externally-allocated multi-dimensional data memory */
     pointer_type m_externalData;
 };
 
