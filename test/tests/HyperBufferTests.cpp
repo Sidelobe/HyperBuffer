@@ -262,6 +262,13 @@ TEST_CASE("HyperBuffer ctor: different dimension variants")
         REQUIRE_THROWS(HyperBufferView<int, 1>(data, 0));
         REQUIRE_THROWS(HyperBufferView<int, 2>(data, 0, 0));
         REQUIRE_THROWS(HyperBufferView<int, 2>(data, 1, -20));
+        
+        // Build a View from an owning Buffer
+        HyperBuffer<int, 2> owner(3, 5);
+        HyperBufferView<int, 2> nonOwner(owner);
+        REQUIRE(owner.sizes() == nonOwner.sizes());
+        REQUIRE(*owner.data() == *nonOwner.data());
+        REQUIRE(&owner[1][3] == &nonOwner[1][3]);
     }
     
     SECTION("multidim view") {

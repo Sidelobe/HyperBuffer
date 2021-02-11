@@ -115,6 +115,15 @@ public:
         m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
     }
     
+    /** Constructor that takes an existing (owning) HyperBuffer and creates a (non-owning) HyperBufferView from it */
+    HyperBufferView(HyperBuffer<T, N>& owningBuffer) :
+        m_bufferGeometry(owningBuffer.sizes()),
+        m_externalData(*owningBuffer.data()),
+        m_pointers(m_bufferGeometry.getRequiredPointerArraySize())
+    {
+        m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
+    }
+    
     int size(int i) const override { ASSERT(i < N); return m_bufferGeometry.getDimensionExtents()[i]; }
     const std::array<int, N>& sizes() const noexcept override { return m_bufferGeometry.getDimensionExtents(); }
     
