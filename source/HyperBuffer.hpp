@@ -117,7 +117,7 @@ public:
     }
     
     /** Constructor that takes an existing (owning) HyperBuffer and creates a (non-owning) HyperBufferView from it */
-    HyperBufferView(HyperBuffer<T, N>& owningBuffer) :
+    explicit HyperBufferView(HyperBuffer<T, N>& owningBuffer) :
         m_bufferGeometry(owningBuffer.sizes()),
         m_externalData(*owningBuffer.data()),
         m_pointers(m_bufferGeometry.getRequiredPointerArraySize())
