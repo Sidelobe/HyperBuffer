@@ -75,6 +75,7 @@ private:
 private:
     friend IHyperBuffer<T, N, HyperBuffer<T, N>>;
 
+    /** Handles the geometry (organization) of the data memory, enabling multi-dimensional access to it */
     BufferGeometry<N> m_bufferGeometry;
     
     /** All the data (innermost dimension) is stored in a 1D structure and access with offsets to simulate multi-dimensionality */
@@ -115,6 +116,15 @@ public:
         m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
     }
     
+    /** Constructor that takes an existing (owning) HyperBuffer and creates a (non-owning) HyperBufferView from it */
+    explicit HyperBufferView(HyperBuffer<T, N>& owningBuffer) :
+        m_bufferGeometry(owningBuffer.sizes()),
+        m_externalData(*owningBuffer.data()),
+        m_pointers(m_bufferGeometry.getRequiredPointerArraySize())
+    {
+        m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
+    }
+    
     int size(int i) const override { ASSERT(i < N); return m_bufferGeometry.getDimensionExtents()[i]; }
     const std::array<int, N>& sizes() const noexcept override { return m_bufferGeometry.getDimensionExtents(); }
     
@@ -141,8 +151,13 @@ private:
 private:
     friend IHyperBuffer<T, N, HyperBufferView<T, N>>;
     
+    /** Handles the geometry (organization) of the data memory, enabling multi-dimensional access to it */
     BufferGeometry<N> m_bufferGeometry;
+    
+    /** Pointer to the externally-allocated data memory */
     T* m_externalData;
+    
+    /** All but the innermost dimensions consist of pointers only, which are stored in a 1D structure as well */
     std::vector<T*> m_pointers;
 };
 
@@ -217,6 +232,8 @@ private:
     friend IHyperBuffer<T, N, HyperBufferViewMD<T, N>>;
     
     std::array<int, N> m_dimensionExtents;
+    
+    /** Pointer to the externally-allocated multi-dimensional data memory */
     pointer_type m_externalData;
 };
 

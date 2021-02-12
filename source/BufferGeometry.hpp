@@ -18,8 +18,9 @@ namespace slb
 
 /**
  * This class performs the 'geometry' calculations for certain set of dimension extents.
+ * It allows multi-dimensional access to one-dimensional memory.
  *
- * The underlying data model resembles two self-referencing flat arrays that contain all the pointers (for every
+ * The underlying data model resembles two self-referencing flat (1D) arrays that contain all the pointers (for every
  * dimension except the lowest-order) and all the data (lowest-order dimension).
  */
 template<int N>
