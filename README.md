@@ -28,7 +28,7 @@ float* outerDimension1 = subBuffer.data();
 // Any number of dimensions
 HyperBuffer<int, 8> buffer8D (3, 4, 3, 1, 6, 256, 11, 7); 
 
-// Wrapper for existing multi-dimensional data
+// Wrapper for existing multi-dimensional data (zero dynamic memory allocation!)
 float bufferL[]{ 0.1f, 0.2f, 0.3f };  float bufferR[]{ -0.1f, -0.2f, -0.3f };
 float* stereoBuffer[2] = { bufferL, bufferR };
 HyperBufferViewMD<float, 2> wrapper(stereoBuffer, 2, 3);

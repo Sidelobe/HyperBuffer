@@ -25,9 +25,9 @@ endfunction()
 ##############################
 #### MAIN
 project(HyperBuffer
-        VERSION 0.1.0
-        DESCRIPTION "A header-only C++ data structure to manage multi-dimensional data"
-        HOMEPAGE_URL "https://github.com/Sidelobe/Hypbuffer")
+        VERSION 1.0.0
+        DESCRIPTION "A header-only C++ data structure to manage multi-dimensional efficiently and safely"
+        HOMEPAGE_URL "https://github.com/Sidelobe/Hyperbuffer")
 
 # Set C++ standard to C++14
 set(CMAKE_CXX_STANDARD 14)
