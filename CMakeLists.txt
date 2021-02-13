@@ -24,10 +24,11 @@ endfunction()
 
 # build target with code coverage information
 function(generate_code_coverage_data _target)
+    # When building with coverage, we disable exceptions, for more meaningful results
     target_compile_options(${_target} PRIVATE
-            $<$<COMPILE_LANGUAGE:CXX>:-fprofile-arcs -ftest-coverage>
-            $<$<COMPILE_LANGUAGE:C>:-fprofile-arcs -ftest-coverage>)
-        target_link_options(${_target} PRIVATE -fprofile-arcs -ftest-coverage)
+            $<$<COMPILE_LANGUAGE:CXX>:-fprofile-arcs -ftest-coverage -fno-exceptions -fno-inline>
+            $<$<COMPILE_LANGUAGE:C>:-fprofile-arcs -ftest-coverage -fno-exceptions -fno-inline>)
+    target_link_options(${_target} PRIVATE -fprofile-arcs -ftest-coverage)
 endfunction()
 
 ##############################
