@@ -40,7 +40,7 @@ wrapper[0][1] = 0.22f; // access left channel, second sample
  - C++14, STL only
  - Compiled & Tested with:
  	- GCC/g++ 9.3.0 (Linux)
-	- Clang 11 (Xcode 11.3, macos)
+	- Clang 11 (Xcode 11.6, macos)
 	- MSVC++ 19.28 (Visual Studio 2019, Windows) 
 
 ## Design paradigms:

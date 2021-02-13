@@ -10,7 +10,7 @@ matrix:
           env: CONFIG="Debug" COMPILER='clang++'  COV="no"
           
         - os: osx
-          osx_image: xcode10.1
+          osx_image: xcode11.6
           compiler: clang
           env: CONFIG="Release" COMPILER='clang++' COV="yes" ASAN="yes"
           addons:
