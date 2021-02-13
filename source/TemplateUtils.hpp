@@ -14,6 +14,14 @@
 
 #define UNUSED(x) (void)x
 
+/* Macro to detect if exceptions are disabled (works on GCC, Clang and MSVC) 3 */
+#ifndef __has_feature
+#define __has_feature(x) 0
+#endif
+#if !__has_feature(cxx_exceptions) && !defined(__cpp_exceptions) && !defined(__EXCEPTIONS) && !defined(_CPPUNWIND)
+  #define EXCEPTIONS_DISABLED
+#endif
+
 /* these functions are coming in C++17, MSVC already defines them */
 #if (__cplusplus < 201703) && !defined(_MSC_VER)
 namespace std
@@ -38,14 +46,23 @@ namespace Assertions
 #endif
 
 /**
- * NOTE: this assertion handler is constexpr - to allow its use inside constexpr functions.
+ * Custom assertion handler
+ *
+ * @note: this assertion handler is constexpr - to allow its use inside constexpr functions.
  * The handler will still be evaluated at runtime, but memory is only allocated IF the assertion is triggered.
  */
 static constexpr void handleAssert(const char* conditionAsText, bool condition, const char* file, int line, const char* message = "")
 {
-    if (condition == false) {
-        throw std::runtime_error(std::string("Assertion failed: ") + conditionAsText + " (" + file + ":" + std::to_string(line) + ") " + message);
+    if (condition == true) {
+        return;
     }
+    
+#ifdef EXCEPTIONS_DISABLED
+    UNUSED(conditionAsText); UNUSED(file); UNUSED(line); UNUSED(message);
+    assert(0 && message);
+#else
+    throw std::runtime_error(std::string("Assertion failed: ") + conditionAsText + " (" + file + ":" + std::to_string(line) + ") " + message);
+#endif
 }
 } // namespace Assertions
 

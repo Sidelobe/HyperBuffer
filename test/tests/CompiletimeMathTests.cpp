@@ -21,12 +21,12 @@ TEST_CASE("CompiletimeMath Tests")
     // They are written in catch2 style for convenience only.
     
     SECTION("isEveryElementLargerThanZero") {
-        static_assert(isEveryElementLargerThanZero(1) == true, "");
-        static_assert(isEveryElementLargerThanZero(-1) == false, "");
-        static_assert(isEveryElementLargerThanZero(0) == false, "");
-        static_assert(isEveryElementLargerThanZero(1, 2, 99) == true, "");
-        static_assert(isEveryElementLargerThanZero(1, 2, -99) == false, "");
-        static_assert(isEveryElementLargerThanZero(0, 0) == false, "");
+        static_assert(areAllPositive(1) == true, "");
+        static_assert(areAllPositive(-1) == false, "");
+        static_assert(areAllPositive(0) == false, "");
+        static_assert(areAllPositive(1, 2, 99) == true, "");
+        static_assert(areAllPositive(1, 2, -99) == false, "");
+        static_assert(areAllPositive(0, 0) == false, "");
     }
     
     SECTION("sum") {
@@ -139,15 +139,30 @@ TEST_CASE("CompiletimeMath Tests")
     
     // These run-time test were added solely to satisfy code coverage metrics (traverse every branch)
     
+    REQUIRE(areAllPositive(1));
+    REQUIRE_FALSE(areAllPositive(0));
+    REQUIRE_FALSE(areAllPositive(-1));
+    REQUIRE(areAllPositive(1, 1));
+    REQUIRE_FALSE(areAllPositive(0, 1));
+    REQUIRE_FALSE(areAllPositive(1, -1));
+    REQUIRE_FALSE(areAllPositive(1, 2, -3));
+    REQUIRE(areAllPositive(1, 3, 6));
+    REQUIRE_FALSE(areAllPositive(-1, 3, 6));
+
     REQUIRE(sumOverRange(1, 0, 2, 2, 3) == 0); // zero summands
     REQUIRE(sumOverRange(2, -1, 2, 2, 3) == 0); // negative num summands
     REQUIRE(sumOverRange(-1, 1, 2, 2, 3) == 2); // negative range start
     REQUIRE(sumOverRange(0, 0, 1) == 0);
-    
+    REQUIRE(sumOverRange(1, 4, 1) == 1);
+
     REQUIRE(productOverRange(1, 0, 2, 2, 3) == 0); // zero summands
     REQUIRE(productOverRange(2, -1, 2, 2, 3) == 0); // negative num summands
     REQUIRE(productOverRange(-1, 1, 2, 2, 3) == 2); // negative range start
     REQUIRE(productOverRange(0, 0, 1) == 0);
-
+    REQUIRE(productOverRange(0, -1, 1) == 0);
     
+    REQUIRE(sumOfCumulativeProductOverRange(0, 0, 1) == 0);
+    REQUIRE(sumOfCumulativeProductOverRange(-1, 0, 1) == 0);
+    REQUIRE(sumOfCumulativeProductOverRange(-1, -1, 1) == 0);
+
 }

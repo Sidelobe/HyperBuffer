@@ -16,18 +16,16 @@ namespace slb
 namespace CompiletimeMath
 {
 
-// MARK: - isEveryElementLargerThanZero
-/** @returns true if every element of the parameter pack is > 0 */
+// MARK: - areAllPositive
+/** @returns true if every element of the parameter pack is > 0 [base case] */
+template<typename T>
+constexpr bool areAllPositive(T first) noexcept { return first > T{0}; }
+
+/** @returns true if every element of the parameter pack is > 0 [recursive] */
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
-constexpr bool isEveryElementLargerThanZero(Args... args) noexcept
+constexpr bool areAllPositive(T first, Args... args) noexcept
 {
-    T limit {0};
-    T values[] { args... };
-    bool r = true;
-    for (int i = 0 ; i < static_cast<int>(sizeof...(args)); ++i) {
-        r = r && values[i] > limit;
-    }
-    return r;
+    return areAllPositive(first) && areAllPositive(args...);
 }
 
 // MARK: - Sum
@@ -66,11 +64,11 @@ constexpr T sum(Args... args) noexcept
 template<typename... Args, typename T = typename std::common_type<Args...>::type>
 constexpr T productOverRange(int firstFactor, int numFactors, Args... args) noexcept
 {
-    if (numFactors <= 0) { return 0; }
+    T product{1};
+    if (numFactors <= 0) { product = {0}; }
     firstFactor = std::max<int>(firstFactor, 1);
     numFactors = std::min<int>(numFactors, static_cast<int>(sizeof...(args)) - firstFactor + 1);
     
-    T product{1};
     T values[]{ args... };
      for (int i=firstFactor; i < firstFactor+numFactors; ++i) {
         product *= values[i-1];

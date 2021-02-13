@@ -42,7 +42,7 @@ public:
         m_data(m_bufferGeometry.getRequiredDataArraySize()),
         m_pointers(m_bufferGeometry.getRequiredPointerArraySize())
     {
-        ASSERT(CompiletimeMath::isEveryElementLargerThanZero(i...), "Invalid Dimension extents");
+        ASSERT(CompiletimeMath::areAllPositive(i...), "Invalid Dimension extents");
         m_bufferGeometry.hookupPointerArrayToData(m_data.data(), m_pointers.data());
     }
     
@@ -112,7 +112,7 @@ public:
     m_externalData(preAllocatedDataFlat),
     m_pointers(m_bufferGeometry.getRequiredPointerArraySize())
     {
-        ASSERT(CompiletimeMath::isEveryElementLargerThanZero(i...), "Invalid Dimension extents");
+        ASSERT(CompiletimeMath::areAllPositive(i...), "Invalid Dimension extents");
         m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
     }
     
@@ -186,7 +186,7 @@ public:
         m_dimensionExtents{static_cast<int>(i)...},
         m_externalData(preAllocatedData)
     {
-        ASSERT(CompiletimeMath::isEveryElementLargerThanZero(i...), "Invalid Dimension extents");
+        ASSERT(CompiletimeMath::areAllPositive(i...), "Invalid Dimension extents");
     }
             
     /** Constructor that takes the extents of the dimensions as a std::array */
@@ -194,7 +194,7 @@ public:
         m_dimensionExtents(dimensionExtents),
         m_externalData(preAllocatedData)
     {
-        ASSERT(CompiletimeMath::isEveryElementLargerThanZero(m_dimensionExtents), "Invalid Dimension extents");
+        ASSERT(CompiletimeMath::areAllPositive(m_dimensionExtents), "Invalid Dimension extents");
     }
     
     /** Constructor that takes the extents of the dimensions as a std::vector */
@@ -203,7 +203,7 @@ public:
     {
         ASSERT(dimensionExtentsVector.size() == N, "Incorrect number of dimension extents");
         std::copy(dimensionExtentsVector.begin(), dimensionExtentsVector.end(), m_dimensionExtents.begin());
-        ASSERT(CompiletimeMath::isEveryElementLargerThanZero(m_dimensionExtents), "Invalid Dimension extents");
+        ASSERT(CompiletimeMath::areAllPositive(m_dimensionExtents), "Invalid Dimension extents");
     }
     
     int size(int i) const override { ASSERT(i < N); return m_dimensionExtents[i]; }

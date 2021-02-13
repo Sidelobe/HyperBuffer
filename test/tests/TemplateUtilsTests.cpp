@@ -17,6 +17,7 @@ using namespace slb;
 
 TEST_CASE("TemplateUtils Assertion Tests")
 {
+    ASSERT(true);
     REQUIRE_THROWS(ASSERT(false));
 }
 
