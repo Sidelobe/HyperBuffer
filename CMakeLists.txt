@@ -22,15 +22,6 @@ function(assign_include_dirs_from_sources _target)
     target_include_directories(${_target} PRIVATE ${_include_dirs})
 endfunction()
 
-# build target with code coverage information
-function(generate_code_coverage_data _target)
-    # When building with coverage, we disable exceptions, for more meaningful results
-    target_compile_options(${_target} PRIVATE
-            $<$<COMPILE_LANGUAGE:CXX>:-fprofile-arcs -ftest-coverage -fno-exceptions -fno-inline>
-            $<$<COMPILE_LANGUAGE:C>:-fprofile-arcs -ftest-coverage -fno-exceptions -fno-inline>)
-    target_link_options(${_target} PRIVATE -fprofile-arcs -ftest-coverage)
-endfunction()
-
 ##############################
 #### MAIN
 project(HyperBuffer
@@ -44,6 +35,7 @@ set(CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CODE_COVERAGE OFF CACHE BOOL "Build with instrumentation and code coverage")
+set(ASAN OFF CACHE BOOL "Build with address sanitizer enabled")
 
 # SOURCE TARGET --- "interface", since we have a header-only library
 file(GLOB_RECURSE source "source/*.h*")
@@ -53,7 +45,7 @@ target_include_directories(${PROJECT_NAME} INTERFACE ${source})
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_14)
 
 # TEST TARGET
-set (TEST_NAME "${PROJECT_NAME}Test")
+set(TEST_NAME "${PROJECT_NAME}Test")
 file(GLOB_RECURSE source_test "test/tests/*.c*")
 file(GLOB main_file "test/main.cpp" "test/TestCommon.hpp")
 list(APPEND source_test ${main_file})
@@ -66,9 +58,20 @@ target_link_libraries(${TEST_NAME} PUBLIC ${PROJECT_NAME})
 source_group("Sources" FILES ${source})
 source_group("Tests" FILES ${source_test})
 
-if(CODE_COVERAGE)
-    generate_code_coverage_data(${TEST_NAME})
+if (CODE_COVERAGE)
+  message("Code Coverage tracking enabled")
+  # When building with coverage, we disable exceptions, for more meaningful results
+  target_compile_options(${TEST_NAME} PRIVATE
+          $<$<COMPILE_LANGUAGE:CXX>:-fprofile-arcs -ftest-coverage -fno-exceptions -fno-inline>
+          $<$<COMPILE_LANGUAGE:C>:-fprofile-arcs -ftest-coverage -fno-exceptions -fno-inline>)
+  target_link_options(${TEST_NAME} PRIVATE -fprofile-arcs -ftest-coverage)
 endif(CODE_COVERAGE)
+
+if (ASAN)
+  message("Address Sanitizer enabled")
+  target_compile_options(${TEST_NAME} PRIVATE -fno-omit-frame-pointer -fsanitize=address)
+  target_link_options(${TEST_NAME} PRIVATE -fno-omit-frame-pointer -fsanitize=address)
+endif(ASAN)
 
 # Add external-utils
 target_include_directories(${TEST_NAME} SYSTEM PRIVATE test/external-utils)
@@ -128,7 +131,7 @@ else()
 endif()
 
 # Explicitly set CMP0110 to "NEW" to allow whitespace in tests names
-if(POLICY CMP0110)
+if (POLICY CMP0110)
   cmake_policy(SET CMP0110 NEW)
 endif()
 
