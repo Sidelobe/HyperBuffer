@@ -145,6 +145,9 @@ TEST_CASE("CompiletimeMath Tests")
     REQUIRE(areAllPositive(1, 1));
     REQUIRE_FALSE(areAllPositive(0, 1));
     REQUIRE_FALSE(areAllPositive(1, -1));
+    REQUIRE_FALSE(areAllPositive(1, 2, -3));
+    REQUIRE(areAllPositive(1, 3, 6));
+    REQUIRE_FALSE(areAllPositive(-1, 3, 6));
 
     REQUIRE(sumOverRange(1, 0, 2, 2, 3) == 0); // zero summands
     REQUIRE(sumOverRange(2, -1, 2, 2, 3) == 0); // negative num summands
