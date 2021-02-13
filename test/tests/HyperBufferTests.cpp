@@ -86,6 +86,9 @@ TEST_CASE("HyperBuffer Tests - Construction and Data Access")
             const auto& constBuffer = buffer;
             const int* rawConst = constBuffer.data(); UNUSED(rawConst);
         }
+        // const operator[]
+        const auto& constBuffer = buffer;
+        REQUIRE(constBuffer[1] == -99);
     };
     auto verify2D = [](auto& buffer)
     {
@@ -375,16 +378,10 @@ TEST_CASE("HyperBuffer const correctness")
 TEST_CASE("HyperBuffer: sub-buffer construction & at() access")
 {
     // assumes a {3, 3, 8} buffer
-    auto verify = [](auto& buffer)
+    auto verifyConst = [](const auto& buffer)
     {
-        // RW Access to data via at()
-        REQUIRE(buffer.at(0, 1, 5) == 13);
-        buffer.at(0, 1, 5) = -13;
-        REQUIRE(buffer.at(0, 1, 5) == -13);
-        buffer.at(0, 1, 5) = 13; // restore original value
-        
         // N-1 Sub-buffer -> 2D
-        int subBufferIndex = GENERATE(0, 1, 2);
+        int subBufferIndex = GENERATE(0, 2);
         
         auto subBuffer = buffer.at(subBufferIndex);
         REQUIRE(subBuffer.sizes() == std::array<int, 2>{buffer.size(1), buffer.size(2)});
@@ -405,13 +402,34 @@ TEST_CASE("HyperBuffer: sub-buffer construction & at() access")
         }
     };
     
+    // assumes a {3, 3, 8} buffer
+    auto verify = [verifyConst](auto& buffer)
+    {
+        verifyConst(buffer);
+        
+        // Write Access to data via at()
+        REQUIRE(buffer.at(0, 1, 5) == 13);
+        buffer.at(0, 1, 5) = -13;
+        REQUIRE(buffer.at(0, 1, 5) == -13);
+        buffer.at(0, 1, 5) = 13; // restore original value
+        
+        int subBufferIndex = 2;
+        int subBufferIndex2 = 1;
+        auto subBuffer2 = buffer.at(subBufferIndex, subBufferIndex2);
+        int j = 0;
+        for (int m=0; m < subBuffer2.size(0); ++m) {
+            REQUIRE(subBuffer2[m] == buffer.size(1) * buffer.size(2) * subBufferIndex + buffer.size(2) * subBufferIndex2 + j++);
+        }
+    };
+    
     SECTION("owning") {
         HyperBuffer<int, 3> buffer(3, 3, 8);
         fillWith3DSequence(buffer);
-        
         // NOTE: A sub-buffer of HyperBuffer is a HyperBufferView pointing to the HyperBuffer's data!
-        
         verify(buffer);
+        
+        const HyperBuffer<int, 3> constBuffer = buffer;
+        verifyConst(buffer);
     }
     
     SECTION("view flat") {
@@ -426,7 +444,7 @@ TEST_CASE("HyperBuffer: sub-buffer construction & at() access")
         fillWith3DSequence(buffer);
         verify(buffer);
         
-        { // Creating a subbuffer also does not allocate memory
+        { // Creating a sub-buffer also does not allocate memory
             ScopedMemorySentinel sentinel;
             auto subBuffer = buffer.at(1);
         }
@@ -451,7 +469,7 @@ TEST_CASE("HyperBuffer: Sub-Buffer Assignmemt")
 TEST_CASE("HyperBuffer: out of memory")
 {
     // this test is mainly here to improve branch coverage by simulating an out-of-memory condition
-    // NOTE: cannot do REQUIRE_THROWS on a constructor
+    // NOTE: cannot do REQUIRE_THROWS_AS on a constructor
  
     SECTION("owning")
     {
