@@ -59,7 +59,7 @@ HyperBuffer is designed as a multi-dimensional counterpart to `std::array` and/o
 
 Design choices were carefully weighed with the following prime directive in mind: avoid dynamic memory allocation as much as possible. This is crucial in realtime environments with a strict need for deterministic behaviour (e.g. audio processing threads). 
 
-Thanks to the chosen memory model, dynamic memory allocation happens only during construction. Furthermore, the entire data and pointer memory is allocated in a single call (cf. documentation in [Design Details](/docu/HyperBuffer Design Details.mds)), thereby avoiding memory fragmentation / churn.
+Thanks to the chosen memory model, dynamic memory allocation happens only during construction. Furthermore, the entire data and pointer memory is allocated in a single call (cf. documentation in [Design Details](/docu/HyperBuffer Design Details.md)), thereby avoiding memory fragmentation / churn.
 
 ### Data Storage & Ownership Variants
 
