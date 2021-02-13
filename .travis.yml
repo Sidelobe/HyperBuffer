@@ -7,17 +7,17 @@ matrix:
         - os: osx
           osx_image: xcode10.1
           compiler: clang
-          env: CONFIG="Debug" COMPILER='clang++' COV="yes"
+          env: CONFIG="Debug" COMPILER='clang++'  COV="no"
+          
+        - os: osx
+          osx_image: xcode10.1
+          compiler: clang
+          env: CONFIG="Release" COMPILER='clang++' COV="yes"
           addons:
             sonarcloud:
                 organization: "idelobe" # the key of the org you chose at step #3
                 token:
                     secure: "A0Qtq8CLpu5aFLElfkhJYSvuvtwTUNsyUQJIVstKn/XUIehsaU8o1xbSG475O3P3BvJHgYWcj/dW+Hf3yTCfML+5jtA5fj9uijloN4GrJVmlCBX7r7GUbcrWWP9BTwnIM7HOEf5Pjw5USfMcqjYBL3ztVizGfUkdexROP92REqweeke2CEJiICm7/H1yxZ/kKDmxy1w74B58tLDiVhTmjcE7+aQkMGWFx80cFEE+RC00efFXCfeCtWcpVITh08kinsaT8mf9KkfV+e9DQx00JQGrDmiwAPXoecgwqF27cCNhiAtyKXGbhZawTX29qYYmhySCF88keBwxuWanNEAAujaoySIVkL1LYAkHYt9Dg2TXdGZhAJ7mt9ccukDJJpCpPcoXLU1vS6E4f2Ug9zMgwjppRhy9/BQXZZ2qUAlPSumNAFQP7waQ0Vm2xRYJ/Rc8XUXZ3ObnfMDhzP+/AKm1VbburWTtvacxf8QEg3hBZX5zWylZqo1/LzF0DLOLGM+DEKA0LnSbZhaIVY8Xcp3nVyPP3N+LzC4fVWonZxXXwi8bJVJdiaeKL4P9L4wtc4W99z7BEdqOL+/05KGNYi0yaHCLht2Uca1c3X7AzlVHuUnRnGeYCWVOmlTan+oXDMfg3KdZkmPvkOpAndL2ydIemmfrYOYQbYVL5KoISmGhi8A="
-
-        - os: osx
-          osx_image: xcode10.1
-          compiler: clang
-          env: CONFIG="Release" COMPILER='clang++'  COV="no" 
         
         - os: linux
           dist: bionic
