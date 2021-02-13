@@ -65,13 +65,13 @@ if (CODE_COVERAGE)
           $<$<COMPILE_LANGUAGE:CXX>:-fprofile-arcs -ftest-coverage -fno-exceptions -fno-inline>
           $<$<COMPILE_LANGUAGE:C>:-fprofile-arcs -ftest-coverage -fno-exceptions -fno-inline>)
   target_link_options(${TEST_NAME} PRIVATE -fprofile-arcs -ftest-coverage)
-endif(CODE_COVERAGE)
+endif()
 
 if (ASAN)
   message("Address Sanitizer enabled")
   target_compile_options(${TEST_NAME} PRIVATE -fno-omit-frame-pointer -fsanitize=address)
   target_link_options(${TEST_NAME} PRIVATE -fno-omit-frame-pointer -fsanitize=address)
-endif(ASAN)
+endif()
 
 # Add external-utils
 target_include_directories(${TEST_NAME} SYSTEM PRIVATE test/external-utils)
