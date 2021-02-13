@@ -160,6 +160,9 @@ TEST_CASE("HyperBuffer Tests - Construction and Data Access")
     };
     
     SECTION("Owning") {
+        
+        int* aa = (int*)malloc(34);
+        aa[34] = 12     ;
         HyperBuffer<int, 1> buffer1D(4);
         verify1D(buffer1D);
         
