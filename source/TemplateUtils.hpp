@@ -71,13 +71,13 @@ static constexpr void handleAssert(const char* conditionAsText, bool condition, 
 template<class T, int N>
 struct add_pointers_to_type
 {
-  using type = typename add_pointers_to_type<T*, N-1>::type;
+    using type = typename add_pointers_to_type<T*, N-1>::type;
 };
 
 template<class T>
 struct add_pointers_to_type<T, 0>
 {
-  using type = T;
+    using type = T;
 };
 
 static_assert(std::is_same<add_pointers_to_type<int,1>::type, int*>{}, "");
@@ -89,13 +89,13 @@ static_assert(std::is_same<add_pointers_to_type<float,0>::type, float>{}, "");
 template<class T, int N>
 struct add_const_pointers_to_type
 {
-  using type = typename add_const_pointers_to_type<const T*, N-1>::type;
+    using type = typename add_const_pointers_to_type<const T*, N-1>::type;
 };
 
 template<class T>
 struct add_const_pointers_to_type<T, 0>
 {
-  using type = T;
+    using type = T;
 };
 
 static_assert(std::is_same<add_const_pointers_to_type<int,1>::type, int const*>{}, "");
@@ -109,13 +109,13 @@ static_assert(std::is_same<add_const_pointers_to_type<float,0>::type, float>{}, 
 template<class T, int N>
 struct remove_pointers_from_type
 {
-  using type = typename remove_pointers_from_type<typename std::remove_pointer<T>::type, N-1>::type;
+    using type = typename remove_pointers_from_type<typename std::remove_pointer<T>::type, N-1>::type;
 };
 
 template<class T>
 struct remove_pointers_from_type<T, 0>
 {
-  using type = T;
+    using type = T;
 };
 
 static_assert(std::is_same<remove_pointers_from_type<int*,1>::type, int>{}, "");
