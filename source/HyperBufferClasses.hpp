@@ -28,16 +28,16 @@ template<typename T, int N> class HyperBufferView; // forward declaration
  *  - Guarantees: Dynamic memory allocation only during construction and when calling subView()
  */
 template<typename T, int N>
-class HyperBuffer : public IHyperBuffer<T, N, HyperBuffer<T, N>>
+class HyperBufferOwning : public IHyperBuffer<T, N, HyperBufferOwning<T, N>>
 {
-    using typename IHyperBuffer<T, N, HyperBuffer<T, N>>::size_type;
-    using typename IHyperBuffer<T, N, HyperBuffer<T, N>>::pointer_type;
-    using typename IHyperBuffer<T, N, HyperBuffer<T, N>>::const_pointer_type;
+    using typename IHyperBuffer<T, N, HyperBufferOwning<T, N>>::size_type;
+    using typename IHyperBuffer<T, N, HyperBufferOwning<T, N>>::pointer_type;
+    using typename IHyperBuffer<T, N, HyperBufferOwning<T, N>>::const_pointer_type;
 
 public:
     /** Constructor that takes the extents of the dimensions as a variable argument list */
     template<typename... I>
-    explicit HyperBuffer(I... i) :
+    explicit HyperBufferOwning(I... i) :
         m_bufferGeometry(i...),
         m_data(m_bufferGeometry.getRequiredDataArraySize()),
         m_pointers(m_bufferGeometry.getRequiredPointerArraySize())
@@ -75,7 +75,7 @@ private:
                     T* getDataPointer_N1()       noexcept override { return *m_pointers.data(); }
 
 private:
-    friend IHyperBuffer<T, N, HyperBuffer<T, N>>;
+    friend IHyperBuffer<T, N, HyperBufferOwning<T, N>>;
 
     /** Handles the geometry (organization) of the data memory, enabling multi-dimensional access to it */
     BufferGeometry<N> m_bufferGeometry;
@@ -119,7 +119,7 @@ public:
     }
     
     /** Constructor that takes an existing (owning) HyperBuffer and creates a (non-owning) HyperBufferView from it */
-    explicit HyperBufferView(HyperBuffer<T, N>& owningBuffer) :
+    explicit HyperBufferView(HyperBufferOwning<T, N>& owningBuffer) :
         m_bufferGeometry(owningBuffer.sizes()),
         m_externalData(*owningBuffer.data()),
         m_pointers(m_bufferGeometry.getRequiredPointerArraySize())
