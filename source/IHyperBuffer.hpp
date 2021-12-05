@@ -72,7 +72,7 @@ public:
     FOR_N1         const T& at(size_type i)          const { return getDataPointer_N1()[i]; }
     FOR_N1               T& at(size_type i)                { return getDataPointer_N1()[i]; }
     
-    // MARK: subView() -- returns Derived<T,N-1> instance
+    // MARK: subView(...) -- returns Derived<T,N-1> instance
     FOR_Nx_V decltype(auto) subView(size_type dn, I... i) const { return static_cast<const Derived*>(this)->createSubBufferView(dn).subView(i...); }
     FOR_Nx_V decltype(auto) subView(size_type dn, I... i)       { return static_cast<      Derived*>(this)->createSubBufferView(dn).subView(i...); }
     FOR_Nx   decltype(auto) subView(size_type dn)         const { return static_cast<const Derived*>(this)->createSubBufferView(dn); }
