@@ -20,7 +20,19 @@
 namespace slb
 {
 
-template<typename T, int N, class StoragePolicy>
+/**
+ *  HyperBuffer is a container for dynamically-allocated N-dimensional datasets. The extents of the dimensions have
+ *  to be supplied during construction and are not changeable afterwards.
+ *
+ *  - Template parameters: T=data type (e.g. float),  N=dimension (e.g. 3),
+ *    StoragePolicy:
+ *      -# 'Owning' (default): uses the native memory model and has full ownership of the multi-dimensional data
+ *      -# 'View': same memory model as 'owning', but without ownership: uses an externally-allocated 1-D data block
+ *      -# 'Multi-Dimensional View': uses externally-allocated multi-dimensional data
+ *
+ *  - Guarantees: Dynamic memory allocation only during construction and when calling subView()
+ */
+template<typename T, int N, class StoragePolicy = StoragePolicyOwning<T, N>>
 class HyperBuffer
 {
     using size_type                 = int;
@@ -93,6 +105,17 @@ private:
     StoragePolicy m_storage;
     
 };
+
+// MARK: Aliases (for convenience)
+
+template<typename T, int N>
+using HyperBufferView = HyperBuffer<T, N, StoragePolicyView <T, N>>;
+
+template<typename T, int N>
+using HyperBufferViewMD = HyperBuffer<T, N, StoragePolicyMultiDimensionalView <T, N>>;
+
+
+
 
 
 } // namespace slb

@@ -50,16 +50,6 @@ static auto fillWith3DSequence = [](auto& buffer)
     }
 };
 
-template<typename T, int N>
-using HyperBufferOwning = HyperBuffer<T, N, HyperBufferOwningPolicy<T, N>>;
-
-template<typename T, int N>
-using HyperBufferView = HyperBuffer<T, N, HyperBufferViewPolicy <T, N>>;
-
-template<typename T, int N>
-using HyperBufferViewMD = HyperBuffer<T, N, HyperBufferViewMDPolicy <T, N>>;
-
-
 TEST_CASE("HyperBuffer Tests - Construction and Data Access")
 {
     // test read & write
@@ -170,18 +160,18 @@ TEST_CASE("HyperBuffer Tests - Construction and Data Access")
     };
     
     SECTION("Owning") {
-        HyperBufferOwning<int, 1> buffer1D(4);
+        HyperBuffer<int, 1> buffer1D(4);
         verify1D(buffer1D);
         
-        HyperBufferOwning<int, 2> buffer2D(2, 4);
+        HyperBuffer<int, 2> buffer2D(2, 4);
         verify2D(buffer2D);
         
-        HyperBufferOwning<int, 3> buffer3D(3, 3, 8);
+        HyperBuffer<int, 3> buffer3D(3, 3, 8);
         verify3D(buffer3D);
 
         // Constructor via std::array
         std::array<int, 3> dims {3, 3, 8};
-        HyperBufferOwning<int, 3> bufferFromStdArray(dims);
+        HyperBuffer<int, 3> bufferFromStdArray(dims);
         verify3D(bufferFromStdArray);
     }
     
@@ -239,22 +229,22 @@ TEST_CASE("HyperBuffer Tests - Construction and Data Access")
 TEST_CASE("HyperBuffer ctor: different dimension variants")
 {
     SECTION("owning") {
-        HyperBufferOwning<int, 2> hostClass(3, 5); // calls int ctor
+        HyperBuffer<int, 2> hostClass(3, 5); // calls int ctor
         REQUIRE(hostClass.sizes() == std::array<int, 2>({3, 5}));
         std::array<int, 2> dimArray = {3, 5};
-        HyperBufferOwning<int, 2> hostClass2(dimArray); // calls array ctor
+        HyperBuffer<int, 2> hostClass2(dimArray); // calls array ctor
         REQUIRE(hostClass2.sizes() == std::array<int, 2>({3, 5}));
         std::vector<int> dimVector = {3, 5};
-        HyperBufferOwning<int, 2> hostClass3(dimVector); // calls int* ctor
+        HyperBuffer<int, 2> hostClass3(dimVector); // calls int* ctor
         REQUIRE(hostClass3.sizes() == std::array<int, 2>({3, 5}));
   
-        REQUIRE_THROWS(HyperBufferOwning<int, 2>(std::vector<int>{})); // empty
-        REQUIRE_THROWS(HyperBufferOwning<int, 2>(std::vector<int>{4})); // missing one dimension
-        REQUIRE_THROWS(HyperBufferOwning<int, 2>(std::vector<int>{2, 3, 64})); // one dimension too many
+        REQUIRE_THROWS(HyperBuffer<int, 2>(std::vector<int>{})); // empty
+        REQUIRE_THROWS(HyperBuffer<int, 2>(std::vector<int>{4})); // missing one dimension
+        REQUIRE_THROWS(HyperBuffer<int, 2>(std::vector<int>{2, 3, 64})); // one dimension too many
 
-        REQUIRE_THROWS(HyperBufferOwning<int, 1>(0));
-        REQUIRE_THROWS(HyperBufferOwning<int, 2>(0, 0));
-        REQUIRE_THROWS(HyperBufferOwning<int, 2>(1, -20));
+        REQUIRE_THROWS(HyperBuffer<int, 1>(0));
+        REQUIRE_THROWS(HyperBuffer<int, 2>(0, 0));
+        REQUIRE_THROWS(HyperBuffer<int, 2>(1, -20));
     }
     
     SECTION("flat view") {
@@ -277,7 +267,7 @@ TEST_CASE("HyperBuffer ctor: different dimension variants")
         REQUIRE_THROWS(HyperBufferView<int, 2>(data, 1, -20));
         
         // Build a View from an owning Buffer
-        HyperBufferOwning<int, 2> owner(3, 5);
+        HyperBuffer<int, 2> owner(3, 5);
         HyperBufferView<int, 2> nonOwner(owner);
         REQUIRE(owner.sizes() == nonOwner.sizes());
         REQUIRE(*owner.data() == *nonOwner.data());
@@ -314,7 +304,7 @@ TEST_CASE("HyperBuffer use non-primitive data types")
         std::vector<float> data;
     };
     
-    HyperBufferOwning<UserType, 3> userTypeCube(3, 2, 6);
+    HyperBuffer<UserType, 3> userTypeCube(3, 2, 6);
     
     userTypeCube.at(0, 0, 1) = { 99, "myTag", {1.2f, 2.3f, 3.3f}};
     UserType myTypeElement =  userTypeCube[0][0][1];
@@ -361,12 +351,12 @@ TEST_CASE("HyperBuffer const correctness")
     };
 
     SECTION("owning") {
-        HyperBufferOwning<int, 3> buffer(3, 3, 8);
+        HyperBuffer<int, 3> buffer(3, 3, 8);
         fillWith3DSequence(buffer);
         verify(buffer);
         
         // Explicitly test a 1D owning, because above verify function only checks HyperBufferView after being reduced to subBuffers
-        const HyperBufferOwning<int, 1> constBuffer1D(4);
+        const HyperBuffer<int, 1> constBuffer1D(4);
         int a = constBuffer1D.at(2); (UNUSED(a));
         static_assert(std::is_trivially_assignable<int&, decltype(constBuffer1D.at(1))>::value, "Can assign to a const");
         static_assert(!std::is_trivially_assignable<decltype(constBuffer1D.at(1)), int*>::value, "Cannot write to a const");
@@ -433,7 +423,7 @@ TEST_CASE("HyperBuffer: sub-buffer construction & at() access")
     };
     
     SECTION("owning") {
-        HyperBufferOwning<int, 3> buffer(3, 3, 8);
+        HyperBuffer<int, 3> buffer(3, 3, 8);
         fillWith3DSequence(buffer);
         // NOTE: A sub-buffer of HyperBuffer is a HyperBufferView pointing to the HyperBuffer's data!
         verify(buffer);
@@ -461,10 +451,10 @@ TEST_CASE("HyperBuffer: sub-buffer construction & at() access")
 
 TEST_CASE("HyperBuffer: Sub-Buffer Assignmemt")
 {
-    HyperBufferOwning<int, 3> buffer(2, 2, 4);
+    HyperBuffer<int, 3> buffer(2, 2, 4);
     fillWith3DSequence(buffer);
            
-    HyperBufferOwning<int, 1> bufferData(4);
+    HyperBuffer<int, 1> bufferData(4);
     bufferData[0] = -1;
     bufferData[1] = -2;
     bufferData[2] = -3;
@@ -483,11 +473,11 @@ TEST_CASE("HyperBuffer: out of memory")
     {
         { // fails allocating data
             ScopedMemorySentinel scopedSentinel(100);
-            REQUIRE_THROWS(HyperBufferOwning<int, 3>(3, 3, 8));
+            REQUIRE_THROWS(HyperBuffer<int, 3>(3, 3, 8));
         }
         { // succeeds allocating data, fails at pointers
             ScopedMemorySentinel scopedSentinel(300);
-            REQUIRE_THROWS(HyperBufferOwning<int, 3>(3, 3, 8));
+            REQUIRE_THROWS(HyperBuffer<int, 3>(3, 3, 8));
         }
     }
     
@@ -523,10 +513,10 @@ TEST_CASE("HyperBuffer: memory allocation - precise verification")
         pointerArraySizeBytes += 16; // debug iterator (?)
 #endif
         MemorySentinel::setAllocationQuota(dataArraySizeBytes + pointerArraySizeBytes);
-        HyperBufferOwning<int, 3> buffer(bufferGeo.getDimensionExtents());
+        HyperBuffer<int, 3> buffer(bufferGeo.getDimensionExtents());
         
         MemorySentinel::setAllocationQuota(dataArraySizeBytes + pointerArraySizeBytes - 1);
-        REQUIRE_THROWS(HyperBufferOwning<int, 3>(bufferGeo.getDimensionExtents()));
+        REQUIRE_THROWS(HyperBuffer<int, 3>(bufferGeo.getDimensionExtents()));
         sentinel.setArmed(false);
     }
     SECTION("view") {

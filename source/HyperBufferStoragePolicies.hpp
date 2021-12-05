@@ -16,29 +16,24 @@
 namespace slb
 {
 
-template<typename T, int N> class HyperBufferViewPolicy; // forward declaration
+template<typename T, int N> class StoragePolicyView; // forward declaration
 
 /**
- *  HyperBuffer is a container for dynamically-allocated N-dimensional datasets. The extents of the dimensions have
- *  to be supplied during construction. Memory for the pointers and the data is allocated separately (with  ownership).
- *
- *  - Template parameters: T=data type (e.g. float),  N=dimension (e.g. 3)
- *
- *  - Guarantees: Dynamic memory allocation only during construction and when calling subView()
+ *  Memory for the pointers and the data is allocated separately (with ownership).
  */
 template<typename T, int N>
-class HyperBufferOwningPolicy
+class StoragePolicyOwning
 {
     using size_type                 = int;
     using pointer_type              = typename add_pointers_to_type<T, N>::type;
     using const_pointer_type        = typename add_const_pointers_to_type<T, N>::type;
 
 public:
-    using SubBufferPolicy = HyperBufferViewPolicy<T, N-1>; // SubBuffers of an 'owning' are always a 'view' !
+    using SubBufferPolicy = StoragePolicyView<T, N-1>; // SubBuffers of an 'owning' are always a 'view' !
     
     /** Constructor that takes the extents of the dimensions as a variable argument list */
     template<typename... I>
-    explicit HyperBufferOwningPolicy(I... i) :
+    explicit StoragePolicyOwning(I... i) :
         m_bufferGeometry(i...),
         m_data(m_bufferGeometry.getRequiredDataArraySize()),
         m_pointers(m_bufferGeometry.getRequiredPointerArraySize())
@@ -74,7 +69,7 @@ private:
     }
 
 private:
-    friend class HyperBufferViewPolicy<T, N>;
+    friend class StoragePolicyView<T, N>;
     
     /** Handles the geometry (organization) of the data memory, enabling multi-dimensional access to it */
     BufferGeometry<N> m_bufferGeometry;
@@ -99,18 +94,18 @@ private:
  *  - Guarantees: Dynamic memory allocation only during construction and when calling .at()
  */
 template<typename T, int N>
-class HyperBufferViewPolicy
+class StoragePolicyView
 {
     using size_type                 = int;
     using pointer_type              = typename add_pointers_to_type<T, N>::type;
     using const_pointer_type        = typename add_const_pointers_to_type<T, N>::type;
     
 public:
-    using SubBufferPolicy = HyperBufferViewPolicy<T, N-1>;
+    using SubBufferPolicy = StoragePolicyView<T, N-1>;
     
     /** Constructor that takes the extents of the dimensions as a variable argument list */
     template<typename... I>
-    HyperBufferViewPolicy(T* preAllocatedDataFlat, I... i) :
+    StoragePolicyView(T* preAllocatedDataFlat, I... i) :
         m_bufferGeometry(i...),
         m_externalData(preAllocatedDataFlat),
         m_pointers(m_bufferGeometry.getRequiredPointerArraySize())
@@ -120,7 +115,7 @@ public:
     }
 
     /** Constructor that takes an existing (owning) Buffer and creates a (non-owning) View from it */
-    explicit HyperBufferViewPolicy(HyperBufferOwningPolicy<T, N>& owningBufferPolicy) :
+    explicit StoragePolicyView(StoragePolicyOwning<T, N>& owningBufferPolicy) :
         m_bufferGeometry(owningBufferPolicy.sizes()),
         m_externalData(owningBufferPolicy.getRawData()),
         m_pointers(m_bufferGeometry.getRequiredPointerArraySize())
@@ -165,7 +160,7 @@ private:
  *  - Guarantees: Does not allocate any memory dynamically.
  */
 template<typename T, int N>
-class HyperBufferViewMDPolicy
+class StoragePolicyMultiDimensionalView
 {
     using size_type                 = int;
     using pointer_type              = typename add_pointers_to_type<T, N>::type;
@@ -173,11 +168,11 @@ class HyperBufferViewMDPolicy
     using subdim_pointer_type       = typename remove_pointers_from_type<pointer_type, 1>::type;
     
 public:
-    using SubBufferPolicy = HyperBufferViewMDPolicy<T, N-1>;
+    using SubBufferPolicy = StoragePolicyMultiDimensionalView<T, N-1>;
     
     /** Constructor that takes the extents of the dimensions as a variable argument list */
     template<typename... I>
-    HyperBufferViewMDPolicy(pointer_type preAllocatedData, I... i) :
+    StoragePolicyMultiDimensionalView(pointer_type preAllocatedData, I... i) :
         m_dimensionExtents{static_cast<int>(i)...},
         m_externalData(preAllocatedData)
     {
@@ -185,7 +180,7 @@ public:
     }
             
     /** Constructor that takes the extents of the dimensions as a std::array */
-    HyperBufferViewMDPolicy(pointer_type preAllocatedData, std::array<int, N> dimensionExtents) :
+    StoragePolicyMultiDimensionalView(pointer_type preAllocatedData, std::array<int, N> dimensionExtents) :
         m_dimensionExtents(dimensionExtents),
         m_externalData(preAllocatedData)
     {
@@ -193,7 +188,7 @@ public:
     }
     
     /** Constructor that takes the extents of the dimensions as a std::vector */
-    HyperBufferViewMDPolicy(pointer_type preAllocatedData, std::vector<int> dimensionExtentsVector) :
+    StoragePolicyMultiDimensionalView(pointer_type preAllocatedData, std::vector<int> dimensionExtentsVector) :
         m_externalData(preAllocatedData)
     {
         ASSERT(dimensionExtentsVector.size() == N, "Incorrect number of dimension extents");

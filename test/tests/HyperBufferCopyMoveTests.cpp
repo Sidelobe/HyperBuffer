@@ -28,37 +28,26 @@ void verifyBuffer(const U& b)
     REQUIRE (b[2][1][3] == -666);
 }
 
-template<typename T, int N>
-using HyperBufferOwning = HyperBuffer<T, N, HyperBufferOwningPolicy<T, N>>;
-
-template<typename T, int N>
-using HyperBufferView = HyperBuffer<T, N, HyperBufferViewPolicy <T, N>>;
-
-template<typename T, int N>
-using HyperBufferViewMD = HyperBuffer<T, N, HyperBufferViewMDPolicy <T, N>>;
-
-
-
 TEST_CASE("Copy/Move a HyperBuffer with internal allocation")
 {
     constexpr int N = 3;
     std::array<int, N> dims {3, 2, 8};
-    HyperBufferOwning<int, N> buffer(dims);
+    HyperBuffer<int, N> buffer(dims);
     buffer[1][0][5] = 333;
     buffer[2][1][3] = -666;
 
     // Copy assignment operator
-    HyperBufferOwning<int, N> bufferCopy = buffer;
+    HyperBuffer<int, N> bufferCopy = buffer;
     verifyBuffer(bufferCopy);
     verifyBuffer(buffer); // original remains untouched
     
     // Copy Ctor
-    HyperBufferOwning<int, N> bufferCopyCtor(buffer);
+    HyperBuffer<int, N> bufferCopyCtor(buffer);
     verifyBuffer(bufferCopy);
     verifyBuffer(buffer); // original remains untouched
     
     // verify no memory is allocated during copy to buffer with same size
-    HyperBufferOwning<int, N> bufferCopySameSize(dims);
+    HyperBuffer<int, N> bufferCopySameSize(dims);
     {
         ScopedMemorySentinel sentinel;
         bufferCopySameSize = buffer;
@@ -66,15 +55,15 @@ TEST_CASE("Copy/Move a HyperBuffer with internal allocation")
     
     // this will work, but will allocate memory
     std::array<int, 3> dimsSmaller {2, 2, 6};
-    HyperBufferOwning<int, N> bufferCopySmallerSize(dimsSmaller);
+    HyperBuffer<int, N> bufferCopySmallerSize(dimsSmaller);
     bufferCopySmallerSize = buffer;
     verifyBuffer(bufferCopy);
     verifyBuffer(buffer); // original remains untouched
     
     // Move assignment operator
     {
-        HyperBufferOwning<int, N> bufferMovedFrom = buffer; // working copy
-        HyperBufferOwning<int, N> bufferMovedTo(1, 1, 1);
+        HyperBuffer<int, N> bufferMovedFrom = buffer; // working copy
+        HyperBuffer<int, N> bufferMovedTo(1, 1, 1);
         bufferMovedTo = std::move(bufferMovedFrom);
         verifyBuffer(bufferMovedTo);
         REQUIRE(bufferMovedTo.data() != nullptr);
@@ -83,7 +72,7 @@ TEST_CASE("Copy/Move a HyperBuffer with internal allocation")
 #if MSVC_DEBUG == 0
     // verify no memory is allocated during move assignment
     {
-        HyperBufferOwning<int, N> bufferMovedFrom = buffer; // working copy
+        HyperBuffer<int, N> bufferMovedFrom = buffer; // working copy
         
         // Can't use Scoped Sentinel, since we need to do declaration and move on same line.
         auto& sentinel = MemorySentinel::getInstance();
@@ -91,7 +80,7 @@ TEST_CASE("Copy/Move a HyperBuffer with internal allocation")
         sentinel.clearTransgressions();
         sentinel.setArmed(true);
         
-        HyperBufferOwning<int, N> bufferMovedTo = std::move(bufferMovedFrom);
+        HyperBuffer<int, N> bufferMovedTo = std::move(bufferMovedFrom);
         
         REQUIRE_FALSE(sentinel.getAndClearTransgressionsOccured());
         sentinel.setArmed(false);
@@ -102,8 +91,8 @@ TEST_CASE("Copy/Move a HyperBuffer with internal allocation")
     
     // Move Ctor
     {
-        HyperBufferOwning<int, N> bufferMovedFrom = buffer;
-        HyperBufferOwning<int, N> bufferMovedToCtor(std::move(bufferMovedFrom));
+        HyperBuffer<int, N> bufferMovedFrom = buffer;
+        HyperBuffer<int, N> bufferMovedToCtor(std::move(bufferMovedFrom));
         verifyBuffer(bufferMovedToCtor);
         REQUIRE(bufferMovedToCtor.data() != nullptr);
     }
@@ -111,7 +100,7 @@ TEST_CASE("Copy/Move a HyperBuffer with internal allocation")
 #if MSVC_DEBUG == 0
     // verify no memory is allocated during move construction
     {
-        HyperBufferOwning<int, N> bufferMovedFrom = buffer; // working copy
+        HyperBuffer<int, N> bufferMovedFrom = buffer; // working copy
         
         // Can't use Scoped Sentinel, since we need to do declaration and move on same line.
         auto& sentinel = MemorySentinel::getInstance();
@@ -119,7 +108,7 @@ TEST_CASE("Copy/Move a HyperBuffer with internal allocation")
         sentinel.clearTransgressions();
         sentinel.setArmed(true);
         
-        HyperBufferOwning<int, N> bufferMovedCtor(std::move(bufferMovedFrom));
+        HyperBuffer<int, N> bufferMovedCtor(std::move(bufferMovedFrom));
         REQUIRE_FALSE(sentinel.getAndClearTransgressionsOccured());
         
         sentinel.setArmed(false);
