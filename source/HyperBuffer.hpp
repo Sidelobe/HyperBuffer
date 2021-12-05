@@ -66,28 +66,13 @@ public:
     FOR_N1                  const T& operator[] (size_type i) const { return m_storage.getDataPointer_N1()[i]; }
     FOR_N1                        T& operator[] (size_type i)       { return m_storage.getDataPointer_N1()[i]; }
     
-    // MARK: at(...) -- Exists only for N parameters, returns data
+    // MARK: at(...) -- Exists only for call with N parameters, returns data
     FOR_Nx_N decltype(auto) at(size_type dn, I... i) const
     {
-        // TODO: integrate this into policy if possible (?)
+        auto subViewData = m_storage.getSubDimData(dn);
+        auto subViewDims = StdArrayOperations::shaveOffFirstElement(sizes());
         
-        // Owning to view:
-        ASSERT(dn < this->size(0), "Index out of range");
-        const int offset = m_storage.getBufferGeometry().getDataArrayOffsetForHighestOrderSubDim(dn);
-        // NOTE: explicitly cast away the const-ness - need to provide a non-const pointer to the
-        // HyperBufferView ctor, even if we turn it into a const object upon return
-        T* subDimData = const_cast<T*>(&m_storage.getData()[offset]);
-        return HyperBuffer<T, N-1, HyperBufferViewPolicy<T, N-1>>(subDimData, StdArrayOperations::shaveOffFirstElement(this->sizes())).at(i...);
-        
-        // View to view:
-//        ASSERT(index < this->size(0), "Index out of range");
-//        int offset = m_bufferGeometry.getDataArrayOffsetForHighestOrderSubDim(index);
-//        return HyperBufferView<T, N-1>(&m_externalData[offset], StdArrayOperations::shaveOffFirstElement(this->sizes()));
-        
-        // ViewMD to ViewMD
-//        ASSERT(index < this->size(0), "Index out of range");
-//        return HyperBufferViewMD<T, N-1>(m_externalData[index], StdArrayOperations::shaveOffFirstElement(this->sizes()));
-        
+        return HyperBuffer<T, N-1, typename StoragePolicy::SubBufferPolicy>(subViewData, subViewDims).at(i...);
     }
 
     FOR_Nx_N decltype(auto) at(size_type dn, I... i)       { return std::as_const(*this).at(dn, i...); }
@@ -97,23 +82,19 @@ public:
     // MARK: subView(...) -- returns Derived<T,N-1> instance
     FOR_Nx_V decltype(auto) subView(size_type dn, I... i) const
     {
-        ASSERT(dn < this->size(0), "Index out of range");
-        const int offset = m_storage.getBufferGeometry().getDataArrayOffsetForHighestOrderSubDim(dn);
-        // NOTE: explicitly cast away the const-ness - need to provide a non-const pointer to the
-        // HyperBufferView ctor, even if we turn it into a const object upon return
-        T* subDimData = const_cast<T*>(&m_storage.getData()[offset]);
-        return HyperBuffer<T, N-1, HyperBufferViewPolicy<T, N-1>>(subDimData, StdArrayOperations::shaveOffFirstElement(this->sizes())).subView(i...);
+        auto subViewData = m_storage.getSubDimData(dn);
+        auto subViewDims = StdArrayOperations::shaveOffFirstElement(sizes());
+        
+        return HyperBuffer<T, N-1, typename StoragePolicy::SubBufferPolicy>(subViewData, subViewDims).subView(i...);
     }
     
     FOR_Nx_V decltype(auto) subView(size_type dn, I... i)       { return std::as_const(*this).subView(dn, i...); }
     FOR_Nx   decltype(auto) subView(size_type dn)         const
     {
-        ASSERT(dn < this->size(0), "Index out of range");
-        const int offset = m_storage.getBufferGeometry().getDataArrayOffsetForHighestOrderSubDim(dn);
-        // NOTE: explicitly cast away the const-ness - need to provide a non-const pointer to the
-        // HyperBufferView ctor, even if we turn it into a const object upon return
-        T* subDimData = const_cast<T*>(&m_storage.getData()[offset]);
-        return HyperBuffer<T, N-1, HyperBufferViewPolicy<T, N-1>>(subDimData, StdArrayOperations::shaveOffFirstElement(this->sizes()));
+        auto subViewData = m_storage.getSubDimData(dn);
+        auto subViewDims = StdArrayOperations::shaveOffFirstElement(sizes());
+        
+        return HyperBuffer<T, N-1, typename StoragePolicy::SubBufferPolicy>(subViewData, subViewDims);
     }
     FOR_Nx   decltype(auto) subView(size_type dn)               { return std::as_const(*this).subView(dn); }
 

@@ -29,15 +29,13 @@ template<typename T, int N> class HyperBufferViewPolicy; // forward declaration
 template<typename T, int N>
 class HyperBufferOwningPolicy
 {
-//    using typename IHyperBuffer<T, N, HyperBufferOwning<T, N>>::size_type;
-//    using typename IHyperBuffer<T, N, HyperBufferOwning<T, N>>::pointer_type;
-//    using typename IHyperBuffer<T, N, HyperBufferOwning<T, N>>::const_pointer_type;
-    
     using size_type                 = int;
     using pointer_type              = typename add_pointers_to_type<T, N>::type;
     using const_pointer_type        = typename add_const_pointers_to_type<T, N>::type;
 
 public:
+    using SubBufferPolicy = HyperBufferViewPolicy<T, N-1>;
+    
     /** Constructor that takes the extents of the dimensions as a variable argument list */
     template<typename... I>
     explicit HyperBufferOwningPolicy(I... i) :
@@ -49,9 +47,16 @@ public:
         m_bufferGeometry.hookupPointerArrayToData(m_data.data(), m_pointers.data());
     }
     
-    const BufferGeometry<N>& getBufferGeometry() const { return m_bufferGeometry; }
-    const T* getData() const { return m_data.data(); }
+    /** @return a const pointer to a subdimension of the data */
+    T* getSubDimData(size_type index) const
+    {
+        ASSERT(index < this->size(0), "Index out of range");
+        const int offset = m_bufferGeometry.getDataArrayOffsetForHighestOrderSubDim(index);
+        return const_cast<T*>(&m_data[offset]); // TODO: comment const-cast
+    }
     
+    const T* getRawData() const { return m_data.data(); }
+
     int size(int i) const { ASSERT(i < N); return m_bufferGeometry.getDimensionExtents()[i]; }
     const std::array<int, N>& sizes() const noexcept { return m_bufferGeometry.getDimensionExtents(); }
 
@@ -86,15 +91,13 @@ private:
 template<typename T, int N>
 class HyperBufferViewPolicy
 {
-//    using typename IHyperBuffer<T, N, HyperBufferView>::pointer_type;
-//    using typename IHyperBuffer<T, N, HyperBufferView>::const_pointer_type;
-//    using typename IHyperBuffer<T, N, HyperBufferView>::size_type;
-    
     using size_type                 = int;
     using pointer_type              = typename add_pointers_to_type<T, N>::type;
     using const_pointer_type        = typename add_const_pointers_to_type<T, N>::type;
     
 public:
+    using SubBufferPolicy = HyperBufferViewPolicy<T, N-1>;
+    
     /** Constructor that takes the extents of the dimensions as a variable argument list */
     template<typename... I>
     HyperBufferViewPolicy(T* preAllocatedDataFlat, I... i) :
@@ -107,16 +110,21 @@ public:
     }
     
     /** Constructor that takes an existing (owning) HyperBuffer and creates a (non-owning) HyperBufferView from it */
-    explicit HyperBufferViewPolicy(const HyperBufferOwningPolicy<T, N>& owningBuffer) :
-        m_bufferGeometry(owningBuffer.sizes()),
-        m_externalData(const_cast<T*>(owningBuffer.getData())), // TODO: const_cast here... :-(
+    explicit HyperBufferViewPolicy(const HyperBufferOwningPolicy<T, N>& owningBufferPolicy) :
+        m_bufferGeometry(owningBufferPolicy.sizes()),
+        m_externalData(const_cast<T*>(owningBufferPolicy.getRawData())), // TODO: const_cast here... :-(
         m_pointers(m_bufferGeometry.getRequiredPointerArraySize())
     {
         m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
     }
     
-    const BufferGeometry<N>& getBufferGeometry() const { return m_bufferGeometry; }
-    const T* getData() const { return m_externalData; }
+    /** @return a const pointer to a subdimension of the data */
+    T* getSubDimData(size_type index) const
+    {
+        ASSERT(index < this->size(0), "Index out of range");
+        const int offset = m_bufferGeometry.getDataArrayOffsetForHighestOrderSubDim(index);
+        return &m_externalData[offset];
+    }
     
     int size(int i) const { ASSERT(i < N); return m_bufferGeometry.getDimensionExtents()[i]; }
     const std::array<int, N>& sizes() const noexcept { return m_bufferGeometry.getDimensionExtents(); }
@@ -157,8 +165,11 @@ class HyperBufferViewMDPolicy
     using size_type                 = int;
     using pointer_type              = typename add_pointers_to_type<T, N>::type;
     using const_pointer_type        = typename add_const_pointers_to_type<T, N>::type;
-
+    using subdim_pointer_type       = typename remove_pointers_from_type<pointer_type, 1>::type;
+    
 public:
+    using SubBufferPolicy = HyperBufferViewMDPolicy<T, N-1>;
+    
     /** Constructor that takes the extents of the dimensions as a variable argument list */
     template<typename... I>
     HyperBufferViewMDPolicy(pointer_type preAllocatedData, I... i) :
@@ -185,7 +196,12 @@ public:
         ASSERT(CompiletimeMath::areAllPositive(m_dimensionExtents), "Invalid Dimension extents");
     }
     
-    const pointer_type getData() const { return m_externalData; }
+    /** @return a const pointer to a subdimension of the data */
+    subdim_pointer_type getSubDimData(size_type index) const
+    {
+        ASSERT(index < this->size(0), "Index out of range");
+        return m_externalData[index];
+    }
     
     int size(int i) const { ASSERT(i < N); return m_dimensionExtents[i]; }
     const std::array<int, N>& sizes() const noexcept { return m_dimensionExtents; }
