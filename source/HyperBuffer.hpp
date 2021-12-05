@@ -25,7 +25,7 @@ template<typename T, int N> class HyperBufferView; // forward declaration
  *
  *  - Template parameters: T=data type (e.g. float),  N=dimension (e.g. 3)
  *
- *  - Guarantees: Dynamic memory allocation only during construction and when calling .at()
+ *  - Guarantees: Dynamic memory allocation only during construction and when calling subView()
  */
 template<typename T, int N>
 class HyperBuffer : public IHyperBuffer<T, N, HyperBuffer<T, N>>
@@ -97,7 +97,7 @@ private:
  *
  *  - Template parameters: T=data type (e.g. float),  N=dimension (e.g. 3)
  *
- *  - Guarantees: Dynamic memory allocation only during construction and when calling .at()
+ *  - Guarantees: Dynamic memory allocation only during construction and when calling subView()
  */
 template<typename T, int N>
 class HyperBufferView : public IHyperBuffer<T, N, HyperBufferView<T, N>>

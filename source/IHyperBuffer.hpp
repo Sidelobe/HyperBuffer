@@ -13,10 +13,13 @@
 #include "TemplateUtils.hpp"
 #include "IntArrayOperations.hpp"
 
-// Macros to restrict a function declaration to 1-dimensional and higher-dimensional case only
+// Macros to restrict a function declaration to certain use cases, e.g. 1-dimensional, higher-dimensional, ...
 #define FOR_N1 template<int M=N, std::enable_if_t<(M==1), int> = 0>
 #define FOR_Nx template<int M=N, std::enable_if_t<(M>1), int> = 0>
-#define FOR_Nx_V template<int M=N, typename... I, std::enable_if_t<(M>1), int> = 0>
+
+// For N>1 and any number / exactly N-1 variable arguments
+#define FOR_Nx_V template<int M=N, typename... I, std::enable_if_t<(M>1 && sizeof...(I)<M-1), int> = 0>
+#define FOR_Nx_N template<int M=N, typename... I, std::enable_if_t<(M>1 && sizeof...(I)==M-1), int> = 0>
 
 namespace slb
 {
@@ -30,7 +33,7 @@ namespace slb
  *
  *  - std::enable_if constructs are required to resolve for different dimensions (no overloaded return types possible)
  *
- *  - virtual functions cannot be used for data(), operator[] and at() because of said std::enable_if and
+ *  - virtual functions cannot be used for data(), operator[], at() and subView() because of said std::enable_if and
  *    the deduced return types of decltype(auto) in the return of recursive functions (different for each recursion level)
  *
  */
@@ -63,13 +66,17 @@ public:
     FOR_N1                  const T& operator[] (size_type i) const { return getDataPointer_N1()[i]; }
     FOR_N1                        T& operator[] (size_type i)       { return getDataPointer_N1()[i]; }
     
-    // MARK: at() -- data/subbuffer access; returns Derived<T,N-1> instance or data
-    FOR_Nx_V decltype(auto) at(size_type dn, I... i) const { return static_cast<const Derived*>(this)->createSubBufferView(dn).at(i...); }
-    FOR_Nx_V decltype(auto) at(size_type dn, I... i)       { return static_cast<      Derived*>(this)->createSubBufferView(dn).at(i...); }
-    FOR_Nx   decltype(auto) at(size_type dn)         const { return static_cast<const Derived*>(this)->createSubBufferView(dn); }
-    FOR_Nx   decltype(auto) at(size_type dn)               { return static_cast<      Derived*>(this)->createSubBufferView(dn); }
+    // MARK: at(...) -- Exists only for N parameters, returns data
+    FOR_Nx_N decltype(auto) at(size_type dn, I... i) const { return static_cast<const Derived*>(this)->createSubBufferView(dn).at(i...); }
+    FOR_Nx_N decltype(auto) at(size_type dn, I... i)       { return static_cast<      Derived*>(this)->createSubBufferView(dn).at(i...); }
     FOR_N1         const T& at(size_type i)          const { return getDataPointer_N1()[i]; }
     FOR_N1               T& at(size_type i)                { return getDataPointer_N1()[i]; }
+    
+    // MARK: subView() -- returns Derived<T,N-1> instance
+    FOR_Nx_V decltype(auto) subView(size_type dn, I... i) const { return static_cast<const Derived*>(this)->createSubBufferView(dn).subView(i...); }
+    FOR_Nx_V decltype(auto) subView(size_type dn, I... i)       { return static_cast<      Derived*>(this)->createSubBufferView(dn).subView(i...); }
+    FOR_Nx   decltype(auto) subView(size_type dn)         const { return static_cast<const Derived*>(this)->createSubBufferView(dn); }
+    FOR_Nx   decltype(auto) subView(size_type dn)               { return static_cast<      Derived*>(this)->createSubBufferView(dn); }
 
 protected:
     // MARK: Virtual functions to be defined by derived classes
