@@ -67,20 +67,24 @@ public:
 
     // MARK: at(...) -- Exists only for call with N parameters, returns data
     FOR_Nx_N decltype(auto) at(size_type dn, I... i) const { return createSubBuffer(dn).at(i...); }
+    FOR_Nx_N decltype(auto) at(size_type dn, I... i)       { return createSubBuffer(dn).at(i...); }
     FOR_N1         const T& at(size_type i)          const { return m_storage.getDataPointer_N1()[i]; }
     FOR_N1               T& at(size_type i)                { return m_storage.getDataPointer_N1()[i]; }
     
-    // MARK: subView(...) -- returns Derived<T,N-1> instance
+    // MARK: subView(...) -- returns <T,N-1> instance
     FOR_Nx_V decltype(auto) subView(size_type dn, I... i) const { return createSubBuffer(dn).subView(i...); }
     FOR_Nx   decltype(auto) subView(size_type dn)         const { return createSubBuffer(dn); }
-    FOR_Nx   decltype(auto) subView(size_type dn)               { return std::as_const(*this).subView(dn); }
     
 private:
-    HyperBuffer<T, N-1, typename StoragePolicy::SubBufferPolicy> createSubBuffer(size_type index) const
+    const HyperBuffer<T, N-1, typename StoragePolicy::SubBufferPolicy> createSubBuffer(size_type index) const
     {
         auto subViewData = m_storage.getSubDimData(index);
         auto subViewDims = StdArrayOperations::shaveOffFirstElement(sizes());
         return HyperBuffer<T, N-1, typename StoragePolicy::SubBufferPolicy>(subViewData, subViewDims);
+    }
+    HyperBuffer<T, N-1, typename StoragePolicy::SubBufferPolicy> createSubBuffer(size_type index)
+    {
+        return std::as_const(*this).createSubBuffer(index);
     }
     
 private:
