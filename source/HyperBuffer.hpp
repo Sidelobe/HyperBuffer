@@ -42,9 +42,17 @@ class HyperBuffer
     using subdim_const_pointer_type = typename remove_pointers_from_type<const_pointer_type, 1>::type;
     
 public:
-    /** Generic Constructor that forwards all arguments to the storage policy constructor  */
+    /** Generic Constructor that forwards all arguments to the storage policy constructor */
     template<typename... I>
     explicit HyperBuffer(I... i) : m_storage(i...) {}
+    
+    ~HyperBuffer() = default;
+    
+    // MARK: need explicit default copy/move ctors and assignment operators for this object to be fully copyable/moveable
+    HyperBuffer(const HyperBuffer&) = default;
+    HyperBuffer& operator=(const HyperBuffer&) = default;
+    HyperBuffer(HyperBuffer&&) noexcept = default;
+    HyperBuffer& operator= (HyperBuffer&&) noexcept = default;
     
     /**
      * Copy constructor from an object with a different storage policy. Enabled only Policy differs from current one
@@ -54,10 +62,6 @@ public:
      */
     template<typename U, int M, class AnotherStoragePolicy, typename std::enable_if<!std::is_same<AnotherStoragePolicy, StoragePolicy>::value, int>::type = 0>
     explicit HyperBuffer(HyperBuffer<U, M, AnotherStoragePolicy>& other) : m_storage(other.m_storage) {}
-
-//    explicit HyperBuffer(const HyperBuffer<T, N, StoragePolicy>&& other) noexcept { this->m_storage = std::move(other.m_storage); }
-    
-    ~HyperBuffer() = default;
     
     // MARK: dimension extents
     int size(int i) const { return m_storage.size(i); }

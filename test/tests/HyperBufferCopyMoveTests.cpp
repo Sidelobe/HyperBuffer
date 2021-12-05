@@ -28,6 +28,21 @@ void verifyBuffer(const U& b)
     REQUIRE (b[2][1][3] == -666);
 }
 
+static_assert(std::is_copy_constructible<HyperBuffer<int, 3>>::value, "should be Copy-Constructible");
+static_assert(std::is_copy_assignable<HyperBuffer<int, 3>>::value, "should be Copy-Assignable");
+static_assert(std::is_nothrow_move_constructible<HyperBuffer<int, 3>>::value, "should be noexcept Move-Constructible");
+static_assert(std::is_nothrow_move_assignable<HyperBuffer<int, 3>>::value, "should be noexcept Move-Assignable");
+
+static_assert(std::is_copy_constructible<HyperBufferView<int, 3>>::value, "should be Copy-Constructible");
+static_assert(std::is_copy_assignable<HyperBufferView<int, 3>>::value, "should be Copy-Assignable");
+static_assert(std::is_nothrow_move_constructible<HyperBufferView<int, 3>>::value, "should be noexcept Move-Constructible");
+static_assert(std::is_nothrow_move_assignable<HyperBufferView<int, 3>>::value, "should be noexcept Move-Assignable");
+
+static_assert(std::is_copy_constructible<HyperBufferViewMD<int, 3>>::value, "should be Copy-Constructible");
+static_assert(std::is_copy_assignable<HyperBufferViewMD<int, 3>>::value, "should be Copy-Assignable");
+static_assert(std::is_nothrow_move_constructible<HyperBufferViewMD<int, 3>>::value, "should be noexcept Move-Constructible");
+static_assert(std::is_nothrow_move_assignable<HyperBufferViewMD<int, 3>>::value, "should be noexcept Move-Assignable");
+
 TEST_CASE("Copy/Move a HyperBuffer with internal allocation")
 {
     constexpr int N = 3;
