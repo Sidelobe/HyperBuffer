@@ -34,7 +34,7 @@ class HyperBufferOwningPolicy
     using const_pointer_type        = typename add_const_pointers_to_type<T, N>::type;
 
 public:
-    using SubBufferPolicy = HyperBufferViewPolicy<T, N-1>;
+    using SubBufferPolicy = HyperBufferViewPolicy<T, N-1>; // SubBuffers of an 'owning' are always a 'view' !
     
     /** Constructor that takes the extents of the dimensions as a variable argument list */
     template<typename... I>
@@ -47,15 +47,12 @@ public:
         m_bufferGeometry.hookupPointerArrayToData(m_data.data(), m_pointers.data());
     }
     
-    /** @return a pointer to a subdimension of the data */
+    /** @return a modifiable pointer to a subdimension of the data */
     T* getSubDimData(size_type index) const
     {
-        ASSERT(index < this->size(0), "Index out of range");
         const int offset = m_bufferGeometry.getDataArrayOffsetForHighestOrderSubDim(index);
-        return const_cast<T*>(&m_data[offset]); // TODO: comment const-cast
+        return getRawData(offset);
     }
-    
-    const T* getRawData() const { return m_data.data(); }
 
     int size(int i) const { ASSERT(i < N); return m_bufferGeometry.getDimensionExtents()[i]; }
     const std::array<int, N>& sizes() const noexcept { return m_bufferGeometry.getDimensionExtents(); }
@@ -66,6 +63,19 @@ public:
                     T* getDataPointer_N1()       noexcept { return *m_pointers.data(); }
 
 private:
+    /**
+     * @returns a pointer to the raw data at a given offset.
+     * @note The const_cast is unfortunately necessary to resolve an ambiguity in the scenario of creating a subBuffer
+     * view from an owning buffer (this rabbithole is deep...)
+     */
+    T* getRawData(int offset = 0) const
+    {
+        return const_cast<T*>(&m_data[offset]);
+    }
+
+private:
+    friend class HyperBufferViewPolicy<T, N>;
+    
     /** Handles the geometry (organization) of the data memory, enabling multi-dimensional access to it */
     BufferGeometry<N> m_bufferGeometry;
     
@@ -108,18 +118,17 @@ public:
         ASSERT(CompiletimeMath::areAllPositive(i...), "Invalid Dimension extents");
         m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
     }
-    
 
     /** Constructor that takes an existing (owning) Buffer and creates a (non-owning) View from it */
-    explicit HyperBufferViewPolicy(const HyperBufferOwningPolicy<T, N>& owningBufferPolicy) :
+    explicit HyperBufferViewPolicy(HyperBufferOwningPolicy<T, N>& owningBufferPolicy) :
         m_bufferGeometry(owningBufferPolicy.sizes()),
-        m_externalData(const_cast<T*>(owningBufferPolicy.getRawData())), // TODO: const_cast here... :-(
+        m_externalData(owningBufferPolicy.getRawData()),
         m_pointers(m_bufferGeometry.getRequiredPointerArraySize())
     {
         m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
     }
     
-    /** @return a pointer to a subdimension of the data */
+    /** @return a modifiable pointer to a subdimension of the data */
     T* getSubDimData(size_type index) const
     {
         const int offset = m_bufferGeometry.getDataArrayOffsetForHighestOrderSubDim(index);
@@ -192,7 +201,7 @@ public:
         ASSERT(CompiletimeMath::areAllPositive(m_dimensionExtents), "Invalid Dimension extents");
     }
     
-    /** @return a pointer to a subdimension of the data */
+    /** @return a modifiable pointer to a subdimension of the data */
     subdim_pointer_type getSubDimData(size_type index) const
     {
         return m_externalData[index];

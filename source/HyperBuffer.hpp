@@ -41,7 +41,7 @@ public:
      * implemented using a special ctor in the corresponding StoragePolicy.
      */
     template<typename U, int M, class AnotherStoragePolicy, typename std::enable_if<!std::is_same<AnotherStoragePolicy, StoragePolicy>::value, int>::type = 0>
-    explicit HyperBuffer(const HyperBuffer<U, M, AnotherStoragePolicy>& other) : m_storage(other.m_storage) {}
+    explicit HyperBuffer(HyperBuffer<U, M, AnotherStoragePolicy>& other) : m_storage(other.m_storage) {}
 
 //    explicit HyperBuffer(const HyperBuffer<T, N, StoragePolicy>&& other) noexcept { this->m_storage = std::move(other.m_storage); }
     
@@ -78,7 +78,7 @@ private:
     {
         ASSERT(index < this->size(0), "Index out of range");
         auto subViewData = m_storage.getSubDimData(index);
-        auto subViewDims = StdArrayOperations::shaveOffFirstElement(sizes());
+        std::array<int, N-1> subViewDims = StdArrayOperations::shaveOffFirstElement(sizes());
         return HyperBuffer<T, N-1, typename StoragePolicy::SubBufferPolicy>(subViewData, subViewDims);
     }
     HyperBuffer<T, N-1, typename StoragePolicy::SubBufferPolicy> createSubBuffer(size_type index)
