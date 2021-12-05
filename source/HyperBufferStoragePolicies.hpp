@@ -19,7 +19,13 @@ namespace slb
 template<typename T, int N> class StoragePolicyView; // forward declaration
 
 /**
- *  Memory for the pointers and the data is allocated separately (with ownership).
+ *  Native memory model for HyperBuffer: full ownership of data and pointer memory.
+ *  The extents of the dimensions have to be supplied during construction.
+ *
+ *  Memory for the pointers and the data is allocated separately, but each in a 1-dimensional block of memory, which
+ *  results in only two allocations for the entire multi-dimensional data, regardless of the dimensions.
+ *
+ *  - Template parameters: T=data type (e.g. float),  N=dimension (e.g. 3)
  */
 template<typename T, int N>
 class StoragePolicyOwning
@@ -84,14 +90,13 @@ private:
 
 // ====================================================================================================================
 /**
- *  A wrapper for existing HyperBuffer data, giving it the same API, but without data ownership. The extents of the
- *  dimensions have to be supplied during construction. The pre-allocated data is expected to be in a
- *  flat (one-dimensional), contiguous memory block. Pointer memory is allocated during construction and, unlike
- *  data memory, is owned by a given instance of this class.
+ *  A wrapper for existing HyperBuffer data in the native format, which gives it the same API, but without data ownership.
+ *  The extents of the dimensions have to be supplied during construction.
+ *
+ *  The pre-allocated data is expected to be in a flat (one-dimensional), contiguous memory block. Pointer memory is
+ *  allocated during construction and, unlike data memory, is owned by a given instance of this class.
  *
  *  - Template parameters: T=data type (e.g. float),  N=dimension (e.g. 3)
- *
- *  - Guarantees: Dynamic memory allocation only during construction and when calling .at()
  */
 template<typename T, int N>
 class StoragePolicyView
@@ -157,7 +162,6 @@ private:
  *
  *  - Template parameters: T=data type (e.g. float),  N=dimension (e.g. 3)
  *
- *  - Guarantees: Does not allocate any memory dynamically.
  */
 template<typename T, int N>
 class StoragePolicyMultiDimensionalView
