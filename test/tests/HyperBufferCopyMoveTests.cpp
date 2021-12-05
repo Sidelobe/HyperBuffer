@@ -249,6 +249,7 @@ TEST_CASE("Copy/Move a HyperBuffer with external, multi-dimensional allocation")
     {
         ScopedMemorySentinel sentinel;
         HyperBufferViewMD<int, N> bufferCopy = buffer;
+        UNUSED(bufferCopy);
     }
     HyperBufferViewMD<int, N> bufferCopy = buffer;
     verifyBuffer(bufferCopy);
@@ -311,6 +312,7 @@ TEST_CASE("Copy/Move a HyperBuffer with external, multi-dimensional allocation")
         {
             ScopedMemorySentinel sentinel;
             HyperBufferViewMD<int, N> bufferMovedCtor(std::move(bufferMovedFrom));
+            UNUSED(bufferMovedCtor);
         }
         REQUIRE(bufferMovedFrom.data() != nullptr); // original remains untouched
     }

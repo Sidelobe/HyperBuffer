@@ -454,6 +454,7 @@ TEST_CASE("HyperBuffer: sub-buffer construction & at() access")
         { // Creating a sub-buffer also does not allocate memory
             ScopedMemorySentinel sentinel;
             auto subBuffer = buffer.subView(1);
+            UNUSED(subBuffer);
         }
     }
 }
