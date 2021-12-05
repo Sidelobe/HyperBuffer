@@ -11,7 +11,7 @@
 #include <random>
 #include <numeric>
 
-#include "HyperBufferClasses.hpp"
+#include "HyperBuffer.hpp"
 #include "MemorySentinel.hpp"
 
 // classic preprocessor hack to stringify -- double expansion is required
@@ -49,6 +49,16 @@ static auto fillWith3DSequence = [](auto& buffer)
         }
     }
 };
+
+template<typename T, int N>
+using HyperBufferOwning = HyperBuffer<T, N, HyperBufferOwningPolicy<T, N>>;
+
+template<typename T, int N>
+using HyperBufferView = HyperBuffer<T, N, HyperBufferViewPolicy <T, N>>;
+
+template<typename T, int N>
+using HyperBufferViewMD = HyperBuffer<T, N, HyperBufferViewMDPolicy <T, N>>;
+
 
 TEST_CASE("HyperBuffer Tests - Construction and Data Access")
 {

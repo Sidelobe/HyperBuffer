@@ -7,7 +7,7 @@
 
 #include "TestCommon.hpp"
 
-#include "HyperBufferClasses.hpp"
+#include "HyperBuffer.hpp"
 #include "MemorySentinel.hpp"
 
 #if defined(_MSC_VER) && defined(_DEBUG) &&_ITERATOR_DEBUG_LEVEL > 1
@@ -27,6 +27,17 @@ void verifyBuffer(const U& b)
     REQUIRE (b[1][0][5] == 333);
     REQUIRE (b[2][1][3] == -666);
 }
+
+template<typename T, int N>
+using HyperBufferOwning = HyperBuffer<T, N, HyperBufferOwningPolicy<T, N>>;
+
+template<typename T, int N>
+using HyperBufferView = HyperBuffer<T, N, HyperBufferViewPolicy <T, N>>;
+
+template<typename T, int N>
+using HyperBufferViewMD = HyperBuffer<T, N, HyperBufferViewMDPolicy <T, N>>;
+
+
 
 TEST_CASE("Copy/Move a HyperBuffer with internal allocation")
 {
