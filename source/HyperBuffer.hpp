@@ -23,8 +23,6 @@ namespace slb
 template<typename T, int N, class StoragePolicy>
 class HyperBuffer
 {
-    
-protected:
     using size_type                 = int;
     using pointer_type              = typename add_pointers_to_type<T, N>::type;
     using const_pointer_type        = typename add_const_pointers_to_type<T, N>::type;
@@ -78,6 +76,7 @@ public:
 private:
     const HyperBuffer<T, N-1, typename StoragePolicy::SubBufferPolicy> createSubBuffer(size_type index) const
     {
+        ASSERT(index < this->size(0), "Index out of range");
         auto subViewData = m_storage.getSubDimData(index);
         auto subViewDims = StdArrayOperations::shaveOffFirstElement(sizes());
         return HyperBuffer<T, N-1, typename StoragePolicy::SubBufferPolicy>(subViewData, subViewDims);
