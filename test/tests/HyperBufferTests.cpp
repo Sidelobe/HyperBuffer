@@ -218,10 +218,10 @@ TEST_CASE("HyperBuffer Tests - Construction and Data Access")
             ScopedMemorySentinel sentinel;
             buffer2D.at(1, 2) = -1;
             int a = buffer2D.at(1, 2); UNUSED(a);
-            auto aa = buffer2D.at(1); UNUSED(aa);
+            auto aa = buffer2D.subView(1); UNUSED(aa);
             buffer3D.at(1, 2, 0) = -888;
             int b = buffer3D.at(1, 2, 0); UNUSED(b);
-            auto bb = buffer3D.at(1, 2); UNUSED(bb);
+            auto bb = buffer3D.subView(1, 2); UNUSED(bb);
         }
     }
 }
@@ -326,28 +326,28 @@ TEST_CASE("HyperBuffer const correctness")
         REQUIRE(constBuffer.at(0, 0, 7) == 7);
 
         // static checks: verify we can assign to a const, but not to a non-const
-        static_assert(std::is_assignable<const int*&, decltype(constBuffer.at(0, 1).data())>::value == true, "Can assign to a const");
-        static_assert(std::is_assignable<int*&,       decltype(constBuffer.at(0, 1).data())>::value == false, "Cannot assign to a non-const");
-        static_assert(std::is_assignable<const int* const*&, decltype(constBuffer.at(2).data())>::value == true, "Can assign to a const");
-        static_assert(std::is_assignable<int**&,             decltype(constBuffer.at(2).data())>::value == false, "Cannot assign to a non-const");
-        static_assert(std::is_assignable<const int*&,  decltype(constBuffer[0][0])>::value == true, "Can assign to a const");
-        static_assert(std::is_assignable<int*&,        decltype(constBuffer[0][0])>::value == false, "Cannot assign to a non-const");
-        static_assert(std::is_assignable<const int* const*&, decltype(constBuffer[0])>::value == true, "Can assign to a const");
-        static_assert(std::is_assignable<int**&,             decltype(constBuffer[0])>::value == false, "Cannot assign to a non-const");
-        static_assert(std::is_assignable<int* const*&,       decltype(constBuffer[0])>::value == false, "Cannot assign to a non-const");
-        static_assert(std::is_assignable<const int**&,       decltype(constBuffer[0])>::value == false, "Cannot assign to a non-const");
+        static_assert(std::is_assignable<const int*&,        decltype(constBuffer.subView(0, 1).data())>::value, "Can assign to a const pointer");
+        static_assert(!std::is_assignable<int*&,             decltype(constBuffer.subView(0, 1).data())>::value, "Cannot assign to a non-const pointer");
+        static_assert(std::is_assignable<const int* const*&, decltype(constBuffer.subView(2).data())>::value, "Can assign to a const");
+        static_assert(!std::is_assignable<int**&,            decltype(constBuffer.subView(2).data())>::value, "Cannot assign to a non-const pointer");
+        static_assert(std::is_assignable<const int*&,        decltype(constBuffer[0][0])>::value, "Can assign to a const pointer");
+        static_assert(!std::is_assignable<int*&,             decltype(constBuffer[0][0])>::value, "Cannot assign to a non-const pointer");
+        static_assert(std::is_assignable<const int* const*&, decltype(constBuffer[0])>::value, "Can assign to a const pointer");
+        static_assert(!std::is_assignable<int**&,            decltype(constBuffer[0])>::value, "Cannot assign to a non-const");
+        static_assert(!std::is_assignable<int* const*&,      decltype(constBuffer[0])>::value, "Cannot assign to a non-const");
+        static_assert(!std::is_assignable<const int**&,      decltype(constBuffer[0])>::value, "Cannot assign to a non-const");
 
-        static_assert(std::is_assignable<const int* const* const*&, decltype(constBuffer.data())>::value == true, "Can assign to a const");
-        static_assert(std::is_assignable<const int* const**&, decltype(constBuffer.data())>::value == false, "Cannot assign to a non-const");
-        static_assert(std::is_assignable<const int** const*&, decltype(constBuffer.data())>::value == false, "Cannot assign to a non-const");
-        static_assert(std::is_assignable<int* const* const*&, decltype(constBuffer.data())>::value == false, "Cannot assign to a non-const");
-        static_assert(std::is_assignable<int***&,             decltype(constBuffer.data())>::value == false, "Cannot assign to a non-const");
+        static_assert(std::is_assignable<const int* const* const*&, decltype(constBuffer.data())>::value, "Can assign to a const pointer");
+        static_assert(!std::is_assignable<const int* const**&,      decltype(constBuffer.data())>::value, "Cannot assign to a non-const pointer");
+        static_assert(!std::is_assignable<const int** const*&,      decltype(constBuffer.data())>::value, "Cannot assign to a non-const pointer");
+        static_assert(!std::is_assignable<int* const* const*&,      decltype(constBuffer.data())>::value, "Cannot assign to a non-const pointer");
+        static_assert(!std::is_assignable<int***&,                  decltype(constBuffer.data())>::value, "Cannot assign to a non-const pointer");
 
-        static_assert(std::is_trivially_assignable<decltype(constBuffer.at(0, 0, 7)), int>::value == false, "Cannot write to a const");
-        static_assert(std::is_trivially_assignable<decltype(constBuffer[0][0][7]), int>::value == false, "Cannot write to a const");
-        static_assert(std::is_trivially_assignable<decltype(constBuffer.data()[0][0][7]), int>::value == false, "Cannot write to a const");
-        static_assert(std::is_trivially_assignable<decltype(constBuffer.at(0, 1).data()), int*>::value == false, "Cannot write to a const");
-        static_assert(std::is_trivially_assignable<decltype(constBuffer.at(1).data()), int*>::value == false, "Cannot write to a const");
+        static_assert(!std::is_trivially_assignable<decltype(constBuffer.at(0, 0, 7)), int>::value, "Cannot write to a const");
+        static_assert(!std::is_trivially_assignable<decltype(constBuffer[0][0][7]), int>::value, "Cannot write to a const");
+        static_assert(!std::is_trivially_assignable<decltype(constBuffer.data()[0][0][7]), int>::value, "Cannot write to a const");
+        static_assert(!std::is_trivially_assignable<decltype(constBuffer.subView(0, 1).data()), int*>::value, "Cannot write to a const");
+        static_assert(!std::is_trivially_assignable<decltype(constBuffer.subView(1).data()), int*>::value, "Cannot write to a const");
     };
 
     SECTION("owning") {
@@ -358,8 +358,8 @@ TEST_CASE("HyperBuffer const correctness")
         // Explicitly test a 1D owning, because above verify function only checks HyperBufferView after being reduced to subBuffers
         const HyperBuffer<int, 1> constBuffer1D(4);
         int a = constBuffer1D.at(2); (UNUSED(a));
-        static_assert(std::is_trivially_assignable<int&, decltype(constBuffer1D.at(1))>::value == true, "Can assign to a const");
-        static_assert(std::is_trivially_assignable<decltype(constBuffer1D.at(1)), int*>::value == false, "Cannot write to a const");
+        static_assert(std::is_trivially_assignable<int&, decltype(constBuffer1D.at(1))>::value, "Can assign to a const");
+        static_assert(!std::is_trivially_assignable<decltype(constBuffer1D.at(1)), int*>::value, "Cannot write to a const");
     }
     SECTION("flat view") {
         int dataRaw1 [3*3*8];
@@ -383,7 +383,7 @@ TEST_CASE("HyperBuffer: sub-buffer construction & at() access")
         // N-1 Sub-buffer -> 2D
         int subBufferIndex = GENERATE(0, 2);
         
-        auto subBuffer = buffer.at(subBufferIndex);
+        auto subBuffer = buffer.subView(subBufferIndex);
         REQUIRE(subBuffer.sizes() == std::array<int, 2>{buffer.size(1), buffer.size(2)});
         int j = 0;
         for (int l=0; l < subBuffer.size(0); ++l) {
@@ -394,7 +394,7 @@ TEST_CASE("HyperBuffer: sub-buffer construction & at() access")
         
         // N-2 Sub-buffer -> 1D
         int subBufferIndex2 = 1; // just test one value
-        auto subBuffer2 = buffer.at(subBufferIndex, subBufferIndex2);
+        auto subBuffer2 = buffer.subView(subBufferIndex, subBufferIndex2);
         REQUIRE(subBuffer2.sizes() == std::array<int, 1>{buffer.size(2)});
         j = 0;
         for (int m=0; m < subBuffer2.size(0); ++m) {
@@ -415,7 +415,7 @@ TEST_CASE("HyperBuffer: sub-buffer construction & at() access")
         
         int subBufferIndex = 2;
         int subBufferIndex2 = 1;
-        auto subBuffer2 = buffer.at(subBufferIndex, subBufferIndex2);
+        auto subBuffer2 = buffer.subView(subBufferIndex, subBufferIndex2);
         int j = 0;
         for (int m=0; m < subBuffer2.size(0); ++m) {
             REQUIRE(subBuffer2[m] == buffer.size(1) * buffer.size(2) * subBufferIndex + buffer.size(2) * subBufferIndex2 + j++);
@@ -427,9 +427,6 @@ TEST_CASE("HyperBuffer: sub-buffer construction & at() access")
         fillWith3DSequence(buffer);
         // NOTE: A sub-buffer of HyperBuffer is a HyperBufferView pointing to the HyperBuffer's data!
         verify(buffer);
-        
-        const HyperBuffer<int, 3> constBuffer = buffer;
-        verifyConst(buffer);
     }
     
     SECTION("view flat") {
@@ -446,7 +443,7 @@ TEST_CASE("HyperBuffer: sub-buffer construction & at() access")
         
         { // Creating a sub-buffer also does not allocate memory
             ScopedMemorySentinel sentinel;
-            auto subBuffer = buffer.at(1);
+            auto subBuffer = buffer.subView(1);
         }
     }
 }

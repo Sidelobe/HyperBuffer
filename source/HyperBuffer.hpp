@@ -25,7 +25,7 @@ template<typename T, int N> class HyperBufferView; // forward declaration
  *
  *  - Template parameters: T=data type (e.g. float),  N=dimension (e.g. 3)
  *
- *  - Guarantees: Dynamic memory allocation only during construction and when calling .at()
+ *  - Guarantees: Dynamic memory allocation only during construction and when calling subView()
  */
 template<typename T, int N>
 class HyperBuffer : public IHyperBuffer<T, N, HyperBuffer<T, N>>
@@ -50,7 +50,9 @@ public:
     const std::array<int, N>& sizes() const noexcept override { return m_bufferGeometry.getDimensionExtents(); }
     
 private:
-    /** Build a (non-owning) N-1 HyperBuffer const view to this Hyperbuffer's data */
+    /** Build a (non-owning) N-1 HyperBuffer const view to this Hyperbuffer's data
+     * @note this returns a const object to ensure the result cannot be assigned to non-const pointer.
+     */
     const HyperBufferView<T, N-1> createSubBufferView(size_type index) const
     {
         ASSERT(index < this->size(0), "Index out of range");
@@ -95,7 +97,7 @@ private:
  *
  *  - Template parameters: T=data type (e.g. float),  N=dimension (e.g. 3)
  *
- *  - Guarantees: Dynamic memory allocation only during construction and when calling .at()
+ *  - Guarantees: Dynamic memory allocation only during construction and when calling subView()
  */
 template<typename T, int N>
 class HyperBufferView : public IHyperBuffer<T, N, HyperBufferView<T, N>>
@@ -129,7 +131,9 @@ public:
     const std::array<int, N>& sizes() const noexcept override { return m_bufferGeometry.getDimensionExtents(); }
     
 private:
-    /** Build a N-1 HyperBuffer const view to this Hyperbuffer's data */
+    /** Build a N-1 HyperBuffer const view to this Hyperbuffer's data
+     * @note this returns a const object to ensure the result cannot be assigned to non-const pointer.
+     */
     const HyperBufferView<T, N-1> createSubBufferView(size_type index) const
     {
         ASSERT(index < this->size(0), "Index out of range");
