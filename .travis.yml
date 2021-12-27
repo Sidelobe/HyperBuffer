@@ -7,12 +7,12 @@ matrix:
         - os: osx
           osx_image: xcode11.6
           compiler: clang
-          env: CONFIG="Debug" COMPILER='clang++' ARCH="x64" COV="no"
+          env: CONFIG="Debug" COMPILER='clang++' COV="no"
           
         - os: osx
           osx_image: xcode11.6
           compiler: clang
-          env: CONFIG="Release" COMPILER='clang++' ARCH="x64" COV="yes"
+          env: CONFIG="Release" COMPILER='clang++' COV="yes"
           addons:
             sonarcloud:
                 organization: "idelobe" # the key of the org you chose at step #3
@@ -20,9 +20,9 @@ matrix:
                     secure: "A0Qtq8CLpu5aFLElfkhJYSvuvtwTUNsyUQJIVstKn/XUIehsaU8o1xbSG475O3P3BvJHgYWcj/dW+Hf3yTCfML+5jtA5fj9uijloN4GrJVmlCBX7r7GUbcrWWP9BTwnIM7HOEf5Pjw5USfMcqjYBL3ztVizGfUkdexROP92REqweeke2CEJiICm7/H1yxZ/kKDmxy1w74B58tLDiVhTmjcE7+aQkMGWFx80cFEE+RC00efFXCfeCtWcpVITh08kinsaT8mf9KkfV+e9DQx00JQGrDmiwAPXoecgwqF27cCNhiAtyKXGbhZawTX29qYYmhySCF88keBwxuWanNEAAujaoySIVkL1LYAkHYt9Dg2TXdGZhAJ7mt9ccukDJJpCpPcoXLU1vS6E4f2Ug9zMgwjppRhy9/BQXZZ2qUAlPSumNAFQP7waQ0Vm2xRYJ/Rc8XUXZ3ObnfMDhzP+/AKm1VbburWTtvacxf8QEg3hBZX5zWylZqo1/LzF0DLOLGM+DEKA0LnSbZhaIVY8Xcp3nVyPP3N+LzC4fVWonZxXXwi8bJVJdiaeKL4P9L4wtc4W99z7BEdqOL+/05KGNYi0yaHCLht2Uca1c3X7AzlVHuUnRnGeYCWVOmlTan+oXDMfg3KdZkmPvkOpAndL2ydIemmfrYOYQbYVL5KoISmGhi8A="
         
         - os: osx
-          osx_image: xcode12.2
+          osx_image: xcode12u
           compiler: clang
-          env: CONFIG="Debug" COMPILER='clang++'  COV="no" ARCH="arm64"
+          env: CONFIG="Debug" COMPILER='clang++' COV="no" ADD_CMAKE_ARGS="-DCMAKE_OSX_ARCHITECTURES=arm64"
           
         - os: linux
           dist: bionic
@@ -39,17 +39,17 @@ matrix:
         - os: linux
           dist: bionic
           compiler: gcc
-          env: CONFIG="Release" COMPILER='g++-9' ARCH="x64" COV="no" 
+          env: CONFIG="Release" COMPILER='g++-9' COV="no" 
           addons:
               apt:
                   sources: ['ubuntu-toolchain-r-test']
                   packages: *LinuxPackages 
         
         - os: windows
-          env: CONFIG="Debug" ARCH="x64" COV="no" MSBUILD_PATH="C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin"
+          env: CONFIG="Debug" ARCH="x86_64" COV="no" MSBUILD_PATH="C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin"
         
         - os: windows
-          env: CONFIG="Release" ARCH="x64" COV="no" MSBUILD_PATH="C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin"
+          env: CONFIG="Release" ARCH="x86_64" COV="no" MSBUILD_PATH="C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin"
 
 install:
   - |
@@ -82,7 +82,7 @@ before_script:
     - cd deploy
     - mkdir -p build
     - cd build
-    - if [ "$TRAVIS_OS_NAME" != "windows" ]; then cmake -H. -j 4 ../.. -DCMAKE_BUILD_TYPE=$CONFIG -DCMAKE_OSX_ARCHITECTURES=$ARCH -DCODE_COVERAGE="$COV"; fi
+    - if [ "$TRAVIS_OS_NAME" != "windows" ]; then cmake -H. -j 4 ../.. -DCMAKE_BUILD_TYPE=$CONFIG -DCODE_COVERAGE="$COV" $ADD_CMAKE_ARGS; fi
     - if [ "$TRAVIS_OS_NAME" == "windows" ]; then export PATH=$MSBUILD_PATH:$PATH; cmake -G "Visual Studio 16 2019" -DCMAKE_GENERATOR_PLATFORM=x64 ../..; fi
     
 script:
