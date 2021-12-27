@@ -33,7 +33,7 @@ std::vector<int> dataDim2_2 = TestCommon::createRandomVectorInt(8, 2999); \
 int* pointerDim1_0[] = { dataDim0_0.data(), dataDim0_1.data(), dataDim0_2.data() }; \
 int* pointerDim1_1[] = { dataDim1_0.data(), dataDim1_1.data(), dataDim1_2.data() }; \
 int* pointerDim1_2[] = { dataDim2_0.data(), dataDim2_1.data(), dataDim2_2.data() }; \
-int** VARNAME[] = { pointerDim1_0, pointerDim1_1, pointerDim1_2 };
+int** VARNAME[] = { pointerDim1_0, pointerDim1_1, pointerDim1_2 }
 
 using namespace slb;
 
