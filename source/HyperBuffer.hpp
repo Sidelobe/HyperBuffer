@@ -97,6 +97,7 @@ private:
         std::array<int, N-1> subViewDims = StdArrayOperations::shaveOffFirstElement(sizes());
         return HyperBuffer<T, N-1, typename StoragePolicy::SubBufferPolicy>(subViewData, subViewDims);
     }
+    
     HyperBuffer<T, N-1, typename StoragePolicy::SubBufferPolicy> createSubBuffer(size_type index)
     {
         return std::as_const(*this).createSubBuffer(index);

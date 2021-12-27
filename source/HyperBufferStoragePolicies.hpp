@@ -90,7 +90,7 @@ private:
 
 // ====================================================================================================================
 /**
- *  A wrapper for existing HyperBuffer data in the native format, which gives it the same API, but without data ownership.
+ *  A wrapper for existing HyperBuffer data in its native format, which gives it the same API, but without data ownership.
  *  The extents of the dimensions have to be supplied during construction.
  *
  *  The pre-allocated data is expected to be in a flat (one-dimensional), contiguous memory block. Pointer memory is
