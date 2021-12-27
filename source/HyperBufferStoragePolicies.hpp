@@ -138,10 +138,10 @@ public:
     int size(int i) const { ASSERT(i < N); return m_bufferGeometry.getDimensionExtents()[i]; }
     const std::array<int, N>& sizes() const noexcept { return m_bufferGeometry.getDimensionExtents(); }
 
-    const_pointer_type  getDataPointer_Nx() const noexcept { return reinterpret_cast<const_pointer_type>(m_pointers.data()); }
-           pointer_type getDataPointer_Nx()       noexcept { return reinterpret_cast<pointer_type>(m_pointers.data()); }
-               const T* getDataPointer_N1() const noexcept { return *m_pointers.data(); }
-                     T* getDataPointer_N1()       noexcept { return *m_pointers.data(); }
+    const_pointer_type getDataPointer_Nx() const noexcept { return reinterpret_cast<const_pointer_type>(m_pointers.data()); }
+          pointer_type getDataPointer_Nx()       noexcept { return reinterpret_cast<pointer_type>(m_pointers.data()); }
+              const T* getDataPointer_N1() const noexcept { return *m_pointers.data(); }
+                    T* getDataPointer_N1()       noexcept { return *m_pointers.data(); }
     
 private:
     /** Handles the geometry (organization) of the data memory, enabling multi-dimensional access to it */
@@ -212,7 +212,7 @@ public:
     const std::array<int, N>& sizes() const noexcept { return m_dimensionExtents; }
 
     const_pointer_type getDataPointer_Nx() const noexcept { return m_externalData; }
-         pointer_type  getDataPointer_Nx()       noexcept { return m_externalData; }
+          pointer_type getDataPointer_Nx()       noexcept { return m_externalData; }
               const T* getDataPointer_N1() const noexcept { return reinterpret_cast<const T*>(m_externalData); }
                     T* getDataPointer_N1()       noexcept { return reinterpret_cast<T*>(m_externalData); }
     
