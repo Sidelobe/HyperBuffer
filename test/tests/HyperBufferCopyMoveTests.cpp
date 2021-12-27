@@ -38,10 +38,10 @@ static_assert(std::is_copy_assignable<HyperBufferView<int, 3>>::value, "should b
 static_assert(std::is_nothrow_move_constructible<HyperBufferView<int, 3>>::value, "should be noexcept Move-Constructible");
 static_assert(std::is_nothrow_move_assignable<HyperBufferView<int, 3>>::value, "should be noexcept Move-Assignable");
 
-static_assert(std::is_copy_constructible<HyperBufferViewMD<int, 3>>::value, "should be Copy-Constructible");
-static_assert(std::is_copy_assignable<HyperBufferViewMD<int, 3>>::value, "should be Copy-Assignable");
-static_assert(std::is_nothrow_move_constructible<HyperBufferViewMD<int, 3>>::value, "should be noexcept Move-Constructible");
-static_assert(std::is_nothrow_move_assignable<HyperBufferViewMD<int, 3>>::value, "should be noexcept Move-Assignable");
+static_assert(std::is_copy_constructible<HyperBufferViewNC<int, 3>>::value, "should be Copy-Constructible");
+static_assert(std::is_copy_assignable<HyperBufferViewNC<int, 3>>::value, "should be Copy-Assignable");
+static_assert(std::is_nothrow_move_constructible<HyperBufferViewNC<int, 3>>::value, "should be noexcept Move-Constructible");
+static_assert(std::is_nothrow_move_assignable<HyperBufferViewNC<int, 3>>::value, "should be noexcept Move-Assignable");
 
 TEST_CASE("Copy/Move a HyperBuffer with internal allocation")
 {
@@ -243,19 +243,19 @@ TEST_CASE("Copy/Move a HyperBuffer with external, multi-dimensional allocation")
     // Construction does not allocate memory
     {
         ScopedMemorySentinel sentinel;
-        HyperBufferViewMD<int, N> buffer(preallocData, dims);
+        HyperBufferViewNC<int, N> buffer(preallocData, dims);
     }
-    HyperBufferViewMD<int, N> buffer(preallocData, dims);
+    HyperBufferViewNC<int, N> buffer(preallocData, dims);
     buffer[1][0][5] = 333;
     buffer[2][1][3] = -666;
 
     // Copy assignment operator
     {
         ScopedMemorySentinel sentinel;
-        HyperBufferViewMD<int, N> bufferCopy = buffer;
+        HyperBufferViewNC<int, N> bufferCopy = buffer;
         UNUSED(bufferCopy);
     }
-    HyperBufferViewMD<int, N> bufferCopy = buffer;
+    HyperBufferViewNC<int, N> bufferCopy = buffer;
     verifyBuffer(bufferCopy);
     verifyBuffer(buffer); // original remains untouched
     REQUIRE(bufferCopy[0] == buffer[0]); // copy points to the same data
@@ -264,7 +264,7 @@ TEST_CASE("Copy/Move a HyperBuffer with external, multi-dimensional allocation")
 
     // Copy Ctor - verify no memory is allocated
     {
-        HyperBufferViewMD<int, N> bufferCopyCtor(nullptr, 3, 2, 8);
+        HyperBufferViewNC<int, N> bufferCopyCtor(nullptr, 3, 2, 8);
         {
             ScopedMemorySentinel sentinel;
             bufferCopyCtor = buffer;
@@ -278,8 +278,8 @@ TEST_CASE("Copy/Move a HyperBuffer with external, multi-dimensional allocation")
 
     // Move assignment operator
     {
-        HyperBufferViewMD<int, N> bufferMovedFrom = buffer; // working copy
-        HyperBufferViewMD<int, N> bufferMovedTo = std::move(bufferMovedFrom);
+        HyperBufferViewNC<int, N> bufferMovedFrom = buffer; // working copy
+        HyperBufferViewNC<int, N> bufferMovedTo = std::move(bufferMovedFrom);
         verifyBuffer(bufferMovedTo);
         REQUIRE(bufferMovedFrom.data() != nullptr); // original remains untouched
         REQUIRE(bufferMovedTo[0] == buffer[0]); // moved points to the same data
@@ -289,8 +289,8 @@ TEST_CASE("Copy/Move a HyperBuffer with external, multi-dimensional allocation")
 
     // verify no memory is allocated during move assignment
     {
-        HyperBufferViewMD<int, N> bufferMovedFrom = buffer; // working copy
-        HyperBufferViewMD<int, N> bufferMovedToPreAlloc(nullptr, dims);
+        HyperBufferViewNC<int, N> bufferMovedFrom = buffer; // working copy
+        HyperBufferViewNC<int, N> bufferMovedToPreAlloc(nullptr, dims);
         {
             ScopedMemorySentinel sentinel;
             bufferMovedToPreAlloc = std::move(bufferMovedFrom);
@@ -301,8 +301,8 @@ TEST_CASE("Copy/Move a HyperBuffer with external, multi-dimensional allocation")
 
     // Move Ctor
     {
-        HyperBufferViewMD<int, N> bufferMovedFrom = buffer;
-        HyperBufferViewMD<int, N> bufferMovedToCtor(std::move(bufferMovedFrom));
+        HyperBufferViewNC<int, N> bufferMovedFrom = buffer;
+        HyperBufferViewNC<int, N> bufferMovedToCtor(std::move(bufferMovedFrom));
         verifyBuffer(bufferMovedToCtor);
         REQUIRE(bufferMovedFrom.data() != nullptr); // original remains untouched
         REQUIRE(bufferMovedToCtor[0] == buffer[0]); // moved points to the same data
@@ -312,10 +312,10 @@ TEST_CASE("Copy/Move a HyperBuffer with external, multi-dimensional allocation")
 
     // verify no memory is allocated during move construction
     {
-        HyperBufferViewMD<int, N> bufferMovedFrom = buffer; // working copy
+        HyperBufferViewNC<int, N> bufferMovedFrom = buffer; // working copy
         {
             ScopedMemorySentinel sentinel;
-            HyperBufferViewMD<int, N> bufferMovedCtor(std::move(bufferMovedFrom));
+            HyperBufferViewNC<int, N> bufferMovedCtor(std::move(bufferMovedFrom));
             UNUSED(bufferMovedCtor);
         }
         REQUIRE(bufferMovedFrom.data() != nullptr); // original remains untouched

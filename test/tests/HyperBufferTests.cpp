@@ -20,7 +20,7 @@
 #define TOSTRING(x) STRINGIFY(x)
 
 // Helper to allocate 3D data on stack
-#define BUILD_MULTIDIM_ON_STACK_3_3_8(VARNAME) \
+#define BUILD_NC_ON_STACK_3_3_8(VARNAME) \
 std::vector<int> dataDim0_0 = TestCommon::createRandomVectorInt(8, 333); \
 std::vector<int> dataDim0_1 = TestCommon::createRandomVectorInt(8, 666); \
 std::vector<int> dataDim0_2 = TestCommon::createRandomVectorInt(8, 999); \
@@ -194,27 +194,27 @@ TEST_CASE("HyperBuffer Tests - Construction and Data Access")
         verify3D(bufferFromStdArray);
     }
 
-    SECTION("External Memory Allocation (MultiDim View)") {
+    SECTION("External Memory Allocation (Non-Contiguous)") {
         std::vector<int> oneD = TestCommon::createRandomVectorInt(4, 123);
-        HyperBufferViewMD<int, 1> buffer1D(oneD.data(), oneD.size());
+        HyperBufferViewNC<int, 1> buffer1D(oneD.data(), oneD.size());
         verify1D(buffer1D);
 
         std::vector<int> xdataDim0_0 = TestCommon::createRandomVectorInt(4, 333);
         std::vector<int> xdataDim0_1 = TestCommon::createRandomVectorInt(4, 666);
         int* xdataDim1_0[] = { xdataDim0_0.data(), xdataDim0_1.data() };
-        HyperBufferViewMD<int, 2> buffer2D(xdataDim1_0, 2, 4);
+        HyperBufferViewNC<int, 2> buffer2D(xdataDim1_0, 2, 4);
         verify2D(buffer2D);
 
-        BUILD_MULTIDIM_ON_STACK_3_3_8(multiDimData);
-        HyperBufferViewMD<int, 3> buffer3D(multiDimData, 3, 3, 8);
+        BUILD_NC_ON_STACK_3_3_8(nonContiguousData);
+        HyperBufferViewNC<int, 3> buffer3D(nonContiguousData, 3, 3, 8);
         verify3D(buffer3D);
 
         // Constructor via std::array
         std::array<int, 3> dims  {3, 3, 8};
-        HyperBufferViewMD<int, 3> bufferFromStdArray(multiDimData, dims);
+        HyperBufferViewNC<int, 3> bufferFromStdArray(nonContiguousData, dims);
         verify3D(bufferFromStdArray);
         
-        { // Verify .at() operations do not allocate memory for HyperBufferViewMD
+        { // Verify .at() operations do not allocate memory for HyperBufferViewNC
             ScopedMemorySentinel sentinel;
             buffer2D.at(1, 2) = -1;
             int a = buffer2D.at(1, 2); UNUSED(a);
@@ -274,24 +274,24 @@ TEST_CASE("HyperBuffer ctor: different dimension variants")
         REQUIRE(&owner[1][3] == &nonOwner[1][3]);
     }
     
-    SECTION("multidim view") {
+    SECTION("non-contiguous view") {
         int* data [32];
-        HyperBufferViewMD<int, 2> hostClass(data, 3, 5); // calls int ctor
+        HyperBufferViewNC<int, 2> hostClass(data, 3, 5); // calls int ctor
         REQUIRE(hostClass.sizes() == std::array<int, 2>({3, 5}));
         std::array<int, 2> dimArray = {3, 5};
-        HyperBufferViewMD<int, 2> hostClass2(data, dimArray); // calls array ctor
+        HyperBufferViewNC<int, 2> hostClass2(data, dimArray); // calls array ctor
         REQUIRE(hostClass2.sizes() == std::array<int, 2>({3, 5}));
         std::vector<int> dimVector = {3, 5};
-        HyperBufferViewMD<int, 2> hostClass3(data, dimVector); // calls int* ctor
+        HyperBufferViewNC<int, 2> hostClass3(data, dimVector); // calls int* ctor
         REQUIRE(hostClass3.sizes() == std::array<int, 2>({3, 5}));
         
-        REQUIRE_THROWS(HyperBufferViewMD<int, 2>(data, std::vector<int>{})); // empty
-        REQUIRE_THROWS(HyperBufferViewMD<int, 2>(data, std::vector<int>{4})); // missing one dimension
-        REQUIRE_THROWS(HyperBufferViewMD<int, 2>(data, std::vector<int>{2, 3, 64})); // one dimension too many
+        REQUIRE_THROWS(HyperBufferViewNC<int, 2>(data, std::vector<int>{})); // empty
+        REQUIRE_THROWS(HyperBufferViewNC<int, 2>(data, std::vector<int>{4})); // missing one dimension
+        REQUIRE_THROWS(HyperBufferViewNC<int, 2>(data, std::vector<int>{2, 3, 64})); // one dimension too many
 
-        REQUIRE_THROWS(HyperBufferViewMD<int, 1>(nullptr, 0));
-        REQUIRE_THROWS(HyperBufferViewMD<int, 2>(data, 0, 0));
-        REQUIRE_THROWS(HyperBufferViewMD<int, 2>(data, 1, -20));
+        REQUIRE_THROWS(HyperBufferViewNC<int, 1>(nullptr, 0));
+        REQUIRE_THROWS(HyperBufferViewNC<int, 2>(data, 0, 0));
+        REQUIRE_THROWS(HyperBufferViewNC<int, 2>(data, 1, -20));
     }
 }
 
@@ -367,9 +367,9 @@ TEST_CASE("HyperBuffer const correctness")
         fillWith3DSequence(buffer);
         verify(buffer);
     }
-    SECTION("multidim view") {
-        BUILD_MULTIDIM_ON_STACK_3_3_8(multiDimData);
-        HyperBufferViewMD<int, 3> buffer(multiDimData, 3, 3, 8);
+    SECTION("non-contiguous view") {
+        BUILD_NC_ON_STACK_3_3_8(nonContiguousData);
+        HyperBufferViewNC<int, 3> buffer(nonContiguousData, 3, 3, 8);
         fillWith3DSequence(buffer);
         verify(buffer);
     }
@@ -435,9 +435,9 @@ TEST_CASE("HyperBuffer: sub-buffer construction & at() access")
         fillWith3DSequence(buffer);
         verify(buffer);
     }
-    SECTION("view multidim") {
-        BUILD_MULTIDIM_ON_STACK_3_3_8(multiDimData);
-        HyperBufferViewMD<int, 3> buffer(multiDimData, 3, 3, 8);
+    SECTION("non-contiguous view") {
+        BUILD_NC_ON_STACK_3_3_8(nonContiguousData);
+        HyperBufferViewNC<int, 3> buffer(nonContiguousData, 3, 3, 8);
         fillWith3DSequence(buffer);
         verify(buffer);
         
@@ -487,12 +487,12 @@ TEST_CASE("HyperBuffer: out of memory")
         int dataRaw1 [3*3*8];
         REQUIRE_THROWS(HyperBufferView<int, 3>(dataRaw1, 3, 3, 8));
     }
-    SECTION("view multidim -- does not allocate")
+    SECTION("view non-contiguous -- does not allocate")
     {
-        BUILD_MULTIDIM_ON_STACK_3_3_8(multiDimData); // this allocation shall not be monitored
+        BUILD_NC_ON_STACK_3_3_8(nonContiguousData); // this allocation shall not be monitored
         {
             ScopedMemorySentinel scopedSentinel;
-            HyperBufferViewMD<int, 3> buffer(multiDimData, 3, 3, 8);
+            HyperBufferViewNC<int, 3> buffer(nonContiguousData, 3, 3, 8);
         }
     }
 }

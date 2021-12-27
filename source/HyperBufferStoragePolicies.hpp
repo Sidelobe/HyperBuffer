@@ -160,11 +160,13 @@ private:
  *  of the dimensions have to be supplied during construction. Both pointer and data memory are stored externally
  *  (this class has no ownership).
  *
+ *  The pre-allocated data is expected to be stored in individual, non-contiguous memory blocks. Only the lowest-orderd
+ *
  *  - Template parameters: T=data type (e.g. float),  N=dimension (e.g. 3)
  *
  */
 template<typename T, int N>
-class StoragePolicyMultiDimensionalView
+class StoragePolicyViewNonContiguous
 {
     using size_type                 = int;
     using pointer_type              = typename add_pointers_to_type<T, N>::type;
@@ -172,11 +174,11 @@ class StoragePolicyMultiDimensionalView
     using subdim_pointer_type       = typename remove_pointers_from_type<pointer_type, 1>::type;
     
 public:
-    using SubBufferPolicy = StoragePolicyMultiDimensionalView<T, N-1>;
+    using SubBufferPolicy = StoragePolicyViewNonContiguous<T, N-1>;
     
     /** Constructor that takes the extents of the dimensions as a variable argument list */
     template<typename... I>
-    StoragePolicyMultiDimensionalView(pointer_type preAllocatedData, I... i) :
+    StoragePolicyViewNonContiguous(pointer_type preAllocatedData, I... i) :
         m_dimensionExtents{static_cast<int>(i)...},
         m_externalData(preAllocatedData)
     {
@@ -184,7 +186,7 @@ public:
     }
             
     /** Constructor that takes the extents of the dimensions as a std::array */
-    StoragePolicyMultiDimensionalView(pointer_type preAllocatedData, std::array<int, N> dimensionExtents) :
+    StoragePolicyViewNonContiguous(pointer_type preAllocatedData, std::array<int, N> dimensionExtents) :
         m_dimensionExtents(dimensionExtents),
         m_externalData(preAllocatedData)
     {
@@ -192,7 +194,7 @@ public:
     }
     
     /** Constructor that takes the extents of the dimensions as a std::vector */
-    StoragePolicyMultiDimensionalView(pointer_type preAllocatedData, std::vector<int> dimensionExtentsVector) :
+    StoragePolicyViewNonContiguous(pointer_type preAllocatedData, std::vector<int> dimensionExtentsVector) :
         m_externalData(preAllocatedData)
     {
         ASSERT(dimensionExtentsVector.size() == N, "Incorrect number of dimension extents");

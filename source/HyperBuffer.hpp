@@ -28,7 +28,7 @@ namespace slb
  *    StoragePolicy:
  *      -# 'Owning' (default): uses the native memory model and has full ownership of the multi-dimensional data
  *      -# 'View': same memory model as 'owning', but without ownership: uses an externally-allocated 1-D data block
- *      -# 'Multi-Dimensional View': uses externally-allocated multi-dimensional data
+ *      -# 'Non-Contiguous View': uses externally-allocated non-contiguously allocated data
  *
  *  - Guarantees: Dynamic memory allocation only during construction and when calling subView()
  */
@@ -117,7 +117,7 @@ template<typename T, int N>
 using HyperBufferView = HyperBuffer<T, N, StoragePolicyView <T, N>>;
 
 template<typename T, int N>
-using HyperBufferViewMD = HyperBuffer<T, N, StoragePolicyMultiDimensionalView <T, N>>;
+using HyperBufferViewNC = HyperBuffer<T, N, StoragePolicyViewNonContiguous <T, N>>;
 
 
 

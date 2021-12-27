@@ -14,13 +14,13 @@
 # Design Details: Internal Memory Model
 In C++/C, there are two common ways of allocating a multi-dimensional data structure:
 
-1. **contiguous / linear**: e.g. C-Style `int[2][3][5]`, which is just 'view' for a 1D `2*3*5` int array. All dimensions have to be uniform, alignment is achieved through padding. Other than this, there is zero memory overhead, unless you need to produce an `int***` to the data.
+1. **contiguous / linear**: e.g. C-Style `int[2][3][5]`, which is just 'view' for a 1D `2*3*5` int array. **All dimensions have to be uniform**, alignment is achieved through padding. Other than this, there is zero memory overhead, unless you need to produce an `int***` to the data.
 
-1. **linked / pointer**: arrays of pointers that point to other pointers and eventually the data. Dimensions can be non-uniform, data alignment can be achieved when allocating the innermost dimension.
+1. **linked / pointer**: arrays of pointers that point to other pointers and eventually the data. **Dimensions can be non-uniform**, data alignment can be achieved when allocating the innermost dimension.
 
-Essentially, with method \#2 we differentiate between the memory required for pointers and the memory used for the actual data, which is located at the lowest dimension. Allocating the memory for the pointers usually involves individual allocation on every dimension recursively.
+With method \#2 we differentiate between the memory required for pointers and the memory used for the actual data, which is located at the lowest dimension. Allocating the memory for the pointers usually involves individual allocation on every dimension recursively.
 
-This also entails recursive (de-)allocation when copying or moving such a multi-dimensional data structure. For this reason, a **linear memory model** was chosen in this project, where both the data and all the pointers are stored linearly in a 'flat' array each.
+This also entails recursive (de-)allocation when copying or moving such a multi-dimensional data structure. For this reason, a special **linear memory model** was chosen in this project, where the data but also all the pointers are stored linearly in a 'flat' array each. This deviates from the C-Style memory model, but is more efficient, because we do not not to calculate any indices when accessing the data.
 
 This way, only 2 one-dimensional arrays (or similar data structure) need be allocated, regardless of the order of dimensions: one for the data, and one for the pointers.
 
