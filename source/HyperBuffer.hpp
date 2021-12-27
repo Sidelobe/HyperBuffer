@@ -80,10 +80,10 @@ public:
     FOR_N1                        T& operator[] (size_type i)       { return m_storage.getDataPointer_N1()[i]; }
 
     // MARK: at(...) -- Exists only for call with N parameters, returns data
-    FOR_Nx_N decltype(auto) at(size_type dn, I... i) const { return createSubBuffer(dn).at(i...); }
-    FOR_Nx_N decltype(auto) at(size_type dn, I... i)       { return createSubBuffer(dn).at(i...); }
-    FOR_N1         const T& at(size_type i)          const { return m_storage.getDataPointer_N1()[i]; }
-    FOR_N1               T& at(size_type i)                { return m_storage.getDataPointer_N1()[i]; }
+    FOR_Nx_N const T& at(size_type dn, I... i) const { return createSubBuffer(dn).at(i...); }
+    FOR_Nx_N       T& at(size_type dn, I... i)       { return createSubBuffer(dn).at(i...); }
+    FOR_N1   const T& at(size_type i)          const { return m_storage.getDataPointer_N1()[i]; }
+    FOR_N1         T& at(size_type i)                { return m_storage.getDataPointer_N1()[i]; }
     
     // MARK: subView(...) -- returns <T,N-1> instance
     FOR_Nx_V decltype(auto) subView(size_type dn, I... i) const { return createSubBuffer(dn).subView(i...); }
