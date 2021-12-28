@@ -1,5 +1,4 @@
 # Travis configuration file for HyperBuffer
-dist: trusty
 language:
     - cpp
 matrix:
