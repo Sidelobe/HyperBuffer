@@ -24,7 +24,7 @@ matrix:
           arch: arm64-graviton2
           virt: lxd
           group: edge
-          env: COMPILER="g++" C_COMPILER="gcc"
+          env: CONFIG="Release" COMPILER='g++' COV="no"
             
         - os: linux
           dist: bionic
