@@ -54,7 +54,7 @@ matrix:
 
 install:
   - |
-    if [ "${TRAVIS_OS_NAME}" == "linux" && TRAVIS_CPU_ARCH != "arm64-graviton2" ]; then
+    if [ "${TRAVIS_OS_NAME}" == "linux" ] && [ TRAVIS_CPU_ARCH != "arm64-graviton2" ]; then
       export CMAKE_URL="https://github.com/Kitware/CMake/releases/download/v3.17.0/cmake-3.17.0-Linux-x86_64.tar.gz"
       export DEPS_DIR=$PWD
       echo ${TRAVIS_OS_NAME}
