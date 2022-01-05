@@ -23,7 +23,14 @@ matrix:
           arch: arm64-graviton2
           virt: lxd
           group: edge
-          env: CONFIG="Release" COMPILER='g++' COV="no"
+          env: CONFIG="Release" COMPILER='g++-10' COV="no"
+          addons:
+              apt:
+                  sources: ['ubuntu-toolchain-r-test']
+                  packages: &LinuxPackages 
+                    - g++-10
+                    - cmake
+                    - python3-pip  
             
         - os: linux
           dist: bionic
