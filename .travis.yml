@@ -28,6 +28,13 @@ matrix:
             - COMPILER="g++"
             - C_COMPILER="gcc"
             - COV="no"
+          addons:
+              apt:
+                  sources: ['ubuntu-toolchain-r-test']
+                  packages: &LinuxPackages 
+                    - g++-9
+                    - cmake
+                    - python3-pip  
             
         - os: linux
           dist: bionic
@@ -36,10 +43,7 @@ matrix:
           addons:
               apt:
                   sources: ['ubuntu-toolchain-r-test']
-                  packages: &LinuxPackages 
-                    - g++-9
-                    - cmake
-                    - python3-pip
+                  packages: *LinuxPackages 
         
         - os: linux
           dist: bionic
@@ -67,6 +71,7 @@ install:
       export PATH=${DEPS_DIR}/cmake/bin:${PATH}
       echo ${PATH}
       echo "Cmake Updated!"
+      
     elif [ "${TRAVIS_OS_NAME}" == "windows" ]; then
       choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
     fi
