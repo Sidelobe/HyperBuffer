@@ -33,22 +33,11 @@ matrix:
           dist: bionic
           compiler: gcc
           env: CONFIG="Debug" COMPILER='g++-9' COV="no" 
-          addons:
-              apt:
-                  sources: ['ubuntu-toolchain-r-test']
-                  packages: &LinuxPackages 
-                    - g++-9
-                    - cmake
-                    - python3-pip  
         
         - os: linux
           dist: bionic
           compiler: gcc
           env: CONFIG="Release" COMPILER='g++-9' COV="no" 
-          addons:
-              apt:
-                  sources: ['ubuntu-toolchain-r-test']
-                  packages: *LinuxPackages 
         
         - os: windows
           env: CONFIG="Debug" COV="no" MSBUILD_PATH="C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin"
@@ -60,7 +49,7 @@ install:
   - |
     if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
       echo ${TRAVIS_CPU_ARCH}
-      if [ ${TRAVIS_CPU_ARCH} == "arm64-graviton2" ]; then
+      if [ ${TRAVIS_CPU_ARCH} == "arm64" ]; then
         export CMAKE_URL="https://github.com/Kitware/CMake/releases/download/v3.21.0/cmake-3.21.0-linux-aarch64.tar.gz"
       else
         export CMAKE_URL="https://github.com/Kitware/CMake/releases/download/v3.21.0/cmake-3.21.0-linux-x86_64.tar.gz"
@@ -93,7 +82,7 @@ before_script:
     - cd deploy
     - mkdir -p build
     - cd build
-    - if [ "$TRAVIS_OS_NAME" != "windows" ]; then cmake -H. -j 4 ../.. -DCMAKE_BUILD_TYPE=$CONFIG -DCODE_COVERAGE="$COV"; fi
+    - if [ "$TRAVIS_OS_NAME" != "windows" ]; then cmake -H. ../.. -DCMAKE_BUILD_TYPE=$CONFIG -DCODE_COVERAGE="$COV"; fi
     - if [ "$TRAVIS_OS_NAME" == "windows" ]; then export PATH=$MSBUILD_PATH:$PATH; cmake -G "Visual Studio 16 2019" -DCMAKE_GENERATOR_PLATFORM=x64 ../..; fi
     
 script:
