@@ -59,13 +59,14 @@ matrix:
 install:
   - |
     if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
+      echo ${TRAVIS_CPU_ARCH}
       if [ ${TRAVIS_CPU_ARCH} == "arm64-graviton2" ]; then
         export CMAKE_URL="https://github.com/Kitware/CMake/releases/download/v3.21.0/cmake-3.21.0-linux-aarch64.tar.gz"
       else
         export CMAKE_URL="https://github.com/Kitware/CMake/releases/download/v3.21.0/cmake-3.21.0-linux-x86_64.tar.gz"
       fi
       export DEPS_DIR=$PWD
-      echo ${TRAVIS_OS_NAME}
+      echo "Installing Cmake from ${CMAKE_URL}"
       mkdir cmake
       travis_retry wget --quiet --no-check-certificate -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
       export PATH=${DEPS_DIR}/cmake/bin:${PATH}
