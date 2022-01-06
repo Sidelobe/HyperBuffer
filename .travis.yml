@@ -23,21 +23,32 @@ matrix:
           arch: arm64-graviton2
           virt: lxd
           group: edge
-          env:
-            - CONFIG="Release"
-            - COMPILER="g++"
-            - C_COMPILER="gcc"
-            - COV="no"
-
+          env: CONFIG="Release" COMPILER='g++-9' COV="no" 
+          addons:
+              apt:
+                  sources: ['ubuntu-toolchain-r-test']
+                  packages:
+                    - g++-9
+                    
         - os: linux
           dist: bionic
           compiler: gcc
           env: CONFIG="Debug" COMPILER='g++-9' COV="no" 
-        
+          addons:
+              apt:
+                  sources: ['ubuntu-toolchain-r-test']
+                  packages:
+                    - g++-9
+                    
         - os: linux
           dist: bionic
           compiler: gcc
-          env: CONFIG="Release" COMPILER='g++-9' COV="no" 
+          env: CONFIG="Release" COMPILER='g++-9' COV="no"
+          addons:
+              apt:
+                  sources: ['ubuntu-toolchain-r-test']
+                  packages:
+                    - g++-9
         
         - os: windows
           env: CONFIG="Debug" COV="no" MSBUILD_PATH="C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin"
