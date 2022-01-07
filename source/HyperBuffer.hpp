@@ -3,242 +3,124 @@
 //  ╠═╣└┬┘├─┘├┤ ├┬┘  ╠╩╗│ │├┤ ├┤ ├┤ ├┬┘
 //  ╩ ╩ ┴ ┴  └─┘┴└─  ╚═╝└─┘└  └  └─┘┴└─
 //
-//  © 2020 Lorenz Bucher - all rights reserved
+//  © 2021 Lorenz Bucher - all rights reserved
 
 #pragma once
 
-#include <array>
-#include <vector>
+#include "HyperBufferStoragePolicies.hpp"
 
-#include "IHyperBuffer.hpp"
-#include "TemplateUtils.hpp"
-#include "BufferGeometry.hpp"
+// Macros to restrict a function declaration to certain use cases, e.g. 1-dimensional, higher-dimensional, ...
+#define FOR_N1 template<int M=N, std::enable_if_t<(M==1), int> = 0>
+#define FOR_Nx template<int M=N, std::enable_if_t<(M>1), int> = 0>
+
+// For N>1 and any number / exactly N-1 variable arguments
+#define FOR_Nx_V template<int M=N, typename... I, std::enable_if_t<(M>1 && sizeof...(I)<M-1), int> = 0>
+#define FOR_Nx_N template<int M=N, typename... I, std::enable_if_t<(M>1 && sizeof...(I)==M-1), int> = 0>
 
 namespace slb
 {
 
-template<typename T, int N> class HyperBufferView; // forward declaration
-
 /**
  *  HyperBuffer is a container for dynamically-allocated N-dimensional datasets. The extents of the dimensions have
- *  to be supplied during construction. Memory for the pointers and the data is allocated separately (with  ownership).
+ *  to be supplied during construction and are not changeable afterwards.
  *
- *  - Template parameters: T=data type (e.g. float),  N=dimension (e.g. 3)
- *
- *  - Guarantees: Dynamic memory allocation only during construction and when calling subView()
- */
-template<typename T, int N>
-class HyperBuffer : public IHyperBuffer<T, N, HyperBuffer<T, N>>
-{
-    using typename IHyperBuffer<T, N, HyperBuffer<T, N>>::size_type;
-    using typename IHyperBuffer<T, N, HyperBuffer<T, N>>::pointer_type;
-    using typename IHyperBuffer<T, N, HyperBuffer<T, N>>::const_pointer_type;
-
-public:
-    /** Constructor that takes the extents of the dimensions as a variable argument list */
-    template<typename... I>
-    explicit HyperBuffer(I... i) :
-        m_bufferGeometry(i...),
-        m_data(m_bufferGeometry.getRequiredDataArraySize()),
-        m_pointers(m_bufferGeometry.getRequiredPointerArraySize())
-    {
-        ASSERT(CompiletimeMath::areAllPositive(i...), "Invalid Dimension extents");
-        m_bufferGeometry.hookupPointerArrayToData(m_data.data(), m_pointers.data());
-    }
-    
-    int size(int i) const override { ASSERT(i < N); return m_bufferGeometry.getDimensionExtents()[i]; }
-    const std::array<int, N>& sizes() const noexcept override { return m_bufferGeometry.getDimensionExtents(); }
-    
-private:
-    /** Build a (non-owning) N-1 HyperBuffer const view to this Hyperbuffer's data
-     * @note this returns a const object to ensure the result cannot be assigned to non-const pointer.
-     */
-    const HyperBufferView<T, N-1> createSubBufferView(size_type index) const
-    {
-        ASSERT(index < this->size(0), "Index out of range");
-        const int offset = m_bufferGeometry.getDataArrayOffsetForHighestOrderSubDim(index);
-        // NOTE: explicitly cast away the const-ness - need to provide a non-const pointer to the
-        // HyperBufferView ctor, even if we turn it into a const object upon return
-        T* subDimData = const_cast<T*>(&m_data[offset]);
-        return HyperBufferView<T, N-1>(subDimData, StdArrayOperations::shaveOffFirstElement(this->sizes()));
-    }
-    
-    /** Build a (non-owning) N-1 HyperBuffer view to this Hyperbuffer's data */
-    HyperBufferView<T, N-1> createSubBufferView(size_type index)
-    {
-        return std::as_const(*this).createSubBufferView(index);
-    }
-
-    const_pointer_type getDataPointer_Nx() const noexcept override { return reinterpret_cast<const_pointer_type>(m_pointers.data()); }
-          pointer_type getDataPointer_Nx()       noexcept override { return reinterpret_cast<pointer_type>(m_pointers.data()); }
-              const T* getDataPointer_N1() const noexcept override { return *m_pointers.data(); }
-                    T* getDataPointer_N1()       noexcept override { return *m_pointers.data(); }
-
-private:
-    friend IHyperBuffer<T, N, HyperBuffer<T, N>>;
-
-    /** Handles the geometry (organization) of the data memory, enabling multi-dimensional access to it */
-    BufferGeometry<N> m_bufferGeometry;
-    
-    /** All the data (innermost dimension) is stored in a 1D structure and access with offsets to simulate multi-dimensionality */
-    std::vector<T> m_data;
-    
-    /** All but the innermost dimensions consist of pointers only, which are stored in a 1D structure as well */
-    std::vector<T*> m_pointers;
-};
-
-
-// ====================================================================================================================
-/**
- *  A wrapper for existing HyperBuffer data, giving it the same API, but without data ownership. The extents of the
- *  dimensions have to be supplied during construction. The pre-allocated data is expected to be in a
- *  flat (one-dimensional), contiguous memory block. Pointer memory is allocated during construction and, unlike
- *  data memory, is owned by a given instance of this class.
- *
- *  - Template parameters: T=data type (e.g. float),  N=dimension (e.g. 3)
+ *  - Template parameters: T=data type (e.g. float),  N=dimension (e.g. 3),
+ *    StoragePolicy:
+ *      -# 'Owning' (default): uses the native memory model and has full ownership of the multi-dimensional data
+ *      -# 'View': same memory model as 'owning', but without ownership: uses an externally-allocated 1-D data block
+ *      -# 'Non-Contiguous View': uses externally-allocated non-contiguously allocated data
  *
  *  - Guarantees: Dynamic memory allocation only during construction and when calling subView()
  */
-template<typename T, int N>
-class HyperBufferView : public IHyperBuffer<T, N, HyperBufferView<T, N>>
+template<typename T, int N, class StoragePolicy = StoragePolicyOwning<T, N>>
+class HyperBuffer
 {
-    using typename IHyperBuffer<T, N, HyperBufferView>::pointer_type;
-    using typename IHyperBuffer<T, N, HyperBufferView>::const_pointer_type;
-    using typename IHyperBuffer<T, N, HyperBufferView>::size_type;
+    using size_type                 = int;
+    using pointer_type              = typename add_pointers_to_type<T, N>::type;
+    using const_pointer_type        = typename add_const_pointers_to_type<T, N>::type;
+    using subdim_pointer_type       = typename remove_pointers_from_type<pointer_type, 1>::type;
+    using subdim_const_pointer_type = typename remove_pointers_from_type<const_pointer_type, 1>::type;
     
 public:
-    /** Constructor that takes the extents of the dimensions as a variable argument list */
+    /** Generic Constructor that forwards all arguments to the storage policy constructor */
     template<typename... I>
-    HyperBufferView(T* preAllocatedDataFlat, I... i) :
-    m_bufferGeometry(i...),
-    m_externalData(preAllocatedDataFlat),
-    m_pointers(m_bufferGeometry.getRequiredPointerArraySize())
-    {
-        ASSERT(CompiletimeMath::areAllPositive(i...), "Invalid Dimension extents");
-        m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
-    }
+    explicit HyperBuffer(I... i) : m_storage(i...) {}
     
-    /** Constructor that takes an existing (owning) HyperBuffer and creates a (non-owning) HyperBufferView from it */
-    explicit HyperBufferView(HyperBuffer<T, N>& owningBuffer) :
-        m_bufferGeometry(owningBuffer.sizes()),
-        m_externalData(*owningBuffer.data()),
-        m_pointers(m_bufferGeometry.getRequiredPointerArraySize())
-    {
-        m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
-    }
+    ~HyperBuffer() = default;
     
-    int size(int i) const override { ASSERT(i < N); return m_bufferGeometry.getDimensionExtents()[i]; }
-    const std::array<int, N>& sizes() const noexcept override { return m_bufferGeometry.getDimensionExtents(); }
+    // MARK: need explicit default copy/move ctors and assignment operators for this object to be fully copyable/moveable
+    HyperBuffer(const HyperBuffer&) = default;
+    HyperBuffer& operator=(const HyperBuffer&) = default;
+    HyperBuffer(HyperBuffer&&) noexcept = default;
+    HyperBuffer& operator= (HyperBuffer&&) noexcept = default;
     
-private:
-    /** Build a N-1 HyperBuffer const view to this Hyperbuffer's data
-     * @note this returns a const object to ensure the result cannot be assigned to non-const pointer.
+    /**
+     * Copy constructor from an object with a different storage policy. Enabled only Policy differs from current one
+     * (to avoid hijacking the 'normal' copy constructor).
+     * @attention This is dangerous. It's meant to allow a 'view' to be constructed from an 'owning' buffer only and is
+     * implemented using a special ctor in the corresponding StoragePolicy.
      */
-    const HyperBufferView<T, N-1> createSubBufferView(size_type index) const
-    {
-        ASSERT(index < this->size(0), "Index out of range");
-        int offset = m_bufferGeometry.getDataArrayOffsetForHighestOrderSubDim(index);
-        return HyperBufferView<T, N-1>(&m_externalData[offset], StdArrayOperations::shaveOffFirstElement(this->sizes()));
-    }
+    template<typename U, int M, class AnotherStoragePolicy, typename std::enable_if<!std::is_same<AnotherStoragePolicy, StoragePolicy>::value, int>::type = 0>
+    explicit HyperBuffer(HyperBuffer<U, M, AnotherStoragePolicy>& other) : m_storage(other.m_storage) {}
     
-    /** Build a N-1 HyperBuffer view to this Hyperbuffer's data */
-    HyperBufferView<T, N-1> createSubBufferView(size_type index)
-    {
-        return std::as_const(*this).createSubBufferView(index);
-    }
+    // MARK: dimension extents
+    int size(int i) const { return m_storage.size(i); }
+    const std::array<int, N>& sizes() const noexcept { return m_storage.sizes(); }
     
-    const_pointer_type  getDataPointer_Nx() const noexcept override { return reinterpret_cast<const_pointer_type>(m_pointers.data()); }
-           pointer_type getDataPointer_Nx()       noexcept override { return reinterpret_cast<pointer_type>(m_pointers.data()); }
-               const T* getDataPointer_N1() const noexcept override { return *m_pointers.data(); }
-                     T* getDataPointer_N1()       noexcept override { return *m_pointers.data(); }
+    // MARK: data() -- raw pointer to beginning of underlying storage (pointers or data, depending on dimension)
+    FOR_Nx const_pointer_type data() const noexcept { return m_storage.getDataPointer_Nx(); }
+    FOR_Nx       pointer_type data()       noexcept { return m_storage.getDataPointer_Nx(); }
+    FOR_N1           const T* data() const noexcept { return m_storage.getDataPointer_N1(); }
+    FOR_N1                 T* data()       noexcept { return m_storage.getDataPointer_N1(); }
+    
+    // MARK: operator[] -- raw data/pointer access; returns pointer N>1, reference for N=1
+    FOR_Nx subdim_const_pointer_type operator[] (size_type i) const { return m_storage.getDataPointer_Nx()[i]; }
+    FOR_Nx       subdim_pointer_type operator[] (size_type i)       { return m_storage.getDataPointer_Nx()[i]; }
+    FOR_N1                  const T& operator[] (size_type i) const { return m_storage.getDataPointer_N1()[i]; }
+    FOR_N1                        T& operator[] (size_type i)       { return m_storage.getDataPointer_N1()[i]; }
+
+    // MARK: at(...) -- Exists only for call with N parameters, returns data
+    FOR_Nx_N const T& at(size_type dn, I... i) const { return createSubBuffer(dn).at(i...); }
+    FOR_Nx_N       T& at(size_type dn, I... i)       { return createSubBuffer(dn).at(i...); }
+    FOR_N1   const T& at(size_type i)          const { return m_storage.getDataPointer_N1()[i]; }
+    FOR_N1         T& at(size_type i)                { return m_storage.getDataPointer_N1()[i]; }
+    
+    // MARK: subView(...) -- returns <T,N-1> instance
+    FOR_Nx_V decltype(auto) subView(size_type dn, I... i) const { return createSubBuffer(dn).subView(i...); }
+    FOR_Nx   decltype(auto) subView(size_type dn)         const { return createSubBuffer(dn); }
     
 private:
-    friend IHyperBuffer<T, N, HyperBufferView<T, N>>;
+    const HyperBuffer<T, N-1, typename StoragePolicy::SubBufferPolicy> createSubBuffer(size_type index) const
+    {
+        ASSERT(index < this->size(0), "Index out of range");
+        auto subViewData = m_storage.getSubDimData(index);
+        std::array<int, N-1> subViewDims = StdArrayOperations::shaveOffFirstElement(sizes());
+        return HyperBuffer<T, N-1, typename StoragePolicy::SubBufferPolicy>(subViewData, subViewDims);
+    }
     
-    /** Handles the geometry (organization) of the data memory, enabling multi-dimensional access to it */
-    BufferGeometry<N> m_bufferGeometry;
+    HyperBuffer<T, N-1, typename StoragePolicy::SubBufferPolicy> createSubBuffer(size_type index)
+    {
+        return std::as_const(*this).createSubBuffer(index);
+    }
     
-    /** Pointer to the externally-allocated data memory */
-    T* m_externalData;
+private:
+    // Allow instances with other template arguments to access private members
+    template<typename U, int M, class AnotherStoragePolicy> friend class HyperBuffer;
     
-    /** All but the innermost dimensions consist of pointers only, which are stored in a 1D structure as well */
-    std::vector<T*> m_pointers;
+    StoragePolicy m_storage;
+    
 };
 
+// MARK: Aliases (for convenience)
 
-// ====================================================================================================================
-/**
- *  A wrapper for existing multi-dimensional data (e.g. float**), giving it the same API as HyperBuffer. The extents
- *  of the dimensions have to be supplied during construction. Both pointer and data memory are stored externally
- *  (this class has no ownership).
- *
- *  - Template parameters: T=data type (e.g. float),  N=dimension (e.g. 3)
- *
- *  - Guarantees: Does not allocate any memory dynamically.
- */
 template<typename T, int N>
-class HyperBufferViewMD : public IHyperBuffer<T, N, HyperBufferViewMD<T, N>>
-{
-    using typename IHyperBuffer<T, N, HyperBufferViewMD<T, N>>::size_type;
-    using typename IHyperBuffer<T, N, HyperBufferViewMD<T, N>>::pointer_type;
-    using typename IHyperBuffer<T, N, HyperBufferViewMD<T, N>>::const_pointer_type;
+using HyperBufferView = HyperBuffer<T, N, StoragePolicyView <T, N>>;
 
-public:
-    /** Constructor that takes the extents of the dimensions as a variable argument list */
-    template<typename... I>
-    HyperBufferViewMD(pointer_type preAllocatedData, I... i) :
-        m_dimensionExtents{static_cast<int>(i)...},
-        m_externalData(preAllocatedData)
-    {
-        ASSERT(CompiletimeMath::areAllPositive(i...), "Invalid Dimension extents");
-    }
-            
-    /** Constructor that takes the extents of the dimensions as a std::array */
-    HyperBufferViewMD(pointer_type preAllocatedData, std::array<int, N> dimensionExtents) :
-        m_dimensionExtents(dimensionExtents),
-        m_externalData(preAllocatedData)
-    {
-        ASSERT(CompiletimeMath::areAllPositive(m_dimensionExtents), "Invalid Dimension extents");
-    }
-    
-    /** Constructor that takes the extents of the dimensions as a std::vector */
-    HyperBufferViewMD(pointer_type preAllocatedData, std::vector<int> dimensionExtentsVector) :
-        m_externalData(preAllocatedData)
-    {
-        ASSERT(dimensionExtentsVector.size() == N, "Incorrect number of dimension extents");
-        std::copy(dimensionExtentsVector.begin(), dimensionExtentsVector.end(), m_dimensionExtents.begin());
-        ASSERT(CompiletimeMath::areAllPositive(m_dimensionExtents), "Invalid Dimension extents");
-    }
-    
-    int size(int i) const override { ASSERT(i < N); return m_dimensionExtents[i]; }
-    const std::array<int, N>& sizes() const noexcept override { return m_dimensionExtents; }
-    
-private:
-    /** Build a N-1 HyperBuffer const view to this Hyperbuffer's data */
-    const HyperBufferViewMD<T, N-1> createSubBufferView(size_type index) const
-    {
-        ASSERT(index < this->size(0), "Index out of range");
-        return HyperBufferViewMD<T, N-1>(m_externalData[index], StdArrayOperations::shaveOffFirstElement(this->sizes()));
-    }
-    
-    /** Build a N-1 HyperBuffer view to this Hyperbuffer's data */
-    HyperBufferViewMD<T, N-1> createSubBufferView(size_type index)
-    {
-        return std::as_const(*this).createSubBufferView(index);
-    }
+template<typename T, int N>
+using HyperBufferViewNC = HyperBuffer<T, N, StoragePolicyViewNonContiguous <T, N>>;
 
-    const_pointer_type getDataPointer_Nx() const noexcept override { return m_externalData; }
-         pointer_type  getDataPointer_Nx()       noexcept override { return m_externalData; }
-              const T* getDataPointer_N1() const noexcept override { return reinterpret_cast<const T*>(m_externalData); }
-                    T* getDataPointer_N1()       noexcept override { return reinterpret_cast<T*>(m_externalData); }
-    
-private:
-    friend IHyperBuffer<T, N, HyperBufferViewMD<T, N>>;
-    
-    std::array<int, N> m_dimensionExtents;
-    
-    /** Pointer to the externally-allocated multi-dimensional data memory */
-    pointer_type m_externalData;
-};
+
+
+
 
 } // namespace slb
