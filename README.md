@@ -18,12 +18,12 @@ This container was designed to hold dynamically-allocated N-dimensional datasets
 HyperBuffer<float, 2> buffer2D (2, 5);
 
 float element01 = buffer2D[0][1];
-float element14 = buffer2D.at(1, 4);
+float element14 = buffer2D.at(1, 4); // alternative to []
 float** rawPointer = buffer2D.data();
 float* outerDimension0 = buffer2D[0];
 
-HyperBufferView<float, 1> subBuffer = buffer2D.at(1);
-float* outerDimension1 = subBuffer.data();
+HyperBufferView<float, 1> subView = buffer2D.subView(1);
+float* outerDimension1 = subView.data();
 
 // Any number of dimensions
 HyperBuffer<int, 8> buffer8D (3, 4, 3, 1, 6, 256, 11, 7); 
@@ -31,7 +31,7 @@ HyperBuffer<int, 8> buffer8D (3, 4, 3, 1, 6, 256, 11, 7);
 // Wrapper for existing multi-dimensional data (zero dynamic memory allocation!)
 float bufferL[]{ 0.1f, 0.2f, 0.3f };  float bufferR[]{ -0.1f, -0.2f, -0.3f };
 float* stereoBuffer[2] = { bufferL, bufferR };
-HyperBufferViewMD<float, 2> wrapper(stereoBuffer, 2, 3);
+HyperBufferViewNC<float, 2> wrapper(stereoBuffer, 2, 3);
 wrapper[0][1] = 0.22f; // access left channel, second sample
 ```
 
@@ -59,7 +59,7 @@ HyperBuffer is designed as a multi-dimensional counterpart to `std::array` and/o
 
 Design choices were carefully weighed with the following prime directive in mind: avoid dynamic memory allocation as much as possible. This is crucial in realtime environments with a strict need for deterministic behaviour (e.g. audio processing threads). 
 
-Thanks to the chosen memory model, dynamic memory allocation happens only during construction. Furthermore, the entire data and pointer memory is allocated in a single call (cf. documentation in [Design Details](docu/HyperBuffer%20Design%20Details.md)), thereby avoiding memory fragmentation / churn.
+Thanks to the chosen memory model, **dynamic memory allocation happens only during construction**. Furthermore, the entire data and pointer memory is each **allocated in a single call** (cf. documentation in [Design Details](docu/HyperBuffer%20Design%20Details.md)), thereby avoiding memory fragmentation / churn.
 
 ### Data Storage & Ownership Variants
 
@@ -68,22 +68,23 @@ Thanks to the chosen memory model, dynamic memory allocation happens only during
 |                     | ownership                                | use case                                                                                              |
 |---------------------|------------------------------------------|-------------------------------------------------------------------------------------------------------|
 | `HyperBuffer`       | owns/allocates pointers & data                     | Storing multi-dimensional data and providing a simple and safe API to it.                                                                                                      |
-| `HyperBufferView`   | owns pointers, externally-allocated data | View for existing data (contiguous 1D memory) - e.g. a view to a sub-dimension of `HyperBuffer`                                                                          |
-| `HyperBufferViewMD` | externally-allocated pointers & data | Wrapper for existing multi-dimensional data (e.g. `float**`); gives it the same API as `HyperBuffer` |
+| `HyperBufferView`   | owns pointers, externally-allocated data | View for existing data in the HyperBuffer memory format (contiguous 1D memory) - e.g. a view to a sub-dimension of `HyperBuffer`                                                                          |
+| `HyperBufferViewNC` | externally-allocated pointers & data | Wrapper for existing multi-dimensional data (non-contiguous memory, e.g. `float**`); gives it the same API as `HyperBuffer` |
 
->**Note**: Behaviour on copy & move: `HyperBuffer` copies/moves the data like a normal object with data ownership. When copying `HyperBufferViewMD ` and `HyperBufferView`, however, the data is not duplicated - the copy references the original data as well.
+>**Note**: Behaviour on copy & move: `HyperBuffer` copies/moves the data like a normal object with data ownership. When copying `HyperBufferViewNC ` and `HyperBufferView`, however, the data is not duplicated - the copy references the original data as well.
 
 ### API features & Memory Management:
 
 In addition to information about the geometry (dimensions and extent thereof), the API has several ways of accessing data:
 
-| function    | description   | return value       | `HyperBuffer`  | `HyperBufferView` | `HyperBufferMD` |
+| function    | description   | return value       | `HyperBuffer`  | `HyperBufferView` | `HyperBufferViewNC` |
 |-------------|---------------|--------------------|----------------|:---------------:|:--------------:|
 | `.data()` | access the start of highest dimension of the data | raw pointer (e.g. `float***`) | non-allocating | non-allocating  | non-allocating |
-| `operator[.]` | access the N-1 sub-dimension at the given index; can be chained: `h[3][0][6]` | raw pointer  (e.g. `float**`) | non-allocating | non-allocating  | non-allocating |
-| `at(...)` | access data in any dimension (variable-length argument) | N-x view to the data | **allocating** | **allocating**  | non-allocating |
+| `operator[.]` | access the N-1 sub-dimension at the given index; can be chained: `h[3][0][6]` | raw pointer  (e.g. `float**`); data value if `N==1` | non-allocating | non-allocating  | non-allocating |
+| `at(...)` | access data in lowest dimension (N arguments) | data value (e.g. `float`) | **allocating** | **allocating**  | non-allocating |
+| `subView(...)` | access data in any dimension (variable-length argument) | N-x view to the data | **allocating** | **allocating**  | non-allocating |
 
-While `HyperBufferMD` never allocates memory under any circumstances, you can see above that the `.at()` accessor allocates dynamic memory for the other variants. This only happens *when accessing sub-dimensions* and is because a new N-1 `HyperBufferView` is constructed, which allocates memory for the pointers.
+While `HyperBufferViewNC` never allocates memory under any circumstances, you can see above that the `.at()` and `subView()`accessors allocate dynamic memory for the other variants. This is because a new N-1 `HyperBufferView` is constructed, which allocates memory for the pointers.
 
 Further guarantees:
 

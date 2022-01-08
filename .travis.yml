@@ -1,13 +1,12 @@
 # Travis configuration file for HyperBuffer
-dist: trusty
 language:
     - cpp
 matrix:
     include:
         - os: osx
-          osx_image: xcode10.1
+          osx_image: xcode11.6
           compiler: clang
-          env: CONFIG="Debug" COMPILER='clang++'  COV="no"
+          env: CONFIG="Debug" COMPILER='clang++' COV="no"
           
         - os: osx
           osx_image: xcode11.6
@@ -18,7 +17,19 @@ matrix:
                 organization: "idelobe" # the key of the org you chose at step #3
                 token:
                     secure: "A0Qtq8CLpu5aFLElfkhJYSvuvtwTUNsyUQJIVstKn/XUIehsaU8o1xbSG475O3P3BvJHgYWcj/dW+Hf3yTCfML+5jtA5fj9uijloN4GrJVmlCBX7r7GUbcrWWP9BTwnIM7HOEf5Pjw5USfMcqjYBL3ztVizGfUkdexROP92REqweeke2CEJiICm7/H1yxZ/kKDmxy1w74B58tLDiVhTmjcE7+aQkMGWFx80cFEE+RC00efFXCfeCtWcpVITh08kinsaT8mf9KkfV+e9DQx00JQGrDmiwAPXoecgwqF27cCNhiAtyKXGbhZawTX29qYYmhySCF88keBwxuWanNEAAujaoySIVkL1LYAkHYt9Dg2TXdGZhAJ7mt9ccukDJJpCpPcoXLU1vS6E4f2Ug9zMgwjppRhy9/BQXZZ2qUAlPSumNAFQP7waQ0Vm2xRYJ/Rc8XUXZ3ObnfMDhzP+/AKm1VbburWTtvacxf8QEg3hBZX5zWylZqo1/LzF0DLOLGM+DEKA0LnSbZhaIVY8Xcp3nVyPP3N+LzC4fVWonZxXXwi8bJVJdiaeKL4P9L4wtc4W99z7BEdqOL+/05KGNYi0yaHCLht2Uca1c3X7AzlVHuUnRnGeYCWVOmlTan+oXDMfg3KdZkmPvkOpAndL2ydIemmfrYOYQbYVL5KoISmGhi8A="
-        
+      
+        - os: linux
+          dist: bionic
+          arch: arm64-graviton2
+          virt: lxd
+          group: edge
+          env: CONFIG="Release" COMPILER='g++-9' COV="no" 
+          addons:
+              apt:
+                  sources: ['ubuntu-toolchain-r-test']
+                  packages:
+                    - g++-9
+                    
         - os: linux
           dist: bionic
           compiler: gcc
@@ -26,19 +37,18 @@ matrix:
           addons:
               apt:
                   sources: ['ubuntu-toolchain-r-test']
-                  packages: &LinuxPackages 
+                  packages:
                     - g++-9
-                    - cmake
-                    - python3-pip
-        
+                    
         - os: linux
           dist: bionic
           compiler: gcc
-          env: CONFIG="Release" COMPILER='g++-9' COV="no" 
+          env: CONFIG="Release" COMPILER='g++-9' COV="no"
           addons:
               apt:
                   sources: ['ubuntu-toolchain-r-test']
-                  packages: *LinuxPackages 
+                  packages:
+                    - g++-9
         
         - os: windows
           env: CONFIG="Debug" COV="no" MSBUILD_PATH="C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin"
@@ -49,17 +59,23 @@ matrix:
 install:
   - |
     if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
-      export CMAKE_URL="https://github.com/Kitware/CMake/releases/download/v3.17.0/cmake-3.17.0-Linux-x86_64.tar.gz"
+      echo ${TRAVIS_CPU_ARCH}
+      if [ ${TRAVIS_CPU_ARCH} == "arm64" ]; then
+        export CMAKE_URL="https://github.com/Kitware/CMake/releases/download/v3.21.0/cmake-3.21.0-linux-aarch64.tar.gz"
+      else
+        export CMAKE_URL="https://github.com/Kitware/CMake/releases/download/v3.21.0/cmake-3.21.0-linux-x86_64.tar.gz"
+      fi
       export DEPS_DIR=$PWD
-      echo ${TRAVIS_OS_NAME}
+      echo "Installing Cmake from ${CMAKE_URL}"
       mkdir cmake
       travis_retry wget --quiet --no-check-certificate -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
       export PATH=${DEPS_DIR}/cmake/bin:${PATH}
-      echo ${PATH}
       echo "Cmake Updated!"
+      
     elif [ "${TRAVIS_OS_NAME}" == "windows" ]; then
       choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
     fi
+    
     if [ "$COV" == "yes" ]; then
       pip3 install gcovr
       echo "Gcovr Updated!"
@@ -77,7 +93,7 @@ before_script:
     - cd deploy
     - mkdir -p build
     - cd build
-    - if [ "$TRAVIS_OS_NAME" != "windows" ]; then cmake -H. -j 4 ../.. -DCMAKE_BUILD_TYPE=$CONFIG -DCODE_COVERAGE="$COV"; fi
+    - if [ "$TRAVIS_OS_NAME" != "windows" ]; then cmake -H. ../.. -DCMAKE_BUILD_TYPE=$CONFIG -DCODE_COVERAGE="$COV"; fi
     - if [ "$TRAVIS_OS_NAME" == "windows" ]; then export PATH=$MSBUILD_PATH:$PATH; cmake -G "Visual Studio 16 2019" -DCMAKE_GENERATOR_PLATFORM=x64 ../..; fi
     
 script:
