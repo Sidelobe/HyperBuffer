@@ -1,0 +1,30 @@
+name: Build & Test HyperBuffer
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    
+jobs: 
+  call-build-linux:
+    uses: ./.github/workflows/build-linux.yml
+  call-build-macos:
+    if: ${{ always() }}
+    uses: ./.github/workflows/build-macos.yml
+  call-build-windows:
+    if: ${{ always() }}
+    uses: ./.github/workflows/build-windows.yml
+  call-build-sonarqube:
+    if: ${{ always() }}
+    uses: ./.github/workflows/build-sonarqube.yml
+    secrets: inherit
+
+  call-check-single-header:
+    needs:
+      - call-build-linux
+      - call-build-macos
+      - call-build-windows
+    uses: ./.github/workflows/regenerate-single-include-header.yml

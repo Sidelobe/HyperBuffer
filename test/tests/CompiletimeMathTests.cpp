@@ -9,7 +9,11 @@
 
 #include <array>
 
-#include "CompiletimeMath.hpp"
+#ifdef SLB_AMALGATED_HEADER
+    #include "HyperBuffer.hpp"
+#else
+    #include "CompiletimeMath.hpp"
+#endif
 
 using namespace slb;
 

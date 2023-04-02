@@ -1,3 +1,6 @@
 [submodule "MemorySentinel"]
 	path = test/external-utils/MemorySentinel
 	url = https://github.com/Sidelobe/MemorySentinel.git
+[submodule "test/external-utils/HppAmalgamator"]
+	path = test/external-utils/HppAmalgamator
+	url = https://github.com/Sidelobe/HppAmalgamator.git
