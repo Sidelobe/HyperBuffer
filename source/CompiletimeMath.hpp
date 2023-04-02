@@ -22,7 +22,7 @@ template<typename T>
 constexpr bool areAllPositive(T first) noexcept { return first > T{0}; }
 
 /** @returns true if every element of the parameter pack is > 0 [recursive] */
-template<typename... Args, typename T = typename std::common_type<Args...>::type>
+template<typename... Args, typename T = typename std::common_type_t<Args...>>
 constexpr bool areAllPositive(T first, Args... args) noexcept
 {
     return areAllPositive(first) && areAllPositive(args...);
@@ -30,7 +30,7 @@ constexpr bool areAllPositive(T first, Args... args) noexcept
 
 // MARK: - Sum
 /** Calculate the sum of a given number of args in parameter pack - starting from the given firstSummand (1-based) */
-template<typename... Args, typename T = typename std::common_type<Args...>::type>
+template<typename... Args, typename T = typename std::common_type_t<Args...>>
 constexpr T sumOverRange(int firstSummand, int numSummands, Args... args) noexcept
 {
     firstSummand = std::max<int>(firstSummand, 1);
@@ -45,14 +45,14 @@ constexpr T sumOverRange(int firstSummand, int numSummands, Args... args) noexce
 }
 
 /** Calculate the sum of a given number of args in parameter pack (starting with the first one) */
-template<typename... Args, typename T = typename std::common_type<Args...>::type>
+template<typename... Args, typename T = typename std::common_type_t<Args...>>
 constexpr T sumCapped(int numSummands, Args... args) noexcept
 {
     return sumOverRange(1, numSummands, args...);
 }
 
 /** Calculate the sum of all args in parameter pack */
-template<typename... Args, typename T = typename std::common_type<Args...>::type>
+template<typename... Args, typename T = typename std::common_type_t<Args...>>
 constexpr T sum(Args... args) noexcept
 {
     return sumCapped(sizeof...(args), args...);
@@ -61,7 +61,7 @@ constexpr T sum(Args... args) noexcept
 // MARK: - Product
 
 /** Calculate the product of a given number of args in parameter pack - starting from the given firstFactor (1-based) */
-template<typename... Args, typename T = typename std::common_type<Args...>::type>
+template<typename... Args, typename T = typename std::common_type_t<Args...>>
 constexpr T productOverRange(int firstFactor, int numFactors, Args... args) noexcept
 {
     T product{1};
@@ -77,14 +77,14 @@ constexpr T productOverRange(int firstFactor, int numFactors, Args... args) noex
 }
 
 /** Calculate the product of a given number of args in parameter pack - starting with the first one */
-template<typename... Args, typename T = typename std::common_type<Args...>::type>
+template<typename... Args, typename T = typename std::common_type_t<Args...>>
 constexpr T productCapped(int numSummands, Args... args) noexcept
 {
     return productOverRange(1, numSummands, args...);
 }
 
 /** Multiply all args in parameter pack */
-template<typename... Args, typename T = typename std::common_type<Args...>::type>
+template<typename... Args, typename T = typename std::common_type_t<Args...>>
 constexpr T product(Args... args) noexcept
 {
     return productCapped(sizeof...(args), args...);
@@ -96,7 +96,7 @@ constexpr T product(Args... args) noexcept
  * Calculate the sum of cumulative products of a given number of args in parameter pack
  * -- starting from the given firstElement (1-based)
  */
-template<typename... Args, typename T = typename std::common_type<Args...>::type>
+template<typename... Args, typename T = typename std::common_type_t<Args...>>
 constexpr T sumOfCumulativeProductOverRange(int firstElement, int numElements, Args... args) noexcept
 {
     firstElement = std::max<int>(firstElement, 1);
@@ -115,7 +115,7 @@ constexpr T sumOfCumulativeProductOverRange(int firstElement, int numElements, A
 }
 
 /** Calculate the sum of cumulative products of a given number of args in parameter pack -- starting from the first one */
-template<typename... Args, typename T = typename std::common_type<Args...>::type>
+template<typename... Args, typename T = typename std::common_type_t<Args...>>
 constexpr T sumOfCumulativeProductCapped(int cap, Args... args) noexcept
 {
     return sumOfCumulativeProductOverRange(1, cap, args...);
@@ -125,7 +125,7 @@ constexpr T sumOfCumulativeProductCapped(int cap, Args... args) noexcept
  * Calculate the sum of cumulative products of all args in parameter pack.
  *  @note: This is equivalent to this Matlab/octave command: sum(cumprod(...))
  */
-template<typename... Args, typename T = typename std::common_type<Args...>::type>
+template<typename... Args, typename T = typename std::common_type_t<Args...>>
 constexpr T sumOfCumulativeProduct(Args... args) noexcept
 {
     return sumOfCumulativeProductCapped(sizeof...(Args), args...);
