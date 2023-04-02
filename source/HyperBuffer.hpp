@@ -60,7 +60,7 @@ public:
      * @attention This is dangerous. It's meant to allow a 'view' to be constructed from an 'owning' buffer only and is
      * implemented using a special ctor in the corresponding StoragePolicy.
      */
-    template<typename U, int M, class AnotherStoragePolicy, typename std::enable_if<!std::is_same<AnotherStoragePolicy, StoragePolicy>::value, int>::type = 0>
+    template<typename U, int M, class AnotherStoragePolicy, typename std::enable_if_t<!std::is_same<AnotherStoragePolicy, StoragePolicy>::value, int> = 0>
     explicit HyperBuffer(HyperBuffer<U, M, AnotherStoragePolicy>& other) : m_storage(other.m_storage) {}
     
     // MARK: dimension extents

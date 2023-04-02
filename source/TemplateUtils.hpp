@@ -22,6 +22,14 @@
   #define EXCEPTIONS_DISABLED
 #endif
 
+// GCC
+//  Bug 67371 - Never executed "throw" in constexpr function fails to compile
+//  https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86678
+//  Fixed for GCC 9.
+#if defined(__GNUC__) && (__GNUC__ < 9)
+#   define BUG_67371
+#endif
+
 /* these functions are coming in C++17, MSVC already defines them */
 #if (__cplusplus < 201703) && !defined(_MSC_VER)
 namespace std
@@ -51,7 +59,11 @@ namespace Assertions
  * @note: this assertion handler is constexpr - to allow its use inside constexpr functions.
  * The handler will still be evaluated at runtime, but memory is only allocated IF the assertion is triggered.
  */
+#ifdef BUG_67371
+static inline void handleAssert(const char* conditionAsText, bool condition, const char* file, int line, const char* message = "")
+#else
 static constexpr void handleAssert(const char* conditionAsText, bool condition, const char* file, int line, const char* message = "")
+#endif
 {
     if (condition == true) {
         return;
@@ -109,7 +121,7 @@ static_assert(std::is_same<add_const_pointers_to_type<float,0>::type, float>{}, 
 template<class T, int N>
 struct remove_pointers_from_type
 {
-    using type = typename remove_pointers_from_type<typename std::remove_pointer<T>::type, N-1>::type;
+    using type = typename remove_pointers_from_type<typename std::remove_pointer_t<T>, N-1>::type;
 };
 
 template<class T>
@@ -145,7 +157,7 @@ static_assert(std::is_same<remove_all_pointers_from_type<float>::type, float>{},
  */
 template<class T> constexpr int getRawArrayLength(const T& a)
 {
-    return sizeof(a) / sizeof(typename std::remove_all_extents<T>::type);
+    return sizeof(a) / sizeof(typename std::remove_all_extents_t<T>);
 }
 
 
