@@ -41,7 +41,7 @@ set(ASAN OFF CACHE BOOL "Build with address sanitizer enabled")
 file(GLOB_RECURSE source "source/*.h*")
 add_library(${PROJECT_NAME} INTERFACE)
 target_sources(${PROJECT_NAME} INTERFACE ${source})
-target_include_directories(${PROJECT_NAME} INTERFACE ${source})
+target_include_directories(${PROJECT_NAME} INTERFACE "source")
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_14)
 
 # TEST TARGET
@@ -51,7 +51,6 @@ file(GLOB main_file "test/main.cpp" "test/TestCommon.hpp")
 list(APPEND source_test ${main_file})
 add_executable(${TEST_NAME} ${source_test})
 assign_include_dirs_from_sources(${TEST_NAME})
-target_include_directories(${TEST_NAME} PRIVATE "source")
 target_link_libraries(${TEST_NAME} PUBLIC ${PROJECT_NAME})
 
 # create source groups

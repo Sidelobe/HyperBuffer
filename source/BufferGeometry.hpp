@@ -79,7 +79,7 @@ public:
      * @param dataArray an array of T. Size must match result given by getRequiredDataArraySize()
      * @param pointerArray an array of T*. Size must match result given by getRequiredPointerArraySize()
      */
-    template<typename T, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
+    template<typename T, typename std::enable_if_t<!std::is_pointer<T>::value>* = nullptr>
     void hookupPointerArrayToData(T* dataArray, T** pointerArray) const
     {
         if (N == 1) {
@@ -101,7 +101,7 @@ public:
     }
     
 private:
-    template<typename T, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
+    template<typename T, typename std::enable_if_t<!std::is_pointer<T>::value>* = nullptr>
     int hookupHigherDimPointers(T** pointerArray, int arrayIndex, int dimIndex) const noexcept
     {
         if (dimIndex >= N-2) {
@@ -115,7 +115,7 @@ private:
             int nextDimExtent = m_dimensionExtents[dimIndex + 1];
             int offset = startOfNextDimension + nextDimExtent * index;
             // hook up pointer to element of next dimension
-            pointerArray[arrayIndex + index] = reinterpret_cast<T*>(&(pointerArray)[offset]);
+            pointerArray[arrayIndex + index] = reinterpret_cast<T*>(&pointerArray[offset]);
         }
         
         // recursive call to lower-order dimension
