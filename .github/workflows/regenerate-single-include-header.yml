@@ -16,7 +16,7 @@ jobs:
         run: |
           mkdir -p build
           cd build
-          cmake -DCMAKE_BUILD_TYPE=Release -DTEST_WITH_AMALGAMETED_HEADER=Yes ../..
+          cmake -DCMAKE_BUILD_TYPE=Release -DTEST_WITH_AMALGAMATED_HEADER=Yes ../..
       - name: Build & Run Tests
         env:
           CTEST_OUTPUT_ON_FAILURE: 1

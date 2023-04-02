@@ -22,9 +22,9 @@ jobs:
     uses: ./.github/workflows/build-sonarqube.yml
     secrets: inherit
 
-  # call-check-single-header:
-  #   needs:
-  #     - call-build-linux
-  #     - call-build-macos
-  #     - call-build-windows
-  #   uses: ./.github/workflows/regenerate-single-include-header.yml
+  call-check-single-header:
+    needs:
+      - call-build-linux
+      - call-build-macos
+      - call-build-windows
+    uses: ./.github/workflows/regenerate-single-include-header.yml
