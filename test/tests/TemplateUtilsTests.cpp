@@ -10,8 +10,12 @@
 #include <array>
 #include <functional>
 
-#include "TemplateUtils.hpp"
-#include "CompiletimeMath.hpp"
+#ifdef SLB_AMALGATED_HEADER
+    #include "HyperBuffer.hpp"
+#else
+    #include "TemplateUtils.hpp"
+    #include "CompiletimeMath.hpp"
+#endif
 
 using namespace slb;
 
