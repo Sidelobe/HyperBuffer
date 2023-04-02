@@ -10,7 +10,11 @@
 #include <array>
 #include <functional>
 
-#include "IntArrayOperations.hpp"
+#ifdef SLB_AMALGATED_HEADER
+    #include "HyperBuffer.hpp"
+#else
+    #include "IntArrayOperations.hpp"
+#endif
 
 using namespace slb;
 

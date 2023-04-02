@@ -9,8 +9,12 @@
 
 #include <vector>
 
-#include "BufferGeometry.hpp"
 #include "MemorySentinel.hpp"
+#ifdef SLB_AMALGATED_HEADER
+    #include "HyperBuffer.hpp"
+#else
+    #include "BufferGeometry.hpp"
+#endif
 
 using namespace slb;
 
