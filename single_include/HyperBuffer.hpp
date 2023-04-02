@@ -41,6 +41,14 @@ extern "C"
   #define EXCEPTIONS_DISABLED
 #endif
 
+// GCC
+//  Bug 67371 - Never executed "throw" in constexpr function fails to compile
+//  https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86678
+//  Fixed for GCC 9.
+#if defined(__GNUC__) && (__GNUC__ < 9)
+#   define BUG_67371
+#endif
+
 /* these functions are coming in C++17, MSVC already defines them */
 #if (__cplusplus < 201703) && !defined(_MSC_VER)
 namespace std
@@ -70,7 +78,11 @@ namespace Assertions
  * @note: this assertion handler is constexpr - to allow its use inside constexpr functions.
  * The handler will still be evaluated at runtime, but memory is only allocated IF the assertion is triggered.
  */
+#ifdef BUG_67371
+static inline void handleAssert(const char* conditionAsText, bool condition, const char* file, int line, const char* message = "")
+#else
 static constexpr void handleAssert(const char* conditionAsText, bool condition, const char* file, int line, const char* message = "")
+#endif
 {
     if (condition == true) {
         return;
@@ -128,7 +140,7 @@ static_assert(std::is_same<add_const_pointers_to_type<float,0>::type, float>{}, 
 template<class T, int N>
 struct remove_pointers_from_type
 {
-    using type = typename remove_pointers_from_type<typename std::remove_pointer<T>::type, N-1>::type;
+    using type = typename remove_pointers_from_type<typename std::remove_pointer_t<T>, N-1>::type;
 };
 
 template<class T>
@@ -164,7 +176,7 @@ static_assert(std::is_same<remove_all_pointers_from_type<float>::type, float>{},
  */
 template<class T> constexpr int getRawArrayLength(const T& a)
 {
-    return sizeof(a) / sizeof(typename std::remove_all_extents<T>::type);
+    return sizeof(a) / sizeof(typename std::remove_all_extents_t<T>);
 }
 
 
@@ -265,7 +277,7 @@ template<typename T>
 constexpr bool areAllPositive(T first) noexcept { return first > T{0}; }
 
 /** @returns true if every element of the parameter pack is > 0 [recursive] */
-template<typename... Args, typename T = typename std::common_type<Args...>::type>
+template<typename... Args, typename T = typename std::common_type_t<Args...>>
 constexpr bool areAllPositive(T first, Args... args) noexcept
 {
     return areAllPositive(first) && areAllPositive(args...);
@@ -273,7 +285,7 @@ constexpr bool areAllPositive(T first, Args... args) noexcept
 
 // MARK: - Sum
 /** Calculate the sum of a given number of args in parameter pack - starting from the given firstSummand (1-based) */
-template<typename... Args, typename T = typename std::common_type<Args...>::type>
+template<typename... Args, typename T = typename std::common_type_t<Args...>>
 constexpr T sumOverRange(int firstSummand, int numSummands, Args... args) noexcept
 {
     firstSummand = std::max<int>(firstSummand, 1);
@@ -288,14 +300,14 @@ constexpr T sumOverRange(int firstSummand, int numSummands, Args... args) noexce
 }
 
 /** Calculate the sum of a given number of args in parameter pack (starting with the first one) */
-template<typename... Args, typename T = typename std::common_type<Args...>::type>
+template<typename... Args, typename T = typename std::common_type_t<Args...>>
 constexpr T sumCapped(int numSummands, Args... args) noexcept
 {
     return sumOverRange(1, numSummands, args...);
 }
 
 /** Calculate the sum of all args in parameter pack */
-template<typename... Args, typename T = typename std::common_type<Args...>::type>
+template<typename... Args, typename T = typename std::common_type_t<Args...>>
 constexpr T sum(Args... args) noexcept
 {
     return sumCapped(sizeof...(args), args...);
@@ -304,7 +316,7 @@ constexpr T sum(Args... args) noexcept
 // MARK: - Product
 
 /** Calculate the product of a given number of args in parameter pack - starting from the given firstFactor (1-based) */
-template<typename... Args, typename T = typename std::common_type<Args...>::type>
+template<typename... Args, typename T = typename std::common_type_t<Args...>>
 constexpr T productOverRange(int firstFactor, int numFactors, Args... args) noexcept
 {
     T product{1};
@@ -320,14 +332,14 @@ constexpr T productOverRange(int firstFactor, int numFactors, Args... args) noex
 }
 
 /** Calculate the product of a given number of args in parameter pack - starting with the first one */
-template<typename... Args, typename T = typename std::common_type<Args...>::type>
+template<typename... Args, typename T = typename std::common_type_t<Args...>>
 constexpr T productCapped(int numSummands, Args... args) noexcept
 {
     return productOverRange(1, numSummands, args...);
 }
 
 /** Multiply all args in parameter pack */
-template<typename... Args, typename T = typename std::common_type<Args...>::type>
+template<typename... Args, typename T = typename std::common_type_t<Args...>>
 constexpr T product(Args... args) noexcept
 {
     return productCapped(sizeof...(args), args...);
@@ -339,7 +351,7 @@ constexpr T product(Args... args) noexcept
  * Calculate the sum of cumulative products of a given number of args in parameter pack
  * -- starting from the given firstElement (1-based)
  */
-template<typename... Args, typename T = typename std::common_type<Args...>::type>
+template<typename... Args, typename T = typename std::common_type_t<Args...>>
 constexpr T sumOfCumulativeProductOverRange(int firstElement, int numElements, Args... args) noexcept
 {
     firstElement = std::max<int>(firstElement, 1);
@@ -358,7 +370,7 @@ constexpr T sumOfCumulativeProductOverRange(int firstElement, int numElements, A
 }
 
 /** Calculate the sum of cumulative products of a given number of args in parameter pack -- starting from the first one */
-template<typename... Args, typename T = typename std::common_type<Args...>::type>
+template<typename... Args, typename T = typename std::common_type_t<Args...>>
 constexpr T sumOfCumulativeProductCapped(int cap, Args... args) noexcept
 {
     return sumOfCumulativeProductOverRange(1, cap, args...);
@@ -368,7 +380,7 @@ constexpr T sumOfCumulativeProductCapped(int cap, Args... args) noexcept
  * Calculate the sum of cumulative products of all args in parameter pack.
  *  @note: This is equivalent to this Matlab/octave command: sum(cumprod(...))
  */
-template<typename... Args, typename T = typename std::common_type<Args...>::type>
+template<typename... Args, typename T = typename std::common_type_t<Args...>>
 constexpr T sumOfCumulativeProduct(Args... args) noexcept
 {
     return sumOfCumulativeProductCapped(sizeof...(Args), args...);
@@ -523,7 +535,7 @@ public:
      * @param dataArray an array of T. Size must match result given by getRequiredDataArraySize()
      * @param pointerArray an array of T*. Size must match result given by getRequiredPointerArraySize()
      */
-    template<typename T, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
+    template<typename T, typename std::enable_if_t<!std::is_pointer<T>::value>* = nullptr>
     void hookupPointerArrayToData(T* dataArray, T** pointerArray) const
     {
         if (N == 1) {
@@ -545,7 +557,7 @@ public:
     }
     
 private:
-    template<typename T, typename std::enable_if<!std::is_pointer<T>::value>::type* = nullptr>
+    template<typename T, typename std::enable_if_t<!std::is_pointer<T>::value>* = nullptr>
     int hookupHigherDimPointers(T** pointerArray, int arrayIndex, int dimIndex) const noexcept
     {
         if (dimIndex >= N-2) {
@@ -559,7 +571,7 @@ private:
             int nextDimExtent = m_dimensionExtents[dimIndex + 1];
             int offset = startOfNextDimension + nextDimExtent * index;
             // hook up pointer to element of next dimension
-            pointerArray[arrayIndex + index] = reinterpret_cast<T*>(&(pointerArray)[offset]);
+            pointerArray[arrayIndex + index] = reinterpret_cast<T*>(&pointerArray[offset]);
         }
         
         // recursive call to lower-order dimension
@@ -849,7 +861,7 @@ public:
      * @attention This is dangerous. It's meant to allow a 'view' to be constructed from an 'owning' buffer only and is
      * implemented using a special ctor in the corresponding StoragePolicy.
      */
-    template<typename U, int M, class AnotherStoragePolicy, typename std::enable_if<!std::is_same<AnotherStoragePolicy, StoragePolicy>::value, int>::type = 0>
+    template<typename U, int M, class AnotherStoragePolicy, typename std::enable_if_t<!std::is_same<AnotherStoragePolicy, StoragePolicy>::value, int> = 0>
     explicit HyperBuffer(HyperBuffer<U, M, AnotherStoragePolicy>& other) : m_storage(other.m_storage) {}
     
     // MARK: dimension extents
