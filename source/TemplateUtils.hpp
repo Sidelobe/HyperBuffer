@@ -121,7 +121,7 @@ static_assert(std::is_same<add_const_pointers_to_type<float,0>::type, float>{}, 
 template<class T, int N>
 struct remove_pointers_from_type
 {
-    using type = typename remove_pointers_from_type<typename std::remove_pointer<T>::type, N-1>::type;
+    using type = typename remove_pointers_from_type<typename std::remove_pointer_t<T>, N-1>::type;
 };
 
 template<class T>
@@ -157,7 +157,7 @@ static_assert(std::is_same<remove_all_pointers_from_type<float>::type, float>{},
  */
 template<class T> constexpr int getRawArrayLength(const T& a)
 {
-    return sizeof(a) / sizeof(typename std::remove_all_extents<T>::type);
+    return sizeof(a) / sizeof(typename std::remove_all_extents_t<T>);
 }
 
 
