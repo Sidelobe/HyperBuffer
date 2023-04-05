@@ -3,7 +3,8 @@
 //  ╠═╣└┬┘├─┘├┤ ├┬┘  ╠╩╗│ │├┤ ├┤ ├┤ ├┬┘
 //  ╩ ╩ ┴ ┴  └─┘┴└─  ╚═╝└─┘└  └  └─┘┴└─
 //
-//  © 2020 Lorenz Bucher - all rights reserved
+//  © 2023 Lorenz Bucher - all rights reserved
+//  https://github.com/Sidelobe/HyperBuffer
 
 #pragma once
 
