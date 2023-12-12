@@ -71,7 +71,7 @@ constexpr T productOverRange(int firstFactor, int numFactors, Args... args) noex
     numFactors = std::min<int>(numFactors, static_cast<int>(sizeof...(args)) - firstFactor + 1);
     
     T values[]{ args... };
-     for (int i=firstFactor; i < firstFactor+numFactors; ++i) {
+    for (int i=firstFactor; i < firstFactor+numFactors; ++i) {
         product *= values[i-1];
     }
     return product;
