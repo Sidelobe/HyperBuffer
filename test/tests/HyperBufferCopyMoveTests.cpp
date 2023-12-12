@@ -152,7 +152,7 @@ TEST_CASE("Copy/Move a HyperBuffer with external, flat allocation")
     REQUIRE(bufferCopy[2][0] == buffer[2][0]);
 
     // Copy Ctor - verify no memory is allocated
-    HyperBufferView<int, N> bufferCopyCtor(nullptr, 3, 2, 8);
+    HyperBufferView<int, N> bufferCopyCtor(preAllocData, 3, 2, 8);
     {
         ScopedMemorySentinel sentinel;
         bufferCopyCtor = buffer;
@@ -166,7 +166,7 @@ TEST_CASE("Copy/Move a HyperBuffer with external, flat allocation")
     // Move assignment operator
     {
         HyperBufferView<int, N> bufferMovedFrom = buffer; // working copy
-        HyperBufferView<int, N> bufferMovedTo(nullptr, 3, 2, 8);
+        HyperBufferView<int, N> bufferMovedTo(preAllocData, 3, 2, 8);
         bufferMovedTo = std::move(bufferMovedFrom);
         verifyBuffer(bufferMovedTo);
         REQUIRE(bufferMovedFrom.data() == nullptr);

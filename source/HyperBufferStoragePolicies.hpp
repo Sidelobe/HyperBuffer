@@ -117,6 +117,7 @@ public:
         m_pointers(m_bufferGeometry.getRequiredPointerArraySize())
     {
         ASSERT(CompiletimeMath::areAllPositive(i...), "Invalid Dimension extents");
+        ASSERT(m_externalData != nullptr);
         m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
     }
 
