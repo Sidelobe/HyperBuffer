@@ -42,6 +42,7 @@ set(TEST_WITH_AMALGAMATED_HEADER OFF CACHE BOOL "Build & Test with Amalgamated h
 add_library(${PROJECT_NAME} INTERFACE)
 
 if (TEST_WITH_AMALGAMATED_HEADER)
+  message(STATUS "using Amalgamated Headers")
   target_sources(${PROJECT_NAME} INTERFACE "single_include/HyperBuffer.hpp")
   target_include_directories(${PROJECT_NAME} INTERFACE "single_include")
   target_compile_definitions(${PROJECT_NAME} INTERFACE SLB_AMALGATED_HEADER)

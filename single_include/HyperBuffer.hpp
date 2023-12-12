@@ -328,7 +328,7 @@ constexpr T productOverRange(int firstFactor, int numFactors, Args... args) noex
     numFactors = std::min<int>(numFactors, static_cast<int>(sizeof...(args)) - firstFactor + 1);
     
     T values[]{ args... };
-     for (int i=firstFactor; i < firstFactor+numFactors; ++i) {
+    for (int i=firstFactor; i < firstFactor+numFactors; ++i) {
         product *= values[i-1];
     }
     return product;
@@ -554,7 +554,7 @@ public:
         // Get number of data pointers (length of 2nd-lowest dim)
         int numDataPointers = StdArrayOperations::productCapped(N-1, m_dimensionExtents);
 
-        //Hook up pointer that point to data (second lowest-order dimension)
+        // Hook up pointer that point to data (second lowest-order dimension)
         for (int i=0; i < numDataPointers; ++i) {
             int offsetInDataArray = i * m_dimensionExtents[N-1];
             pointerArray[dataPointerStartOffset + i] = &dataArray[offsetInDataArray];
@@ -706,6 +706,7 @@ public:
         m_pointers(m_bufferGeometry.getRequiredPointerArraySize())
     {
         ASSERT(CompiletimeMath::areAllPositive(i...), "Invalid Dimension extents");
+        ASSERT(m_externalData != nullptr);
         m_bufferGeometry.hookupPointerArrayToData(m_externalData, m_pointers.data());
     }
 
