@@ -9,7 +9,7 @@ cd build/coverage
 
 find . -maxdepth 10 -type f  \( -name \*.gcno -o -name \*.gcda \) -delete
  
-cmake -j 4 -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=yes ../../..
+cmake -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=yes ../../..
 make
 ./HyperBufferTest
 
