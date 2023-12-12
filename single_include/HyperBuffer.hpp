@@ -5,7 +5,8 @@
 //  ╠═╣└┬┘├─┘├┤ ├┬┘  ╠╩╗│ │├┤ ├┤ ├┤ ├┬┘
 //  ╩ ╩ ┴ ┴  └─┘┴└─  ╚═╝└─┘└  └  └─┘┴└─
 //
-//  © 2021 Lorenz Bucher - all rights reserved
+//  © 2023 Lorenz Bucher - all rights reserved
+//  https://github.com/Sidelobe/HyperBuffer
 
 #pragma once
 
@@ -27,7 +28,8 @@ extern "C"
 //  ╠═╣└┬┘├─┘├┤ ├┬┘  ╠╩╗│ │├┤ ├┤ ├┤ ├┬┘
 //  ╩ ╩ ┴ ┴  └─┘┴└─  ╚═╝└─┘└  └  └─┘┴└─
 //
-//  © 2020 Lorenz Bucher - all rights reserved
+//  © 2023 Lorenz Bucher - all rights reserved
+//  https://github.com/Sidelobe/HyperBuffer
 
 
 
@@ -260,7 +262,8 @@ constexpr auto apply(F&& f, const int (&array)[N]) noexcept
 //  ╠═╣└┬┘├─┘├┤ ├┬┘  ╠╩╗│ │├┤ ├┤ ├┤ ├┬┘
 //  ╩ ╩ ┴ ┴  └─┘┴└─  ╚═╝└─┘└  └  └─┘┴└─
 //
-//  © 2020 Lorenz Bucher - all rights reserved
+//  © 2023 Lorenz Bucher - all rights reserved
+//  https://github.com/Sidelobe/HyperBuffer
 
 
 
@@ -395,7 +398,8 @@ constexpr T sumOfCumulativeProduct(Args... args) noexcept
 //  ╠═╣└┬┘├─┘├┤ ├┬┘  ╠╩╗│ │├┤ ├┤ ├┤ ├┬┘
 //  ╩ ╩ ┴ ┴  └─┘┴└─  ╚═╝└─┘└  └  └─┘┴└─
 //
-//  © 2020 Lorenz Bucher - all rights reserved
+//  © 2023 Lorenz Bucher - all rights reserved
+//  https://github.com/Sidelobe/HyperBuffer
 
 
 
@@ -464,7 +468,8 @@ constexpr std::array<int, N-1> shaveOffFirstElement(const std::array<int, N>& ar
 //  ╠═╣└┬┘├─┘├┤ ├┬┘  ╠╩╗│ │├┤ ├┤ ├┤ ├┬┘
 //  ╩ ╩ ┴ ┴  └─┘┴└─  ╚═╝└─┘└  └  └─┘┴└─
 //
-//  © 2020 Lorenz Bucher - all rights reserved
+//  © 2023 Lorenz Bucher - all rights reserved
+//  https://github.com/Sidelobe/HyperBuffer
 
 
 
@@ -592,7 +597,8 @@ private:
 //  ╠═╣└┬┘├─┘├┤ ├┬┘  ╠╩╗│ │├┤ ├┤ ├┤ ├┬┘
 //  ╩ ╩ ┴ ┴  └─┘┴└─  ╚═╝└─┘└  └  └─┘┴└─
 //
-//  © 2021 Lorenz Bucher - all rights reserved
+//  © 2023 Lorenz Bucher - all rights reserved
+//  https://github.com/Sidelobe/HyperBuffer
 
 
 
