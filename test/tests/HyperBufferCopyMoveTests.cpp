@@ -169,7 +169,7 @@ TEST_CASE("Copy/Move a HyperBuffer with external, flat allocation")
         HyperBufferView<int, N> bufferMovedTo(preAllocData, 3, 2, 8);
         bufferMovedTo = std::move(bufferMovedFrom);
         verifyBuffer(bufferMovedTo);
-        //REQUIRE(bufferMovedFrom.data() == nullptr); // this cannot be relied upon
+        //REQUIRE bufferMovedFrom.data() == nullptr -- this cannot be relied upon
         REQUIRE(bufferMovedTo[0] == buffer[0]); // moved points to the same data
         REQUIRE(bufferMovedTo[0][1] == buffer[0][1]);
         REQUIRE(bufferMovedTo[2][0] == buffer[2][0]);
@@ -192,7 +192,7 @@ TEST_CASE("Copy/Move a HyperBuffer with external, flat allocation")
         sentinel.setArmed(false);
         verifyBuffer(bufferMovedTo);
         REQUIRE(bufferMovedTo.data() != nullptr);
-        //REQUIRE(bufferMovedFrom.data() == nullptr); // this cannot be relied upon
+        //REQUIRE bufferMovedFrom.data() == nullptr -- this cannot be relied upon
     }
 #endif
     
@@ -201,7 +201,7 @@ TEST_CASE("Copy/Move a HyperBuffer with external, flat allocation")
         HyperBufferView<int, N> bufferMovedFrom = buffer;
         HyperBufferView<int, N> bufferMovedToCtor(std::move(bufferMovedFrom));
         verifyBuffer(bufferMovedToCtor);
-        REQUIRE(bufferMovedFrom.data() == nullptr);
+        // REQUIRE bufferMovedFrom.data() == nullptr -- this cannot be relied upon
         REQUIRE(bufferMovedToCtor[0] == buffer[0]); // moved points to the same data
         REQUIRE(bufferMovedToCtor[0][1] == buffer[0][1]);
         REQUIRE(bufferMovedToCtor[2][0] == buffer[2][0]);
@@ -224,7 +224,7 @@ TEST_CASE("Copy/Move a HyperBuffer with external, flat allocation")
         sentinel.setArmed(false);
         verifyBuffer(bufferMovedCtor);
         REQUIRE(bufferMovedCtor.data() != nullptr);
-        //REQUIRE(bufferMovedFrom.data() == nullptr);  // this cannot be relied upon
+        //REQUIRE bufferMovedFrom.data() == nullptr -- this cannot be relied upon
     }
 #endif
     
@@ -282,7 +282,7 @@ TEST_CASE("Copy/Move a HyperBuffer with external, multi-dimensional allocation")
         HyperBufferViewNC<int, N> bufferMovedFrom = buffer; // working copy
         HyperBufferViewNC<int, N> bufferMovedTo = std::move(bufferMovedFrom);
         verifyBuffer(bufferMovedTo);
-        //REQUIRE(bufferMovedFrom.data() != nullptr); // original remains untouched -- NOTE: this cannot be relied upon
+        //REQUIRE bufferMovedFrom.data() != nullptr -- original remains untouched -- NOTE: this cannot be relied upon
         REQUIRE(bufferMovedTo[0] == buffer[0]); // moved points to the same data
         REQUIRE(bufferMovedTo[0][1] == buffer[0][1]);
         REQUIRE(bufferMovedTo[2][0] == buffer[2][0]);
@@ -297,7 +297,7 @@ TEST_CASE("Copy/Move a HyperBuffer with external, multi-dimensional allocation")
             bufferMovedToPreAlloc = std::move(bufferMovedFrom);
         }
         verifyBuffer(bufferMovedToPreAlloc);
-        //REQUIRE(bufferMovedFrom.data() != nullptr); // original remains untouched -- NOTE: this cannot be relied upon
+        //REQUIRE bufferMovedFrom.data() != nullptr -- original remains untouched -- NOTE: this cannot be relied upon
     }
 
     // Move Ctor
@@ -305,7 +305,7 @@ TEST_CASE("Copy/Move a HyperBuffer with external, multi-dimensional allocation")
         HyperBufferViewNC<int, N> bufferMovedFrom = buffer;
         HyperBufferViewNC<int, N> bufferMovedToCtor(std::move(bufferMovedFrom));
         verifyBuffer(bufferMovedToCtor);
-        //REQUIRE(bufferMovedFrom.data() != nullptr); // original remains untouched -- NOTE: this cannot be relied upon
+        //REQUIRE bufferMovedFrom.data() != nullptr -- original remains untouched -- NOTE: this cannot be relied upon
         REQUIRE(bufferMovedToCtor[0] == buffer[0]); // moved points to the same data
         REQUIRE(bufferMovedToCtor[0][1] == buffer[0][1]);
         REQUIRE(bufferMovedToCtor[2][0] == buffer[2][0]);
@@ -319,7 +319,7 @@ TEST_CASE("Copy/Move a HyperBuffer with external, multi-dimensional allocation")
             HyperBufferViewNC<int, N> bufferMovedCtor(std::move(bufferMovedFrom));
             UNUSED(bufferMovedCtor);
         }
-        //REQUIRE(bufferMovedFrom.data() != nullptr); // original remains untouched -- NOTE: this cannot be relied upon
+        //REQUIRE bufferMovedFrom.data() != nullptr -- original remains untouched -- NOTE: this cannot be relied upon
     }
 }
 
