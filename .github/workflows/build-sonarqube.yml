@@ -12,6 +12,11 @@ jobs:
       with:
         submodules: 'true'
         fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+    - name: Install Toolchain
+      run: |
+        pip3 install gcovr
+        echo "Gcovr Updated!"
+        gcovr --version
     - name: Install Build Wrapper
       uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v4
     - name: Setup & Cmake
