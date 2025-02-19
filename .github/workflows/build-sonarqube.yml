@@ -14,11 +14,11 @@ jobs:
     - name: Install Build Wrapper
       uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v4
     - name: Setup & Cmake
-        working-directory: deploy
-        run: |
-          mkdir -p build
-          cd build
-          cmake -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=Yes ../..
+      working-directory: deploy
+      run: |
+        mkdir -p build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=Yes ../..
     - name: Build & Run Tests
       env:
         CTEST_OUTPUT_ON_FAILURE: 1
@@ -39,4 +39,3 @@ jobs:
       with:
         args: >
           --define sonar.cfamily.compile-commands="${{ env.BUILD_WRAPPER_OUT_DIR }}/compile_commands.json"    
-
