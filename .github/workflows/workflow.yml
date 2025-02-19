@@ -6,6 +6,8 @@ on:
       - develop
   pull_request:
     types: [opened, synchronize, reopened]
+  schedule:
+    - cron:  '0 3 1 * *' # At 3:00am on the 1st
   workflow_dispatch:
     
 jobs: 
