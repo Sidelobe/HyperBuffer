@@ -27,6 +27,7 @@ jobs:
         cd build
         cmake -DCMAKE_CXX_STANDARD=${{matrix.std}} \
               -DCMAKE_BUILD_TYPE=${{matrix.build_type}} \
+              --target HyperBufferTest \
               ../..
         
     - name: Build & Run Tests
