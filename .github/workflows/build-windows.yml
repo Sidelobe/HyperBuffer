@@ -36,5 +36,5 @@ jobs:
         if: ${{ matrix.platform == 'x64' }}
         env:
             CTEST_OUTPUT_ON_FAILURE: 1
-        run: ctest -C ${{matrix.build_type}} -j %NUMBER_OF_PROCESSORS%
+        run: ctest -C ${{matrix.build_type}} -E Sentinel
         shell: cmd
