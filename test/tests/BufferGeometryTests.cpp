@@ -41,8 +41,8 @@ TEST_CASE("BufferGeometry Tests")
     SECTION("2D") {
         constexpr int N = 2;
         BufferGeometry<N> bufferGeo(3, 3);
-        CHECK(bufferGeo.getDimensionExtents() == std::array<int, 2>{3, 3});
-        CHECK(bufferGeo.getDimensionExtentsPointer() != nullptr);
+        REQUIRE(bufferGeo.getDimensionExtents() == std::array<int, 2>{3, 3});
+        REQUIRE(bufferGeo.getDimensionExtentsPointer() != nullptr);
         CHECK(bufferGeo.getDimensionExtentsPointer()[0] == 3);
         CHECK(bufferGeo.getDimensionExtentsPointer()[1] == 3);
         CHECK(bufferGeo.getDataArrayOffsetForHighestOrderSubDim(0) == 0);

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.20)
 
 ###########################################################
 #  ╦ ╦┬ ┬┌─┐┌─┐┬─┐  ╔╗ ┬ ┬┌─┐┌─┐┌─┐┬─┐
@@ -42,6 +42,7 @@ set(TEST_WITH_AMALGAMATED_HEADER OFF CACHE BOOL "Build & Test with Amalgamated h
 add_library(${PROJECT_NAME} INTERFACE)
 
 if (TEST_WITH_AMALGAMATED_HEADER)
+  message(STATUS "using Amalgamated Headers")
   target_sources(${PROJECT_NAME} INTERFACE "single_include/HyperBuffer.hpp")
   target_include_directories(${PROJECT_NAME} INTERFACE "single_include")
   target_compile_definitions(${PROJECT_NAME} INTERFACE SLB_AMALGATED_HEADER)
@@ -145,7 +146,8 @@ endif()
 
 
 ## ENABLE THE USE OF CTEST 
-include("test/external-utils/catch2/ParseAndAddCatchTests.cmake")
+include("test/external-utils/catch2/Catch.cmake")
+
 #include(CTest) # this will generate lots of additional targets
 enable_testing()
-ParseAndAddCatchTests(${TEST_NAME})
+catch_discover_tests(${TEST_NAME})

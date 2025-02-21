@@ -8,6 +8,7 @@ cd build/xcode-macos
 cmake -G Xcode \
 -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13 \
 -DCMAKE_OSX_ARCHITECTURES=arm64\;x86_64 \
+-DTEST_WITH_AMALGAMATED_HEADER=No \
 ../../..
 
 exit

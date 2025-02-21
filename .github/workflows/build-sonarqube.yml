@@ -1,25 +1,34 @@
 name: Sidelobe Build Sonarqube
 on:
   workflow_call:
+    
 jobs:
   build:
     name: Linux, GCC, Release, Coverage & SonarQube
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       BUILD_WRAPPER_OUT_DIR: '$GITHUB_WORKSPACE/deploy/build/bw-output' # Directory where build-wrapper output will be placed
+      cxx: g++-11
+      cc: gcc-11
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         submodules: 'true'
+        fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
     - name: Install Toolchain
       run: |
         pip3 install gcovr
         echo "Gcovr Updated!"
         gcovr --version
-    - name: Install sonar-scanner and build-wrapper
-      uses: SonarSource/sonarcloud-github-c-cpp@v2
+        
+        # sudo apt-get install -y g++-11 gcc-11
+    - name: Install Build Wrapper
+      uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v4
     - name: Setup & Cmake
       working-directory: deploy
+      env:
+        CC: ${{env.cc}}
+        CXX: ${{env.cxx}}
       run: |
         mkdir -p build
         cd build
@@ -37,9 +46,11 @@ jobs:
         # Generate coverage report
         gcovr -r .. -f ../source  --exclude-unreachable-branches --exclude-throw-branches --sonarqube -o report/coverage.xml 
         
-    - name: Run sonar-scanner
+    - name: SonarQube Scan
+      uses: SonarSource/sonarqube-scan-action@v4
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      run: |
-        sonar-scanner --define sonar.cfamily.build-wrapper-output="${{ env.BUILD_WRAPPER_OUT_DIR }}"
+      with:
+        args: >
+          --define sonar.cfamily.compile-commands="${{ env.BUILD_WRAPPER_OUT_DIR }}/compile_commands.json"  

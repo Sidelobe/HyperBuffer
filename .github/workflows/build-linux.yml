@@ -4,22 +4,22 @@ on:
 jobs:
   build:
     name: Linux, ${{matrix.cxx}}, C++${{matrix.std}}, ${{matrix.build_type}}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         cxx:
-          - g++-7
-          - g++-11
+          - g++-12
+          - g++-14
         build_type: [Debug, Release]
         std: [14]
         include:
-          - cxx: g++-7
-            cc: gcc-7
-            other_pkgs: g++-7 gcc-7
-          - cxx: g++-11
-            cc: gcc-11
-            other_pkgs: g++-11 gcc-11
+          - cxx: g++-12
+            cc: gcc-12
+            other_pkgs: g++-12 gcc-12
+          - cxx: g++-14
+            cc: gcc-14
+            other_pkgs: g++-14 gcc-14
     
     steps:
     - uses: actions/checkout@v3
@@ -47,4 +47,4 @@ jobs:
       working-directory: deploy/build
       run: |
         cmake --build . --parallel 2
-        ctest -C ${{ matrix.build_type }} -L HyperBufferTest -j 2
+        ctest -C ${{ matrix.build_type }} -E Sentinel

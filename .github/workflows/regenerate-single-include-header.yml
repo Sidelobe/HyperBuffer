@@ -5,7 +5,7 @@ jobs:
   check-single-include:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: 'true'  
       - name: Amalgamate Headers
@@ -23,7 +23,7 @@ jobs:
         working-directory: deploy/build
         run: |
           cmake --build . --parallel 2
-          ctest -C ${{ matrix.build_type }} -L HyperBufferTest -j 2
+          ctest -C Release -E Sentinel  
       - name: Check single_include header
         run: |
           if [[ `git status --porcelain --untracked-files=no single_include/HyperBuffer.hpp` ]]; then

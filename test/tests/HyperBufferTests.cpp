@@ -498,6 +498,9 @@ TEST_CASE("HyperBuffer: out of memory")
     }
 }
 
+// Turn off clang optimization for this test
+#pragma clang optimize off
+
 TEST_CASE("HyperBuffer: memory allocation - precise verification")
 {
     BufferGeometry<3> bufferGeo(3, 3, 8);
@@ -535,3 +538,5 @@ TEST_CASE("HyperBuffer: memory allocation - precise verification")
         sentinel.setArmed(false);
     }
 }
+
+#pragma clang optimize on

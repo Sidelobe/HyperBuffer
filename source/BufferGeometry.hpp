@@ -94,7 +94,7 @@ public:
         // Get number of data pointers (length of 2nd-lowest dim)
         int numDataPointers = StdArrayOperations::productCapped(N-1, m_dimensionExtents);
 
-        //Hook up pointer that point to data (second lowest-order dimension)
+        // Hook up pointer that point to data (second lowest-order dimension)
         for (int i=0; i < numDataPointers; ++i) {
             int offsetInDataArray = i * m_dimensionExtents[N-1];
             pointerArray[dataPointerStartOffset + i] = &dataArray[offsetInDataArray];
