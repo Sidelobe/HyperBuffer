@@ -1,12 +1,15 @@
 name: Sidelobe Build Sonarqube
 on:
   workflow_call:
+    
 jobs:
   build:
     name: Linux, GCC, Release, Coverage & SonarQube
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       BUILD_WRAPPER_OUT_DIR: '$GITHUB_WORKSPACE/deploy/build/bw-output' # Directory where build-wrapper output will be placed
+      cxx: g++-11
+      cc: gcc-11
     steps:
     - uses: actions/checkout@v4
       with:
@@ -17,14 +20,20 @@ jobs:
         pip3 install gcovr
         echo "Gcovr Updated!"
         gcovr --version
+        
+        # sudo apt-get install -y g++-11 gcc-11
     - name: Install Build Wrapper
       uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v4
     - name: Setup & Cmake
       working-directory: deploy
+      env:
+        CC: ${{env.cc}}
+        CXX: ${{env.cxx}}
       run: |
         mkdir -p build
         cd build
         cmake -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=Yes ../..
+        
     - name: Build & Run Tests
       env:
         CTEST_OUTPUT_ON_FAILURE: 1
@@ -35,8 +44,8 @@ jobs:
         cd ..
         mkdir -p report
         # Generate coverage report
-        gcovr -r .. -f ../source  --exclude-unreachable-branches --exclude-throw-branches --sonarqube -o report/coverage.xml
-      
+        gcovr -r .. -f ../source  --exclude-unreachable-branches --exclude-throw-branches --sonarqube -o report/coverage.xml 
+        
     - name: SonarQube Scan
       uses: SonarSource/sonarqube-scan-action@v4
       env:
@@ -44,4 +53,4 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       with:
         args: >
-          --define sonar.cfamily.compile-commands="${{ env.BUILD_WRAPPER_OUT_DIR }}/compile_commands.json"    
+          --define sonar.cfamily.compile-commands="${{ env.BUILD_WRAPPER_OUT_DIR }}/compile_commands.json"  
