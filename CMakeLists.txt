@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.20)
 
 ###########################################################
 #  ╦ ╦┬ ┬┌─┐┌─┐┬─┐  ╔╗ ┬ ┬┌─┐┌─┐┌─┐┬─┐
@@ -146,7 +146,8 @@ endif()
 
 
 ## ENABLE THE USE OF CTEST 
-include("test/external-utils/catch2/ParseAndAddCatchTests.cmake")
+include("test/external-utils/catch2/Catch.cmake")
+
 #include(CTest) # this will generate lots of additional targets
 enable_testing()
-ParseAndAddCatchTests(${TEST_NAME})
+catch_discover_tests(${TEST_NAME})

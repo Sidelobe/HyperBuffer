@@ -8,14 +8,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-11]
+        os: [macos-latest]
         cxx:
           - clang++
         build_type: [Debug, Release]
         std: [14]
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         submodules: 'true'
     - name: Setup & Cmake
@@ -34,5 +34,5 @@ jobs:
         CTEST_OUTPUT_ON_FAILURE: 1
       working-directory: deploy/build
       run: |
-        cmake --build . --parallel 2
-        ctest -C ${{ matrix.build_type }} -L HyperBufferTest -j 2
+        cmake --build . --parallel 2 --target HyperBufferTest
+        ctest -C ${{ matrix.build_type }} -E Sentinel  
