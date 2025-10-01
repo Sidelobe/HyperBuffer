@@ -7,7 +7,7 @@ jobs:
     name: Linux, GCC, Release, Coverage & SonarQube
     runs-on: ubuntu-22.04
     env:
-      BUILD_WRAPPER_OUT_DIR: '${{ github.workspace }} deploy/build/bw-output' # Directory where build-wrapper output will be placed
+      BUILD_WRAPPER_OUT_DIR: '${{ github.workspace }}/deploy/build/bw-output' # Directory where build-wrapper output will be placed
       cxx: g++-11
       cc: gcc-11
     steps:
