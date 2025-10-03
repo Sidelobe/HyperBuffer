@@ -30,7 +30,7 @@ jobs:
       run: |
         mkdir -p build
         cd build
-        cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=On -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=Yes ../..
+        cmake -B . -DCMAKE_EXPORT_COMPILE_COMMANDS=On -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=Yes ../..
         
     - name: Build & Run Tests
       env:
@@ -51,4 +51,4 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       with:
         args: >
-          --define sonar.cfamily.compile-commands=deploy/build/${{ env.BUILD_WRAPPER_OUT_DIR }}/compile_commands.json 
+          --define sonar.cfamily.compile-commands=deploy/build/compile_commands.json 
