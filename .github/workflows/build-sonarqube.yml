@@ -7,7 +7,6 @@ jobs:
     name: Linux, GCC, Release, Coverage & SonarQube
     runs-on: ubuntu-22.04
     env:
-      BUILD_WRAPPER_OUT_DIR: 'bw-output' # Directory where build-wrapper output will be placed
       cxx: g++-11
       cc: gcc-11
     steps:
@@ -22,8 +21,6 @@ jobs:
         gcovr --version
         
         # sudo apt-get install -y g++-11 gcc-11
-    - name: Install Build Wrapper
-      uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v5
     - name: Setup & Cmake
       working-directory: deploy
       env:
@@ -32,15 +29,14 @@ jobs:
       run: |
         mkdir -p build
         cd build
-        cmake -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=Yes ../..
+        cmake -B . -DCMAKE_EXPORT_COMPILE_COMMANDS=On -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=Yes ../..
         
     - name: Build & Run Tests
       env:
         CTEST_OUTPUT_ON_FAILURE: 1
       working-directory: deploy/build
       run: |
-        mkdir -p bw-output
-        build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }}  make -j 4
+        cmake --build . -j 4 --target HyperBufferTest
         ./HyperBufferTest
         cd ..
         mkdir -p report
@@ -54,4 +50,4 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       with:
         args: >
-          --define sonar.cfamily.compile-commands=deploy/build/${{ env.BUILD_WRAPPER_OUT_DIR }}/compile_commands.json 
+          --define sonar.cfamily.compile-commands=deploy/build/compile_commands.json 
